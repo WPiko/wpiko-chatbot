@@ -26,7 +26,8 @@ jobs:
       # already exists. The action never commits this tag or any other changes.
       - name: Stage WordPress.org deployment without committing
         id: dry_run
-        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        # Pinned revision includes credential-free dry runs (unlike 2.3.0).
+        uses: 10up/action-wordpress-plugin-deploy@008657da18d18e065aaaccd287fa3af53ff768a1
         with:
           dry-run: true
           generate-zip: true
