@@ -1,0 +1,821 @@
+/* ==========================================================================
+   DASHBOARD STYLES
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard {
+    --dash-gap: 20px;
+    --dash-pad: 20px;
+    --dash-hairline: 1px solid var(--wpiko-border-light);
+    margin: 0;
+    padding: 0;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.wpiko-chatbot-dashboard .animate-fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.wpiko-chatbot-dashboard .animate-slide-in {
+    animation: slideInLeft 0.5s ease-out forwards;
+}
+
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .dashboard-welcome {
+    background: var(--wpiko-surface);
+    padding: 20px var(--dash-pad);
+    border-radius: var(--wpiko-radius-lg);
+    border: var(--dash-hairline);
+    margin-bottom: var(--dash-gap);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-chatbot-dashboard .welcome-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.wpiko-chatbot-dashboard .welcome-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: var(--wpiko-gradient-primary);
+}
+
+.wpiko-chatbot-dashboard .welcome-icon .dashicons {
+    width: 21px;
+    height: 21px;
+    font-size: 21px;
+    color: var(--wpiko-text-inverse);
+}
+
+.wpiko-chatbot-dashboard .welcome-content {
+    min-width: 0;
+}
+
+.wpiko-chatbot-dashboard .welcome-eyebrow {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--wpiko-text-faint);
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wpiko-chatbot-dashboard .welcome-content h1 {
+    margin: 0 0 2px;
+    padding: 0;
+    font-size: 22px;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-chatbot-dashboard .welcome-description {
+    margin: 0;
+    max-width: 680px;
+    font-size: 13px;
+    color: var(--wpiko-text-muted);
+    line-height: 1.5;
+}
+
+.wpiko-chatbot-dashboard .welcome-status {
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.wpiko-chatbot-dashboard .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px 6px 11px;
+    border-radius: var(--wpiko-radius-full);
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.wpiko-chatbot-dashboard .status-indicator.status-active {
+    background: var(--wpiko-success-tint);
+    color: var(--wpiko-success-hover);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.wpiko-chatbot-dashboard .status-indicator.status-active .dashicons {
+    color: var(--wpiko-success);
+}
+
+.wpiko-chatbot-dashboard .status-indicator.status-inactive {
+    background: var(--wpiko-warning-tint);
+    color: var(--wpiko-warning-text);
+    border: 1px solid var(--wpiko-warning-soft);
+}
+
+.wpiko-chatbot-dashboard .status-indicator .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+/* ==========================================================================
+   STATS GRID
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--dash-gap);
+    margin-bottom: var(--dash-gap);
+}
+
+.wpiko-chatbot-dashboard .stat-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--wpiko-surface);
+    border: var(--dash-hairline);
+    border-radius: var(--wpiko-radius-lg);
+    padding: 16px 18px 18px;
+    transition: border-color var(--wpiko-transition), box-shadow var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .stat-card:hover {
+    border-color: var(--wpiko-border-strong);
+    box-shadow: var(--wpiko-shadow-xs);
+}
+
+.wpiko-chatbot-dashboard .stat-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wpiko-chatbot-dashboard .stat-icon .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.wpiko-chatbot-dashboard .stat-conversations .stat-icon {
+    background: var(--wpiko-primary-tint);
+}
+
+.wpiko-chatbot-dashboard .stat-conversations .stat-icon .dashicons {
+    color: var(--wpiko-primary);
+}
+
+.wpiko-chatbot-dashboard .stat-messages .stat-icon {
+    background: var(--wpiko-accent-tint);
+}
+
+.wpiko-chatbot-dashboard .stat-messages .stat-icon .dashicons {
+    color: var(--wpiko-accent);
+}
+
+.wpiko-chatbot-dashboard .stat-users .stat-icon {
+    background: rgba(124, 58, 237, 0.08);
+}
+
+.wpiko-chatbot-dashboard .stat-users .stat-icon .dashicons {
+    color: var(--wpiko-purple);
+}
+
+.wpiko-chatbot-dashboard .stat-today .stat-icon {
+    background: rgba(255, 111, 89, 0.1);
+}
+
+.wpiko-chatbot-dashboard .stat-today .stat-icon .dashicons {
+    color: var(--wpiko-coral);
+}
+
+/* Label sits above the value; values stay bottom-aligned when labels wrap */
+.wpiko-chatbot-dashboard .stat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.wpiko-chatbot-dashboard .stat-label {
+    margin-bottom: 8px;
+    padding-right: 38px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wpiko-text-faint);
+}
+
+.wpiko-chatbot-dashboard .stat-number {
+    font-size: 30px;
+    font-weight: 650;
+    line-height: 1;
+    color: var(--wpiko-text-strong);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   MAIN CONTENT LAYOUT
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .dashboard-main-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(330px, 0.8fr);
+    gap: var(--dash-gap);
+    margin-bottom: var(--dash-gap);
+    align-items: start;
+}
+
+.wpiko-chatbot-dashboard .dashboard-left-column,
+.wpiko-chatbot-dashboard .dashboard-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dash-gap);
+}
+
+/* ==========================================================================
+   WIDGETS
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .dashboard-widget {
+    background: var(--wpiko-surface);
+    border: var(--dash-hairline);
+    border-radius: var(--wpiko-radius-lg);
+    overflow: hidden;
+}
+
+.wpiko-chatbot-dashboard .widget-header {
+    padding: 14px var(--dash-pad);
+    border-bottom: var(--dash-hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-height: 24px;
+}
+
+.wpiko-chatbot-dashboard .widget-header h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-chatbot-dashboard .widget-header h3 .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--wpiko-text-faint);
+}
+
+.wpiko-chatbot-dashboard .widget-action {
+    color: var(--wpiko-text-muted);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 4px 9px;
+    margin-right: -9px;
+    border-radius: var(--wpiko-radius-sm);
+    white-space: nowrap;
+    transition: background-color var(--wpiko-transition), color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .widget-action:hover,
+.wpiko-chatbot-dashboard .widget-action:focus {
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+}
+
+.wpiko-chatbot-dashboard .widget-content {
+    padding: 6px var(--dash-pad);
+}
+
+/* ==========================================================================
+   RECENT ACTIVITY
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .activity-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0 calc(var(--dash-pad) * -1);
+}
+
+.wpiko-chatbot-dashboard .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px var(--dash-pad);
+    border-bottom: var(--dash-hairline);
+    transition: background-color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .activity-item:last-child {
+    border-bottom: none;
+}
+
+.wpiko-chatbot-dashboard .activity-item:hover {
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-chatbot-dashboard .activity-avatar {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.wpiko-chatbot-dashboard .activity-avatar img {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    box-shadow: 0 0 0 1px var(--wpiko-border-light);
+}
+
+.wpiko-chatbot-dashboard .activity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.wpiko-chatbot-dashboard .activity-user {
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--wpiko-text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-chatbot-dashboard .activity-message {
+    color: var(--wpiko-text-muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-chatbot-dashboard .activity-meta {
+    flex-shrink: 0;
+    font-size: 11.5px;
+    color: var(--wpiko-text-faint);
+    white-space: nowrap;
+}
+
+.wpiko-chatbot-dashboard .activity-time {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.wpiko-chatbot-dashboard .no-activity {
+    text-align: center;
+    padding: 34px 16px;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-chatbot-dashboard .no-activity .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 10px;
+    color: var(--wpiko-text-faint);
+}
+
+.wpiko-chatbot-dashboard .no-activity p {
+    margin: 0 auto;
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   ATTENTION REQUIRED
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .attention-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0 calc(var(--dash-pad) * -1);
+}
+
+.wpiko-chatbot-dashboard .attention-item {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px var(--dash-pad);
+    border-bottom: var(--dash-hairline);
+    transition: background-color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .attention-item:last-child {
+    border-bottom: none;
+}
+
+.wpiko-chatbot-dashboard .attention-item:hover {
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-chatbot-dashboard .attention-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+}
+
+.wpiko-chatbot-dashboard .attention-icon .dashicons {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+}
+
+.wpiko-chatbot-dashboard .attention-critical .attention-icon {
+    background: var(--wpiko-danger-tint);
+    color: var(--wpiko-danger);
+}
+
+.wpiko-chatbot-dashboard .attention-warning .attention-icon {
+    background: var(--wpiko-warning-tint);
+    color: var(--wpiko-warning-text);
+}
+
+.wpiko-chatbot-dashboard .attention-info .attention-icon {
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+}
+
+.wpiko-chatbot-dashboard .attention-details {
+    min-width: 0;
+}
+
+.wpiko-chatbot-dashboard .attention-title {
+    margin-bottom: 2px;
+    color: var(--wpiko-text-strong);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.wpiko-chatbot-dashboard .attention-description {
+    color: var(--wpiko-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.wpiko-chatbot-dashboard .attention-action {
+    color: var(--wpiko-text-muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 9px;
+    margin-right: -9px;
+    border-radius: var(--wpiko-radius-sm);
+    white-space: nowrap;
+    transition: background-color var(--wpiko-transition), color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .attention-action:hover,
+.wpiko-chatbot-dashboard .attention-action:focus {
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+}
+
+.wpiko-chatbot-dashboard .attention-empty {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.wpiko-chatbot-dashboard .attention-empty > .dashicons {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--wpiko-success-tint);
+    color: var(--wpiko-success);
+    font-size: 17px;
+}
+
+.wpiko-chatbot-dashboard .attention-empty strong {
+    display: block;
+    margin: 1px 0 3px;
+    color: var(--wpiko-text-strong);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.wpiko-chatbot-dashboard .attention-empty p {
+    margin: 0;
+    color: var(--wpiko-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   CONFIGURATION STATUS
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .config-status-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0 calc(var(--dash-pad) * -1);
+}
+
+.wpiko-chatbot-dashboard .config-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px var(--dash-pad);
+    border-bottom: var(--dash-hairline);
+    transition: background-color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .config-item:last-child {
+    border-bottom: none;
+}
+
+.wpiko-chatbot-dashboard .config-item:hover {
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-chatbot-dashboard .config-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.wpiko-chatbot-dashboard .config-complete .config-indicator {
+    background: var(--wpiko-success);
+    box-shadow: 0 0 0 3px var(--wpiko-success-tint);
+}
+
+.wpiko-chatbot-dashboard .config-incomplete .config-indicator {
+    background: var(--wpiko-danger);
+    box-shadow: 0 0 0 3px var(--wpiko-danger-tint);
+}
+
+.wpiko-chatbot-dashboard .config-optional .config-indicator {
+    background: var(--wpiko-warning);
+    box-shadow: 0 0 0 3px var(--wpiko-warning-tint);
+}
+
+.wpiko-chatbot-dashboard .config-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--wpiko-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-chatbot-dashboard .config-value {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-bg-subtle);
+    color: var(--wpiko-text-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    vertical-align: 1px;
+}
+
+.wpiko-chatbot-dashboard .config-action {
+    color: var(--wpiko-text-muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 9px;
+    margin-right: -9px;
+    border-radius: var(--wpiko-radius-sm);
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: background-color var(--wpiko-transition), color var(--wpiko-transition);
+}
+
+.wpiko-chatbot-dashboard .config-action:hover,
+.wpiko-chatbot-dashboard .config-action:focus {
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media screen and (max-width: 1200px) {
+    .wpiko-chatbot-dashboard .dashboard-main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .wpiko-chatbot-dashboard .dashboard-right-column {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        display: grid;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .wpiko-chatbot-dashboard {
+        --dash-gap: 16px;
+    }
+
+    .wpiko-chatbot-dashboard .dashboard-welcome {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-main {
+        width: 100%;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-content h1 {
+        font-size: 20px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-status {
+        padding-left: 56px;
+        text-align: left;
+    }
+
+    .wpiko-chatbot-dashboard .dashboard-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .wpiko-chatbot-dashboard .stat-number {
+        font-size: 26px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .wpiko-chatbot-dashboard {
+        --dash-pad: 16px;
+    }
+
+    .wpiko-chatbot-dashboard .dashboard-welcome {
+        padding: 18px 16px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-main {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-icon .dashicons {
+        width: 19px;
+        height: 19px;
+        font-size: 19px;
+    }
+
+    .wpiko-chatbot-dashboard .welcome-status {
+        padding-left: 50px;
+    }
+
+    .wpiko-chatbot-dashboard .dashboard-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wpiko-chatbot-dashboard .stat-card {
+        padding: 14px 16px 16px;
+    }
+
+    .wpiko-chatbot-dashboard .attention-item {
+        grid-template-columns: 32px minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .wpiko-chatbot-dashboard .attention-action {
+        grid-column: 2;
+        justify-self: start;
+        margin: 0 0 0 -9px;
+    }
+}
+
+/* ==========================================================================
+   STATES & ACCESSIBILITY
+   ========================================================================== */
+
+.wpiko-chatbot-dashboard .dashboard-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wpiko-chatbot-dashboard .dashboard-loading .stat-number {
+    background: linear-gradient(90deg, var(--wpiko-bg-subtle) 25%, var(--wpiko-border) 50%, var(--wpiko-bg-subtle) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+    border-radius: var(--wpiko-radius-xs);
+}
+
+@keyframes loading-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.wpiko-chatbot-dashboard .widget-action:focus-visible,
+.wpiko-chatbot-dashboard .config-action:focus-visible,
+.wpiko-chatbot-dashboard .attention-action:focus-visible {
+    outline: 2px solid var(--wpiko-primary);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .wpiko-chatbot-dashboard .stat-card,
+    .wpiko-chatbot-dashboard .dashboard-widget,
+    .wpiko-chatbot-dashboard .dashboard-welcome {
+        border: 2px solid #000;
+    }
+
+    .wpiko-chatbot-dashboard .config-value {
+        color: #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .wpiko-chatbot-dashboard .stat-card,
+    .wpiko-chatbot-dashboard .activity-item,
+    .wpiko-chatbot-dashboard .config-item,
+    .wpiko-chatbot-dashboard .attention-item {
+        transition: none;
+    }
+
+    .wpiko-chatbot-dashboard .animate-fade-in,
+    .wpiko-chatbot-dashboard .animate-slide-in {
+        animation: none;
+    }
+}

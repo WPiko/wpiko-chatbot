@@ -1,0 +1,169 @@
+/* WPiko Chatbot Plugin Header Styles */
+
+.wpiko-chatbot-plugin-header {
+    background: var(--wpiko-gradient-primary);
+    margin: 20px 20px 0 0;
+    border-radius: var(--wpiko-radius-lg);
+    box-shadow: var(--wpiko-shadow-primary);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Subtle highlight sweep for depth */
+.wpiko-chatbot-plugin-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.wpiko-chatbot-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    color: var(--wpiko-text-inverse);
+    position: relative;
+}
+
+.wpiko-chatbot-header-branding {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wpiko-chatbot-header-icon {
+    width: 40px;
+    height: 40px;
+    display: block;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--wpiko-radius);
+    box-sizing: border-box;
+}
+
+.wpiko-chatbot-header-title {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--wpiko-text-inverse);
+}
+
+.wpiko-chatbot-header-pro-badge {
+    background: linear-gradient(135deg, var(--wpiko-gold) 0%, var(--wpiko-gold-light) 100%);
+    color: var(--wpiko-text-strong);
+    padding: 3px 10px;
+    border-radius: var(--wpiko-radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--wpiko-shadow-sm);
+}
+
+.wpiko-chatbot-header-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wpiko-chatbot-header-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    color: var(--wpiko-text-inverse);
+    text-decoration: none;
+    border-radius: var(--wpiko-radius);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background var(--wpiko-transition), transform var(--wpiko-transition), box-shadow var(--wpiko-transition);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.wpiko-chatbot-header-link:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: var(--wpiko-text-inverse);
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wpiko-chatbot-header-link:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+    color: var(--wpiko-text-inverse);
+    text-decoration: none;
+}
+
+.wpiko-chatbot-header-link.wpiko-chatbot-header-upgrade {
+    background: linear-gradient(135deg, var(--wpiko-gold) 0%, var(--wpiko-gold-light) 100%);
+    color: var(--wpiko-text-strong);
+    border: 1px solid var(--wpiko-gold);
+    font-weight: 600;
+}
+
+.wpiko-chatbot-header-link.wpiko-chatbot-header-upgrade:hover {
+    background: linear-gradient(135deg, var(--wpiko-gold-light) 0%, var(--wpiko-gold) 100%);
+    color: var(--wpiko-text-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.wpiko-chatbot-header-link .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Responsive design */
+@media screen and (max-width: 782px) {
+    .wpiko-chatbot-plugin-header {
+        margin: 10px 20px 0 10px;
+    }
+
+    .wpiko-chatbot-header-content {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 20px;
+        text-align: center;
+    }
+
+    .wpiko-chatbot-header-branding {
+        justify-content: center;
+    }
+
+    .wpiko-chatbot-header-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .wpiko-chatbot-header-link {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .wpiko-chatbot-header-title {
+        font-size: 18px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .wpiko-chatbot-header-branding {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+
+/* Adjust margin for the wrapper when header is present */
+.wpiko-chatbot-plugin-header + .wpiko-chatbot-admin-container {
+    margin-top: 16px;
+}

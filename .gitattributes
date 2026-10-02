@@ -1,0 +1,10 @@
+# Keep development and repository files out of WordPress plugin downloads.
+/.github export-ignore
+/.wordpress-org export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/README.md export-ignore
+/CONTRIBUTING.md export-ignore
+/docs export-ignore
+/tests export-ignore
+.DS_Store export-ignore

@@ -1,0 +1,716 @@
+/* ==========================================================================
+   WPiko Chatbot — Chatbot Style tab
+   Appearance presets, color fields and the live preview panel.
+   Design tokens come from admin-style.css.
+   ========================================================================== */
+
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+
+.wpiko-style-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 28px;
+    align-items: start;
+    margin-top: 20px;
+}
+
+.wpiko-style-main {
+    min-width: 0;
+}
+
+/* Must fill the grid row, not shrink to its content, or the sticky preview
+   inside it has no room to travel and simply scrolls out of view. */
+.wpiko-style-side {
+    min-width: 0;
+    align-self: stretch;
+}
+
+.wpiko-style-group-title {
+    margin: 28px 0 8px !important;
+    padding-bottom: 8px;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wpiko-text-muted) !important;
+    border-bottom: 1px solid var(--wpiko-border-light);
+}
+
+.wpiko-style-group-title:first-of-type {
+    margin-top: 8px !important;
+}
+
+.wpiko-style-pro-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-gradient-primary);
+    color: var(--wpiko-text-inverse);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    vertical-align: middle;
+}
+
+/* ==========================================================================
+   PRESETS
+   ========================================================================== */
+
+.wpiko-style-presets {
+    padding: 20px;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-style-presets-head h3 {
+    margin: 0 0 4px !important;
+    font-size: 15px !important;
+    color: var(--wpiko-text-strong) !important;
+}
+
+.wpiko-style-presets-head .description {
+    margin: 0 0 16px;
+}
+
+.wpiko-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.wpiko-preset-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    text-align: left;
+    background: var(--wpiko-surface);
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    box-shadow: var(--wpiko-shadow-xs);
+    cursor: pointer;
+    transition: border-color var(--wpiko-transition), box-shadow var(--wpiko-transition), transform var(--wpiko-transition);
+}
+
+.wpiko-preset-card:hover {
+    border-color: var(--wpiko-primary-light);
+    box-shadow: var(--wpiko-shadow-md);
+    transform: translateY(-2px);
+}
+
+.wpiko-preset-card:focus-visible {
+    outline: none;
+    border-color: var(--wpiko-primary);
+    box-shadow: var(--wpiko-focus-ring);
+}
+
+.wpiko-preset-card.is-active {
+    border-color: var(--wpiko-primary);
+    box-shadow: 0 0 0 1px var(--wpiko-primary), var(--wpiko-shadow-sm);
+}
+
+/* Miniature chatbot window used as the card thumbnail */
+.wpiko-preset-thumb {
+    position: relative;
+    display: block;
+    height: 104px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid;
+    border-radius: var(--wpiko-radius);
+}
+
+.wpiko-preset-thumb-bar {
+    position: absolute;
+    inset: 0 0 auto 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 8px;
+    border-bottom: 1px solid;
+}
+
+.wpiko-preset-thumb-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.wpiko-preset-thumb-line {
+    width: 42px;
+    height: 4px;
+    border-radius: var(--wpiko-radius-full);
+    opacity: 0.75;
+}
+
+.wpiko-preset-thumb-bubble {
+    position: absolute;
+    height: 15px;
+    border-radius: 8px;
+}
+
+.wpiko-preset-thumb-bubble.bot {
+    top: 34px;
+    left: 8px;
+    width: 62%;
+}
+
+.wpiko-preset-thumb-bubble.user {
+    top: 55px;
+    right: 8px;
+    width: 46%;
+    border: 1px solid;
+    opacity: 0.9;
+}
+
+.wpiko-preset-thumb-input {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 22px;
+    padding: 0 4px;
+    border-radius: var(--wpiko-radius-full);
+}
+
+.wpiko-preset-thumb-send {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+}
+
+.wpiko-preset-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.wpiko-preset-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-preset-check {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--wpiko-primary);
+    opacity: 0;
+    transition: opacity var(--wpiko-transition);
+}
+
+.wpiko-preset-card.is-active .wpiko-preset-check {
+    opacity: 1;
+}
+
+.wpiko-preset-desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-preset-custom-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 0;
+    padding: 10px 12px;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius);
+    background: var(--wpiko-surface);
+    font-size: 12.5px;
+    color: var(--wpiko-text-muted);
+}
+
+/* The rules above set a display value, which would otherwise beat [hidden]. */
+.wpiko-preset-custom-note[hidden] {
+    display: none;
+}
+
+.wpiko-preset-custom-note .dashicons {
+    color: var(--wpiko-primary);
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+}
+
+/* ==========================================================================
+   COLOR FIELDS
+   ========================================================================== */
+
+.wpiko-color-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.style-settings-section .form-table input[type="text"].wpiko-color-hex {
+    width: 96px;
+    margin-bottom: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.wpiko-color-hex.is-invalid {
+    border-color: var(--wpiko-danger);
+    box-shadow: 0 0 0 3px var(--wpiko-danger-tint);
+}
+
+.wpiko-color-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--wpiko-radius-sm);
+    background: transparent;
+    color: var(--wpiko-text-faint);
+    cursor: pointer;
+    transition: all var(--wpiko-transition);
+}
+
+.wpiko-color-reset .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.wpiko-color-reset:hover {
+    border-color: var(--wpiko-border);
+    background: var(--wpiko-surface-alt);
+    color: var(--wpiko-text);
+}
+
+.wpiko-color-reset:focus-visible {
+    outline: none;
+    border-color: var(--wpiko-primary);
+    box-shadow: var(--wpiko-focus-ring);
+}
+
+/* ==========================================================================
+   SAVE BAR
+   ========================================================================== */
+
+.wpiko-style-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--wpiko-border-light);
+}
+
+.wpiko-style-dirty {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--wpiko-warning-text);
+}
+
+.wpiko-style-dirty[hidden] {
+    display: none;
+}
+
+.wpiko-style-dirty .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--wpiko-warning);
+}
+
+/* ==========================================================================
+   LIVE PREVIEW
+   ========================================================================== */
+
+.wpiko-style-preview-wrap {
+    /* Defaults for the whole preview column; JavaScript overwrites these from
+       the form fields. Declared here so the floating-button strip below the
+       chat window inherits the same values. */
+    --p-primary: #0968fe;
+    --p-primary-text: #ffffff;
+    --p-bg: #ffffff;
+    --p-header: #fbfbfb;
+    --p-border: #f1f1f1;
+    --p-name: #333333;
+    --p-user-bg: #ffffff;
+    --p-user-text: #444444;
+    --p-user-border: solid;
+    --p-bot-bg: #fbfbfb;
+    --p-bot-text: #333333;
+    --p-admin-label: #0968fe;
+    --p-admin-bg: #f5f9ff;
+    --p-admin-border: #e1edff;
+    --p-admin-text: #002358;
+    --p-icon: #707070;
+    --p-input-bg: #fbfbfb;
+    --p-floating-bg: #ffffff;
+
+    /* Same offsets as the admin sidebar nav in admin-style.css, so the preview
+       clears the WordPress admin bar and scrolls internally on short screens
+       instead of running off the bottom of the viewport. */
+    position: sticky;
+    top: 52px;
+    box-sizing: border-box;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    padding: 18px;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-style-preview-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.wpiko-style-preview-head h3 {
+    margin: 0 !important;
+    font-size: 14px !important;
+    color: var(--wpiko-text-strong) !important;
+}
+
+.wpiko-style-preview-hint {
+    font-size: 11px;
+    color: var(--wpiko-text-faint);
+}
+
+.wpiko-style-preview {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--p-border);
+    border-radius: 16px;
+    background: var(--p-bg);
+    box-shadow: var(--wpiko-shadow-md);
+    font-size: 12.5px;
+    line-height: 1.45;
+    transition: background-color var(--wpiko-transition), border-color var(--wpiko-transition);
+}
+
+/* Header */
+.wpiko-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 12px;
+    background: var(--p-header);
+    border-bottom: 1px solid var(--p-border);
+}
+
+.wpiko-preview-avatar {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+}
+
+.wpiko-preview-avatar img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Front end is a 13px dot with a 2px ring on a 50px avatar; the preview avatar
+   is 34px, so everything is scaled by 0.68. */
+.wpiko-preview-status-dot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid var(--p-bg);
+    border-radius: 50%;
+    background: #00a878;
+}
+
+.wpiko-preview-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.wpiko-preview-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--p-name);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-preview-subtitle {
+    font-size: 11.5px;
+    color: var(--p-name);
+    opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-preview-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-shrink: 0;
+    padding: 4px;
+}
+
+.wpiko-preview-menu span {
+    display: block;
+    width: 15px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--p-icon);
+}
+
+/* Messages */
+.wpiko-preview-body {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 12px;
+    min-height: 190px;
+}
+
+.wpiko-preview-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+/* The rule above sets a display value, which would otherwise beat [hidden]. */
+.wpiko-preview-row[hidden] {
+    display: none;
+}
+
+.wpiko-preview-row.user {
+    justify-content: flex-end;
+}
+
+/* 29px on the front end, scaled by the preview's 0.75 factor. */
+.wpiko-preview-msg-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.wpiko-preview-msg-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* On the front end this renders 26px wide next to the bot avatar's 29px — the
+   20px cap applies to the content box, so the 2px padding and 1px border sit
+   outside it. Scaled to the preview: 22px * (26/29) ~= 20px, with the glyph
+   keeping roughly the same share of the circle. */
+.wpiko-preview-msg-avatar.user {
+    width: 20px;
+    height: 20px;
+    /* Whole pixels only: a fractional padding cannot land on a device-pixel
+       boundary, so the browser snaps it unevenly and the glyph ends up visibly
+       off-centre in a circle this small. Same 2px the front end uses. */
+    padding: 2px;
+    background: var(--p-user-bg);
+    border: 1px var(--p-user-border) var(--p-user-text);
+    color: var(--p-user-text);
+}
+
+.wpiko-preview-msg-avatar.user svg {
+    width: 100%;
+    height: 100%;
+}
+
+.wpiko-preview-bubble {
+    max-width: 74%;
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.wpiko-preview-bubble.bot {
+    background: var(--p-bot-bg);
+    color: var(--p-bot-text);
+    border-radius: 10px 10px 10px 0;
+}
+
+.wpiko-preview-bubble.user {
+    background: var(--p-user-bg);
+    color: var(--p-user-text);
+    border: 1px var(--p-user-border) var(--p-user-text);
+    border-radius: 10px 10px 0 10px;
+    font-weight: 500;
+}
+
+.wpiko-preview-admin-msg {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--p-admin-bg);
+    border: 1px solid var(--p-admin-border);
+    border-radius: 10px;
+    color: var(--p-admin-text);
+    font-size: 12px;
+}
+
+.wpiko-preview-admin-label {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--p-admin-label);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* Input row */
+.wpiko-preview-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 8px 10px;
+    padding: 7px 7px 7px 12px;
+    background: var(--p-input-bg);
+    border-radius: 30px;
+}
+
+.wpiko-preview-placeholder {
+    flex: 1;
+    min-width: 0;
+    color: var(--p-bot-text);
+    opacity: 0.55;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-preview-send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--p-primary);
+    color: var(--p-primary-text);
+}
+
+/* Icon-to-button ratio matches the front end (20px icon in a 40px button). */
+.wpiko-preview-send svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* Floating button preview */
+.wpiko-preview-floating {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.wpiko-preview-floating-text {
+    padding: 6px 11px;
+    border-radius: 20px;
+    background: var(--p-floating-bg);
+    color: var(--p-name);
+    font-size: 11.5px;
+    box-shadow: var(--wpiko-shadow-sm);
+}
+
+.wpiko-preview-floating-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--p-primary);
+    color: var(--p-primary-text);
+    box-shadow: var(--wpiko-shadow-md);
+}
+
+/* Icon-to-button ratio matches the front end (24px icon in a 60px button). */
+.wpiko-preview-floating-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.wpiko-preview-note {
+    margin: 14px 0 0 !important;
+    font-size: 11.5px !important;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media screen and (max-width: 1400px) {
+    .wpiko-style-layout {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+    }
+}
+
+@media screen and (max-width: 1100px) {
+    .wpiko-style-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wpiko-style-preview-wrap {
+        position: static;
+        max-width: 420px;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .wpiko-preset-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .wpiko-color-field {
+        flex-wrap: wrap;
+    }
+
+    .wpiko-style-actions {
+        flex-wrap: wrap;
+    }
+}

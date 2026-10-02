@@ -1,0 +1,470 @@
+/**
+ * Debug Log Premium Styles
+ * 
+ * @package WPIKO_Chatbot
+ */
+
+.wpiko-debug-log-container .wpiko-card {
+    background: var(--wpiko-surface);
+    padding: 24px;
+    margin-top: 0;
+    border-radius: var(--wpiko-radius-lg);
+    box-shadow: var(--wpiko-shadow-xs);
+    border: 1px solid var(--wpiko-border);
+    overflow: hidden;
+}
+
+/* Header Section */
+.wpiko-debug-log-container .wpiko-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Header Toggle */
+.debug-logging-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--wpiko-primary-tint);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--wpiko-primary-soft);
+    box-sizing: border-box;
+    /* Fix for mobile width */
+}
+
+.wpiko-debug-log-container .toggle-status-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wpiko-primary);
+}
+
+.wpiko-debug-log-container .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.wpiko-debug-log-container .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.wpiko-debug-log-container .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--wpiko-border-strong);
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.wpiko-debug-log-container .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--wpiko-surface);
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.wpiko-debug-log-container .toggle-switch input:checked+.toggle-slider {
+    background-color: var(--wpiko-primary);
+}
+
+.wpiko-debug-log-container .toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(20px);
+}
+
+.wpiko-debug-log-container .toggle-switch input:focus+.toggle-slider {
+    box-shadow: 0 0 0 2px var(--wpiko-primary-glow-strong);
+}
+
+/* Stats Grid */
+.wpiko-debug-log-container .log-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+    /* Removed background and border to sit cleanly on white card */
+}
+
+.wpiko-debug-log-container .stat-card {
+    background: #fff;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+
+.wpiko-debug-log-container .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: var(--wpiko-text-faint);
+}
+
+.wpiko-debug-log-container .stat-icon {
+    width: 42px;
+    height: 42px;
+    border: 1px solid transparent;
+    border-radius: var(--wpiko-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    box-shadow: var(--wpiko-shadow-xs);
+    transition: transform var(--wpiko-transition), box-shadow var(--wpiko-transition);
+}
+
+.wpiko-debug-log-container .stat-icon .dashicons {
+    font-size: 21px;
+    width: 21px;
+    height: 21px;
+    line-height: 1;
+    color: inherit;
+}
+
+.wpiko-debug-log-container .stat-card:hover .stat-icon {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: var(--wpiko-shadow-sm);
+}
+
+.wpiko-debug-log-container .stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.wpiko-debug-log-container .stat-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--wpiko-surface-dark);
+    line-height: 1.2;
+}
+
+.wpiko-debug-log-container .stat-label {
+    font-size: 12px;
+    color: var(--wpiko-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Stat Variants */
+.wpiko-debug-log-container .stat-card .icon-total {
+    background: var(--wpiko-primary-tint);
+    border-color: var(--wpiko-primary-soft);
+    color: var(--wpiko-primary);
+}
+
+.wpiko-debug-log-container .stat-card .icon-info {
+    background: var(--wpiko-info-tint);
+    border-color: var(--wpiko-info-soft);
+    color: var(--wpiko-info);
+}
+
+.wpiko-debug-log-container .stat-card.stat-warning .icon-warning {
+    background: var(--wpiko-warning-tint);
+    border-color: var(--wpiko-warning-soft);
+    color: var(--wpiko-warning-hover);
+}
+
+.wpiko-debug-log-container .stat-card.stat-error .icon-error {
+    background: var(--wpiko-danger-tint);
+    border-color: var(--wpiko-danger-soft);
+    color: var(--wpiko-danger);
+}
+
+.wpiko-debug-log-container .stat-card.stat-warning .stat-number {
+    color: var(--wpiko-warning-hover);
+}
+
+.wpiko-debug-log-container .stat-card.stat-error .stat-number {
+    color: var(--wpiko-danger);
+}
+
+
+/* Toolbar */
+.log-toolbar {
+    padding: 0 0 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Removed border and background as it floats within the main container */
+}
+
+.log-filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.log-filter-wrapper .dashicons {
+    position: absolute;
+    left: 10px;
+    color: var(--wpiko-text-muted);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.wpiko-debug-log-container .log-filter {
+    padding-left: 32px !important;
+    min-width: 160px;
+    border-radius: 6px !important;
+    border-color: var(--wpiko-border) !important;
+    height: 36px !important;
+    color: var(--wpiko-text-strong) !important;
+    transition: all 0.2s ease;
+}
+
+.wpiko-debug-log-container .log-filter:focus {
+    border-color: var(--wpiko-primary) !important;
+    box-shadow: 0 0 0 2px var(--wpiko-primary-glow) !important;
+    outline: none !important;
+    color: var(--wpiko-text-strong) !important;
+}
+
+.log-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+.log-actions-right .button {
+    height: 36px !important;
+    line-height: 34px !important;
+    border-radius: 6px !important;
+}
+
+.wpiko-debug-log-container .button.icon-button {
+    padding: 0 10px !important;
+    min-width: 36px;
+    display: inline-flex !important;
+}
+
+.wpiko-debug-log-container .button-link-delete {
+    color: var(--wpiko-danger) !important;
+    border-color: var(--wpiko-danger-soft) !important;
+    background: #fff !important;
+    transition: all 0.2s;
+}
+
+.wpiko-debug-log-container .button-link-delete:hover {
+    background: var(--wpiko-danger-tint) !important;
+    border-color: var(--wpiko-danger) !important;
+    color: var(--wpiko-danger-hover) !important;
+}
+
+.wpiko-debug-log-container .button-link-delete .dashicons {
+    margin-right: 4px;
+}
+
+
+/* Log Viewer */
+.log-viewer-container {
+    max-height: 500px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-sm);
+}
+
+.log-viewer {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.log-viewer thead th {
+    position: sticky;
+    top: 0;
+    background: var(--wpiko-surface-alt);
+    color: var(--wpiko-text-strong);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 24px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--wpiko-border);
+    z-index: 10;
+}
+
+.log-viewer tbody td {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--wpiko-bg-subtle);
+    vertical-align: top;
+    font-size: 13px;
+    color: var(--wpiko-text-strong);
+}
+
+.log-viewer tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.log-viewer tbody tr:hover {
+    background-color: var(--wpiko-primary-tint);
+}
+
+/* Columns */
+.log-col-time {
+    width: 160px;
+    white-space: nowrap;
+}
+
+.log-col-level {
+    width: 100px;
+}
+
+.log-col-message {
+    width: auto;
+}
+
+.log-timestamp {
+    font-family: 'Menlo', 'Monaco', monospace;
+    color: var(--wpiko-text-muted);
+    font-size: 12px;
+}
+
+.log-message-content {
+    font-family: 'Menlo', 'Monaco', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Badges */
+.log-level-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--wpiko-radius-xs);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    min-width: 60px;
+}
+
+.wpiko-debug-log-container .log-level-badge.level-info {
+    background: var(--wpiko-info-tint);
+    color: var(--wpiko-info);
+}
+
+.wpiko-debug-log-container .log-level-badge.level-warning {
+    background: var(--wpiko-warning-tint);
+    color: var(--wpiko-warning-hover);
+}
+
+.wpiko-debug-log-container .log-level-badge.level-error {
+    background: var(--wpiko-danger-tint);
+    color: var(--wpiko-danger);
+}
+
+/* States */
+.no-logs td {
+    padding: 60px 20px !important;
+    text-align: center;
+    background: #fff;
+}
+
+.no-logs-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.no-logs-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--wpiko-primary-tint);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-logs-icon .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--wpiko-primary);
+}
+
+.no-logs-message {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--wpiko-text-strong);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.no-logs-message span {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--wpiko-text-faint);
+}
+
+/* Footer & Note */
+.wpiko-debug-log-container .wpiko-card-footer {
+    padding: 16px 0 0 0;
+    background: transparent;
+    border-top: 1px solid var(--wpiko-bg-subtle);
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-debug-log-container .wpiko-card-footer p {
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .wpiko-debug-log-container .wpiko-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .debug-logging-toggle-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .wpiko-debug-log-container .log-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .wpiko-debug-log-container .log-toolbar {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .wpiko-debug-log-container .log-filter {
+        width: 100%;
+    }
+
+    .wpiko-debug-log-container .log-actions-right {
+        justify-content: flex-start;
+        gap: 12px;
+    }
+}

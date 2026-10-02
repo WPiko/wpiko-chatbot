@@ -1,0 +1,150 @@
+=== WPiko AI Chatbot Changelog ===
+
+This file contains the release history for versions prior to the current release.
+The current release notes remain in readme.txt for the WordPress.org Plugin Directory.
+
+== 2.0.7 ==
+* Feature: Added GPT-6 Astra to AI Configuration with supported reasoning and verbosity controls, file search, and Responses API request handling.
+* Improve: Reordered the AI Configuration model selector from the newest models to the oldest and consolidated it into one validated model registry.
+* Update: Migrated conversation translation, website Q&A generation, and contact text enhancement to the OpenAI Responses API using GPT-5.6 feature-specific defaults.
+* Improve: Centralized utility AI model, reasoning, verbosity, output-token, timeout, and retry defaults with a developer filter for customization.
+* Improve: Added strict structured output validation for conversation translations to preserve message order and count.
+* Improve: Updated API retries to retry temporary failures only and made large website scans discard incomplete Q&A results when any chunk fails.
+* Update: Updated GPT-5.6 Sol pricing to $4.00 per million input tokens and $20.00 per million output tokens.
+* Improve: Clarified that model prices in AI Configuration are input and output costs per million tokens.
+* Update: Confirmed compatibility with WordPress 7.1.
+* Update: Renamed the plugin to "WPiko AI Chatbot – ChatGPT Assistant & Live Chat Support".
+
+== 2.0.6 ==
+* Fix: Fixed emoji rendering in the frontend chat and admin Conversations page by restoring WordPress's default emoji SVG URL.
+* Update: Updated GPT-5.6 Terra pricing to $2.00 per million input tokens and $12.00 per million output tokens.
+* Update: Updated GPT-5.6 Luna pricing to $0.20 per million input tokens and $1.20 per million output tokens.
+
+== 2.0.5 ==
+* Feature: Added Appearance Presets to Chatbot Style — one click applies a complete color scheme. Ships with Aurora Blue (the default), Midnight (dark) and Terracotta (warm), and new presets can be registered with the `wpiko_chatbot_style_presets` filter.
+* Feature: Added a live preview panel to Chatbot Style that reflects colors, name, sub-header, avatar, welcome message and input placeholder as they are edited, including the floating button and (with Pro) the live chat takeover message. The panel stays pinned in view while scrolling through the settings.
+* Improve: Every color field now has an editable hex box and a per-field reset to default, and the advanced options are grouped into Chat Window, Messages, Input & Icons, and Live Chat Takeover.
+* Fix: The chat input text, send icon and message scrollbar now follow the configured colors instead of being hard-coded, so dark color schemes render correctly on the front end.
+* Fix: The soft shadows below the chatbot header and above the pre-made questions were drawn in light grey, which showed up as a pale haze over dark color schemes. They are now drawn as a darkening wash, unchanged on light schemes.
+* Feature: Added a Proactive Greeting card that appears automatically next to the floating chat icon with a customizable heading and message, inviting visitors to start chatting.
+* Feature: Proactive Greeting includes a quick message box — visitors can type directly from the greeting and the full chat opens with their message sent (works with the Pro Email Capture flow).
+* Feature: Proactive Greeting display controls: trigger (immediately, after a delay, or on scroll), frequency (once per session, only once, or every visit), and per-device visibility.
+* Fix: Fixed the admin mobile navigation menu briefly flashing at the top of the screen before dropping into its correct position when opened, caused by a conflicting `slideDown` animation name shared with the Conversations translation dropdown.
+* Improve: Updated the floating chatbot expand control to use one consistent icon, with primary-color styling and a translucent primary background while expanded.
+* Improve: Improve admin pages UI
+* Improve: Reorganized the plugin admin navigation into collapsible Setup & AI, Chat Experience, Manage & Tools, and Pro Features groups, with automatic active-group expansion and responsive mobile behavior.
+* Improve: Reduced the WordPress admin submenu to Dashboard, Conversations, and Settings shortcuts.
+
+== 2.0.4 ==
+* Feature: Added support for OpenAI GPT-5.6 Sol, GPT-5.6 Terra, and GPT-5.6 Luna, including the documented Max reasoning effort.
+* Feature: Added an expand/restore button to the floating chatbot header (desktop and mobile browsers) that toggles full-viewport width and height.
+* Fix: Chat input and placeholder now inherit the site font (`font-family: inherit`) so the message field matches the rest of the chatbot UI and the active WordPress theme.
+
+== 2.0.3 ==
+* Feature: Added per-IP "User Limits" settings (hourly and daily caps) to protect against runaway API costs and abuse.
+* Feature: Added streaming Responses API support so chatbot replies appear progressively as they are generated.
+* Improve: Final streamed replies now use the same formatting, conversation storage, response ID tracking, and Pro takeover hooks as standard responses.
+* Improve: Added automatic fallback to the existing non-streaming path when browser streaming support is unavailable.
+* Fix: Removed the Minimal reasoning effort option from GPT-5 models where it conflicts with Responses API file search.
+* Improve: Existing saved Minimal reasoning effort settings now automatically fall back to Low before requests are sent.
+
+== 2.0.2 ==
+* Fix: Improved WordPress 7.0 admin compatibility for button/icon alignment.
+
+== 2.0.1 ==
+* Feature: Added Top Right and Top Left floating chatbot position options.
+* Feature: Added device visibility controls to hide the floating chatbot on desktop, tablet, or mobile.
+* Feature: Added support for the OpenAI model GPT-5.5 (2026-04-23) in AI Configuration.
+* Improve: Refined the pre-made questions layout with modern and cleaner chat UI.
+
+== 2.0.0 ==
+Major update introducing mobile app (PWA) capabilities and real-time admin chat features.
+
+* Feature: Added an unread message badge to the floating chatbot icon
+* Feature: Added support for OpenAI models GPT-5.4 Mini and GPT-5.4 Nano in AI Configuration
+* Improve: Improved styling of downloaded chatbot transcripts
+* Fix: Fixed minor bugs and improved overall stability
+* Pro: Introduced Mobile App (PWA) support for monitoring and replying to conversations on mobile
+* Pro: Added Admin/Agent Takeover for real-time live chat with visitors
+* Pro: Added Push Notifications for new incoming messages
+* Pro: Added AI takeover handoff to resume conversations after live chat sessions
+
+== 1.1.4 ==
+* Feature: Added a new advanced option to customize the background color of the Chatbot Floating Text.
+* Feature: Added support for the OpenAI models GPT-5.3 Chat and GPT-5.4 in AI Configuration.
+
+== 1.1.3 ==
+* Fix: Shortcode chatbot overlap issue (Z-index fix)
+* Info: This release includes new AI-powered contact form features in wpiko-chatbot-pro.
+
+== 1.1.2 ==
+* Improve: Sound notifications
+* Improve: Added sound preloading for faster playback response
+
+== 1.1.1 ==
+* Feature: Add Reasoning Effort and Verbosity controls for GPT-5 models
+* Feature: Added customizable chatbot interface text (localization support)
+* Feature: New customizable Error Messages system - group technical errors into friendly user-facing categories
+* Feature: Added Debug Log admin page - database-based logging that works without WP_DEBUG for easier troubleshooting
+* Improve: Centralized error message defaults (DRY principle) for better maintainability
+* Improve: Enhanced error logging - admins see detailed technical errors while users see friendly messages
+* Improve: Enhance API connection reliability for new parameter structures
+* Improve: Enhanced chatbot UI
+
+== 1.1.0 ==
+* Fix: Resolved race condition causing mixed or delayed responses during rapid conversations
+* Improve: Prevent concurrent message submissions by adding frontend request queue
+* Improve: Disable input and send button while a response is processing
+* Improve: Implement frontend-based response tracking for more reliable conversation flow
+* Improve: Clear conversation chain correctly when chat is reset
+
+== 1.0.9 ==
+* Fixed "Access denied" errors caused by cached expired WordPress nonces
+* Added automatic nonce refresh mechanism - chatbot now seamlessly retries failed requests with fresh nonces
+* Improved resilience for sites using page caching plugins (WP Rocket, LiteSpeed, W3 Total Cache, etc.)
+* Rate-limited nonce refresh endpoint to prevent abuse
+
+== 1.0.8 ==
+* Fixed conversation context issue where AI would repeat responses after 5+ messages
+* Implemented OpenAI's previous_response_id for stateful multi-turn conversations
+* Added database schema upgrade for storing OpenAI response IDs
+* Improved conversation continuity and context awareness
+
+== 1.0.7 ==
+* Added support for latest OpenAI models: GPT-5.1, GPT-5.1 Chat, GPT-5.2, and GPT-5.2 Chat
+* Added model information display with accurate specifications for all new models
+
+== 1.0.6 ==
+* Added client-side timeout handling (90s for chatbot, 60s for contact form) - users now receive clear feedback instead of waiting indefinitely
+* Optimized retry mechanism - reduced from 3 retries to 2 with shorter timeouts for faster failure feedback
+* Improved error messages - specific, actionable messages for timeout, network, rate limit, and server errors instead of generic "An unexpected error occurred"
+* Added retry attempt logging for better debugging
+
+== 1.0.5 ==
+* Added translation function to the download conversation button
+* Fixed Download conversation - sale prices fixed render
+* Added learn link to the plugin header
+
+== 1.0.4 ==
+* Removed the Assistant API
+* Added plugin Dashboard - provides a modern, elegant overview of the chatbot's performance and activity
+* Added mobile-friendly navigation for the admin interface - enhances user experience on mobile devices with a collapsible hamburger menu
+* **Important**: If you are currently using the Assistant API, you must migrate to the Responses API before updating the plugin
+
+== 1.0.3 ==
+* Added OpenAI Responses API integration for improved performance and reliability
+* Enhanced AI Configuration section with dual API support (Assistants API and Responses API)
+* Future-proofed plugin for OpenAI Assistants API deprecation (sunset August 26, 2026)
+* Improved conversation state management with stateful interactions
+* Better token efficiency and reduced latency with new Responses API
+* Enhanced tool integration capabilities for future development
+
+== 1.0.2 ==
+* Added cache-busting system to ensure updated assets are always loaded
+* Improved header UI/UX for better usability and cleaner design
+
+== 1.0.1 ==
+* Plugin improvements
+
+== 1.0.0 ==
+* Initial release
