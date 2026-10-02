@@ -1,45 +1,42 @@
-# WPiko Chatbot
+# WPiko AI Chatbot
 
-Development repository for the free [WPiko Chatbot WordPress plugin](https://wordpress.org/plugins/wpiko-chatbot/).
+**AI conversations, customer support, and lead capture for WordPress.**
 
-The `wpiko-chatbot-pro` add-on is maintained separately. Plugin installation and user documentation are in `readme.txt`.
+WPiko Chatbot brings OpenAI-powered conversations to your website. Answer visitor questions around the clock, share knowledge about your business, and create a chat experience that fits your brand and language.
 
-## Working from VS Code
+[Download on WordPress.org](https://wordpress.org/plugins/wpiko-chatbot/) · [Visit WPiko](https://wpiko.com/chatbot) · [Watch the video](https://www.youtube.com/watch?v=IJXvW04aBYc)
 
-Open this `wpiko-chatbot` folder in VS Code. Use Source Control to review changes, commit them, and push to `origin` (`https://github.com/WPiko/wpiko-chatbot.git`). Git exists inside this plugin folder, so sibling plugins are outside this repository.
+## Features
 
-Committing saves a local Git revision. Pushing uploads those commits to GitHub. Neither operation publishes a WordPress.org release with the current setup.
+- **AI conversations:** Connect to OpenAI through the Responses API and customize your chatbot's instructions and model settings.
+- **Your knowledge:** Upload files to help the chatbot answer questions about your business.
+- **Flexible placement:** Display a floating chat widget or embed the chatbot with a shortcode.
+- **Custom appearance:** Adjust colors, dimensions, profile images, and chat interface text.
+- **Any language:** Customize visitor-facing labels, welcome messages, and error messages for your audience.
+- **Conversation tools:** Review conversations, export transcripts, and let visitors download their chat history.
+- **Visitor engagement:** Add proactive greetings, quick questions, and conversation starters.
+- **Usage controls:** Set hourly and daily limits per IP address.
 
-## Verification workflow
+## WPiko Chatbot Pro
 
-Every push to `main` and pull request targeting `main` runs **Verify WordPress.org deployment**. You can also run it manually from the GitHub Actions tab.
+The separate **WPiko Chatbot Pro** add-on extends the free plugin with live agent takeover, a mobile app (PWA), push notifications, advanced analytics, lead and contact forms, WooCommerce features, and additional knowledge tools.
 
-The workflow:
+[Explore WPiko Chatbot Pro](https://wpiko.com/chatbot)
 
-1. Checks that the main plugin header, `WPIKO_CHATBOT_VERSION`, and `readme.txt` stable tag match.
-2. Checks PHP syntax in the committed plugin package using the runner's PHP CLI. This is a syntax check, not a full WordPress integration or minimum-PHP compatibility test.
-3. Checks that required runtime assets are included and development files are excluded.
-4. Uses 10up's deployment action to stage SVN trunk and a temporary verification tag with `dry-run: true`.
-5. Saves a plugin ZIP as a workflow artifact for seven days.
+## Requirements
 
-**This workflow cannot publish a release.** It does not receive SVN credentials and does not commit to SVN. The temporary `verify-...` tag is only created in the runner's SVN working copy. It deliberately avoids existing release tags, which would cause the deployment action to skip staging. The plugin version and stable tag remain unchanged.
+- WordPress 6.0 or newer.
+- PHP 7.0 or newer.
+- Your own OpenAI API key. OpenAI API usage is billed separately by OpenAI.
 
-The `.gitattributes` export exclusions apply to both `git archive` and the deployment action. Existing WordPress.org banners, icons, screenshots, and release tags are preserved; this repository does not currently contain a `.wordpress-org` directory.
+## Useful links
 
-Check a committed revision locally:
+- [WordPress.org plugin page](https://wordpress.org/plugins/wpiko-chatbot/)
+- [WPiko website](https://wpiko.com/)
+- [Support forum](https://wordpress.org/support/plugin/wpiko-chatbot/)
+- [Plugin details and FAQs](readme.txt)
+- [Changelog](changelog.txt)
 
-```sh
-python3 .github/scripts/verify-plugin.py
-```
+## License
 
-This checks `HEAD`, so commit intended changes before running it. PHP CLI and Python 3 are required.
-
-## Enabling releases later
-
-Live publishing will be configured separately after verification. Do not push a release tag expecting deployment yet: this repository currently has no tag-triggered publishing workflow.
-
-Before enabling releases, add `SVN_USERNAME` and the dedicated WordPress.org SVN password as `SVN_PASSWORD` in GitHub Actions secrets. Keep credentials out of source files and commits.
-
-The eventual release workflow should validate a numeric Git tag against all three version fields before updating SVN trunk and creating the matching release tag. Update the changelog for each release. Never replace an already published version; release changes under a new version instead.
-
-If WordPress.org Release Confirmation is enabled, a committer must also confirm the staged release on WordPress.org before it becomes available to users.
+WPiko Chatbot is licensed under [GPL-2.0 or later](https://www.gnu.org/licenses/gpl-2.0.html).
