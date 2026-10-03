@@ -9,6 +9,32 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+
+def require_new_release(version):
+    """Reject an existing release or a version older than SVN's stable tag."""
+    base = "https://plugins.svn.wordpress.org/wpiko-chatbot/"
+    headers = {"User-Agent": "WPiko-release-verification"}
+    try:
+        with urlopen(Request(base + "tags/" + version + "/", headers=headers), timeout=30):
+            pass
+    except HTTPError as error:
+        if error.code != 404:
+            raise ValueError("Could not check the existing SVN tags") from error
+    else:
+        raise ValueError("Version " + version + " already exists on WordPress.org")
+
+    with urlopen(Request(base + "trunk/readme.txt", headers=headers), timeout=30) as response:
+        readme = response.read().decode("utf-8")
+    match = re.search(r"^Stable tag:\s*(\S+)\s*$", readme, re.MULTILINE | re.IGNORECASE)
+    if not match or not re.fullmatch(r"\d+(?:\.\d+){2,3}", match.group(1)):
+        raise ValueError("Could not determine WordPress.org's current stable version")
+    numbers = lambda value: tuple(int(part) for part in value.split(".")) + (0,) * (4 - len(value.split(".")))
+    if numbers(version) <= numbers(match.group(1)):
+        raise ValueError("The release must be newer than WordPress.org version " + match.group(1))
+    print("New release verified against WordPress.org: " + version)
 
 
 def verify(ref, expected_version=None):
@@ -100,8 +126,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="HEAD", help="Git revision to verify")
     parser.add_argument("--expect-version", help="Require a matching numeric release tag")
+    parser.add_argument("--require-new-release", action="store_true", help="Reject existing versions and downgrades on WordPress.org")
     args = parser.parse_args()
+    if args.require_new_release and args.expect_version is None:
+        parser.error("--require-new-release needs --expect-version")
     try:
         verify(args.ref, args.expect_version)
-    except (ValueError, subprocess.CalledProcessError) as error:
+        if args.require_new_release:
+            require_new_release(args.expect_version)
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
         parser.exit(1, "Verification failed: " + str(error) + "\n")

@@ -1,0 +1,45 @@
+name: Update WordPress.org artwork
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish artwork changes (leave unchecked for a dry run)
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wordpress-org-wpiko-chatbot
+  cancel-in-progress: false
+
+jobs:
+  artwork:
+    name: Synchronize directory artwork
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out artwork from main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+
+      - name: Install SVN
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion
+
+      - name: Stage or publish only directory artwork
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          SVN_USERNAME: ${{ inputs.publish && secrets.SVN_USERNAME || '' }}
+          SVN_PASSWORD: ${{ inputs.publish && secrets.SVN_PASSWORD || '' }}
+        run: |
+          if [ "$PUBLISH" = true ]; then
+            python3 .github/scripts/update-wordpress-assets.py --publish
+          else
+            python3 .github/scripts/update-wordpress-assets.py
+          fi

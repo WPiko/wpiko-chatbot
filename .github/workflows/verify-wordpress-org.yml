@@ -20,7 +20,9 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Verify version, PHP syntax, and packaged files
-        run: python3 .github/scripts/verify-plugin.py
+        run: |
+          python3 .github/scripts/verify-plugin.py
+          python3 .github/scripts/update-wordpress-assets.py --check-only
 
       # A unique, temporary SVN tag avoids skipping the dry run because 2.0.8
       # already exists. The action never commits this tag or any other changes.
