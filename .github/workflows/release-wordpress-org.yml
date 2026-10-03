@@ -1,10 +1,13 @@
-name: Release to WordPress.org
+name: Publish to WordPress.org
 
 on:
-  push:
-    tags: ['[0-9]*']
-  # Manual runs only verify publishing setup; they never publish plugin code.
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Test only (leave unchecked to publish the plugin version)
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
@@ -16,6 +19,8 @@ concurrency:
 jobs:
   release:
     name: Validate and deploy release
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -36,29 +41,51 @@ jobs:
           fi
 
       - name: Validate release and artwork
+        id: release
         env:
-          RELEASE_VERSION: ${{ github.ref_name }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          git merge-base --is-ancestor HEAD origin/main
-          if [ "$GITHUB_EVENT_NAME" = push ]; then
-            python3 .github/scripts/verify-plugin.py --expect-version "$RELEASE_VERSION" --require-new-release
-          else
-            python3 .github/scripts/verify-plugin.py
+          if [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::Select main when running this workflow."
+            exit 1
           fi
+          git merge-base --is-ancestor HEAD origin/main
+          options=(--output-version)
+          if [ "$DRY_RUN" != true ]; then
+            options+=(--require-new-release)
+          fi
+          python3 .github/scripts/verify-plugin.py "${options[@]}"
           python3 .github/scripts/update-wordpress-assets.py --check-only
 
-      - name: Deploy tagged release or stage manual verification
+      # A retry may reuse a tag for this exact commit, but never replace one.
+      # GITHUB_TOKEN tag pushes do not trigger another workflow run.
+      - name: Create the GitHub version tag
+        if: ${{ !inputs.dry_run }}
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          if git show-ref --verify --quiet "refs/tags/$RELEASE_VERSION"; then
+            if [ "$(git rev-parse "refs/tags/$RELEASE_VERSION^{commit}")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::The version tag already points to another commit. Choose a new version."
+              exit 1
+            fi
+          else
+            git tag "$RELEASE_VERSION"
+          fi
+          git push origin "refs/tags/$RELEASE_VERSION"
+
+      - name: Publish plugin code, SVN version tag, and artwork
         id: deploy
         uses: 10up/action-wordpress-plugin-deploy@008657da18d18e065aaaccd287fa3af53ff768a1
         with:
-          dry-run: ${{ github.event_name != 'push' }}
+          dry-run: ${{ inputs.dry_run }}
           generate-zip: true
         env:
           SLUG: wpiko-chatbot
           ASSETS_DIR: wordpress-org-assets
-          VERSION: ${{ github.event_name == 'push' && github.ref_name || format('verify-release-{0}-{1}', github.run_id, github.run_attempt) }}
-          SVN_USERNAME: ${{ github.event_name == 'push' && secrets.SVN_USERNAME || '' }}
-          SVN_PASSWORD: ${{ github.event_name == 'push' && secrets.SVN_PASSWORD || '' }}
+          VERSION: ${{ !inputs.dry_run && steps.release.outputs.version || format('verify-release-{0}-{1}', github.run_id, github.run_attempt) }}
+          SVN_USERNAME: ${{ !inputs.dry_run && secrets.SVN_USERNAME || '' }}
+          SVN_PASSWORD: ${{ !inputs.dry_run && secrets.SVN_PASSWORD || '' }}
 
       - name: Save plugin package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

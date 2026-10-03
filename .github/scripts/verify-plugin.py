@@ -3,6 +3,7 @@
 
 import argparse
 import io
+import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
@@ -120,6 +121,7 @@ def verify(ref, expected_version=None):
     print("Version fields match: " + version)
     print("PHP syntax passed: " + str(len(php_files)) + " files")
     print("Plugin archive checked: " + str(len(files)) + " runtime files; development files excluded")
+    return version
 
 
 if __name__ == "__main__":
@@ -127,12 +129,14 @@ if __name__ == "__main__":
     parser.add_argument("--ref", default="HEAD", help="Git revision to verify")
     parser.add_argument("--expect-version", help="Require a matching numeric release tag")
     parser.add_argument("--require-new-release", action="store_true", help="Reject existing versions and downgrades on WordPress.org")
+    parser.add_argument("--output-version", action="store_true", help="Write the validated version to GitHub Actions outputs")
     args = parser.parse_args()
-    if args.require_new_release and args.expect_version is None:
-        parser.error("--require-new-release needs --expect-version")
     try:
-        verify(args.ref, args.expect_version)
+        version = verify(args.ref, args.expect_version)
         if args.require_new_release:
-            require_new_release(args.expect_version)
-    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+            require_new_release(version)
+        if args.output_version:
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                output.write("version=" + version + "\n")
+    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error:
         parser.exit(1, "Verification failed: " + str(error) + "\n")

@@ -1,6 +1,10 @@
 name: Update WordPress.org artwork
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - wordpress-org-assets/**
   workflow_dispatch:
     inputs:
       publish:
@@ -27,6 +31,18 @@ jobs:
         with:
           ref: main
 
+      - name: Validate artwork and publishing secrets
+        env:
+          PUBLISH: ${{ github.event_name == 'push' || inputs.publish }}
+          HAS_SVN_USERNAME: ${{ secrets.SVN_USERNAME != '' }}
+          HAS_SVN_PASSWORD: ${{ secrets.SVN_PASSWORD != '' }}
+        run: |
+          python3 .github/scripts/update-wordpress-assets.py --check-only
+          if [ "$PUBLISH" = true ] && { [ "$HAS_SVN_USERNAME" != true ] || [ "$HAS_SVN_PASSWORD" != true ]; }; then
+            echo "::error::Add SVN_USERNAME and SVN_PASSWORD in repository Actions secrets."
+            exit 1
+          fi
+
       - name: Install SVN
         run: |
           sudo apt-get update
@@ -34,9 +50,9 @@ jobs:
 
       - name: Stage or publish only directory artwork
         env:
-          PUBLISH: ${{ inputs.publish }}
-          SVN_USERNAME: ${{ inputs.publish && secrets.SVN_USERNAME || '' }}
-          SVN_PASSWORD: ${{ inputs.publish && secrets.SVN_PASSWORD || '' }}
+          PUBLISH: ${{ github.event_name == 'push' || inputs.publish }}
+          SVN_USERNAME: ${{ (github.event_name == 'push' || inputs.publish) && secrets.SVN_USERNAME || '' }}
+          SVN_PASSWORD: ${{ (github.event_name == 'push' || inputs.publish) && secrets.SVN_PASSWORD || '' }}
         run: |
           if [ "$PUBLISH" = true ]; then
             python3 .github/scripts/update-wordpress-assets.py --publish
