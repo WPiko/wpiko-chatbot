@@ -55,6 +55,7 @@ jobs:
           generate-zip: true
         env:
           SLUG: wpiko-chatbot
+          ASSETS_DIR: wordpress-org-assets
           VERSION: ${{ github.event_name == 'push' && github.ref_name || format('verify-release-{0}-{1}', github.run_id, github.run_attempt) }}
           SVN_USERNAME: ${{ github.event_name == 'push' && secrets.SVN_USERNAME || '' }}
           SVN_PASSWORD: ${{ github.event_name == 'push' && secrets.SVN_PASSWORD || '' }}

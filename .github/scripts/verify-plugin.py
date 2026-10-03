@@ -67,7 +67,7 @@ def verify(ref, expected_version=None):
     if missing:
         raise ValueError("Missing runtime files: " + ", ".join(sorted(missing)))
 
-    forbidden = {".git", ".github", ".svn", ".wordpress-org", ".vscode",
+    forbidden = {".git", ".github", ".svn", "wordpress-org-assets", ".vscode",
                  ".idea", "node_modules", "__pycache__", "docs", "tests"}
     for name in files:
         path = PurePosixPath(name)

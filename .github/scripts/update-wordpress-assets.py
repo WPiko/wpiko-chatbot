@@ -12,14 +12,14 @@ import xml.etree.ElementTree as ET
 
 
 def artwork_files():
-    folder = Path(__file__).resolve().parents[2] / ".wordpress-org"
+    folder = Path(__file__).resolve().parents[2] / "wordpress-org-assets"
     allowed = re.compile(
         r"(?:banner-(?:772x250|1544x500)(?:-rtl)?\.(?:png|jpg)|"
         r"icon-(?:128x128|256x256)\.(?:png|jpg)|icon\.svg|"
         r"screenshot-[1-9]\d*\.(?:png|jpg))"
     )
     if not folder.is_dir():
-        raise ValueError("Missing .wordpress-org artwork folder")
+        raise ValueError("Missing wordpress-org-assets artwork folder")
     files = sorted(folder.iterdir())
     if not files:
         raise ValueError("Refusing to synchronize an empty artwork folder")

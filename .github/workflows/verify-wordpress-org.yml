@@ -35,6 +35,7 @@ jobs:
           generate-zip: true
         env:
           SLUG: wpiko-chatbot
+          ASSETS_DIR: wordpress-org-assets
           VERSION: verify-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Save verified plugin ZIP
