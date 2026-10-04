@@ -91,16 +91,7 @@ function wpiko_chatbot_generate_html_transcript($conversations, $chatbot_name, $
         }
         $timestamp = gmdate('F j, Y - g:i a', strtotime($conversation->timestamp));
         
-        // Process message content with proper emoji support
-        $message = wpiko_chatbot_process_emoji($conversation->message);
-        
-        // Process assistant messages with formatting
-        if ($conversation->role === 'assistant') {
-            $message = nl2br($message);
-            $message = wpiko_chatbot_process_message($message);
-        } else {
-            $message = nl2br($message);
-        }
+        $message = wpiko_chatbot_render_message($conversation->message, $conversation->role);
         
         $html .= '
         <div class="message ' . esc_attr($role) . '">

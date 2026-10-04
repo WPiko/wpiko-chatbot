@@ -438,6 +438,30 @@
     color: #e65100;
 }
 
+/* Admin-only "how to fix it" link shown under an error */
+.error-message .error-message-admin-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background-color: #c62828;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.error-message.config_error .error-message-admin-link {
+    background-color: #e65100;
+}
+
+.error-message .error-message-admin-link:hover,
+.error-message .error-message-admin-link:focus {
+    color: #ffffff;
+    opacity: 0.9;
+    text-decoration: underline;
+}
+
 /* Loading Dots */
 .loading-dots {
     display: flex;

@@ -1,0 +1,701 @@
+/* ==========================================================================
+   SETUP WIZARD + "LEARN FROM YOUR WEBSITE"
+   Uses the design tokens defined in admin-style.css.
+   ========================================================================== */
+
+.wpiko-wizard [hidden],
+.wpiko-site-knowledge [hidden] {
+    display: none !important;
+}
+
+.wpiko-wizard {
+    width: 100%;
+}
+
+.wpiko-wizard-intro,
+.wpiko-wizard-step {
+    background: var(--wpiko-surface);
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    box-shadow: var(--wpiko-shadow-xs);
+    padding: 24px;
+}
+
+.wpiko-wizard-intro {
+    margin-bottom: 16px;
+}
+
+.wpiko-wizard-intro h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-wizard-intro > p {
+    margin: 0;
+    color: var(--wpiko-text-muted);
+    font-size: 14px;
+}
+
+.wpiko-wizard-progress {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+}
+
+.wpiko-wizard-progress li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--wpiko-text-muted);
+    font-weight: 500;
+}
+
+.wpiko-wizard-progress li span {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--wpiko-radius-full);
+    border: 2px solid var(--wpiko-border-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--wpiko-surface);
+}
+
+.wpiko-wizard-progress li.is-current {
+    color: var(--wpiko-primary);
+}
+
+.wpiko-wizard-progress li.is-current span {
+    border-color: var(--wpiko-primary);
+    background: var(--wpiko-primary);
+    color: var(--wpiko-text-inverse);
+}
+
+.wpiko-wizard-progress li.is-done {
+    color: var(--wpiko-success-hover);
+}
+
+.wpiko-wizard-progress li.is-done span {
+    border-color: var(--wpiko-success);
+    background: var(--wpiko-success);
+    color: var(--wpiko-text-inverse);
+}
+
+.wpiko-wizard-step h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-wizard-key-row,
+.wpiko-wizard-retest-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.wpiko-wizard-key-row input {
+    flex: 1 1 280px;
+    max-width: 420px;
+}
+
+.wpiko-wizard-message {
+    margin-top: 12px;
+}
+
+.wpiko-wizard-notice {
+    padding: 12px 14px;
+    border-radius: var(--wpiko-radius);
+    border: 1px solid var(--wpiko-border);
+}
+
+.wpiko-wizard-notice p {
+    margin: 0 0 8px;
+}
+
+.wpiko-wizard-notice p:last-child {
+    margin-bottom: 0;
+}
+
+.wpiko-wizard-notice.is-error {
+    background: var(--wpiko-danger-tint);
+    border-color: var(--wpiko-danger-soft);
+}
+
+.wpiko-wizard-working {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-wizard-working .spinner,
+.wpiko-site-knowledge .spinner {
+    float: none;
+    margin: 0;
+}
+
+.wpiko-wizard-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 12px 14px;
+    background: var(--wpiko-success-tint);
+    border: 1px solid var(--wpiko-success-light);
+    border-radius: var(--wpiko-radius);
+    color: var(--wpiko-text-strong);
+    font-weight: 500;
+}
+
+.wpiko-wizard-success .dashicons {
+    color: var(--wpiko-success);
+}
+
+.wpiko-wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--wpiko-border-light);
+}
+
+.wpiko-wizard-basics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px 20px;
+    margin-bottom: 20px;
+}
+
+.wpiko-wizard-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wpiko-wizard-field label {
+    font-weight: 600;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-wizard-field input,
+.wpiko-wizard-field select {
+    width: 100%;
+    max-width: none;
+}
+
+.wpiko-wizard-files-hint {
+    margin-top: 12px;
+}
+
+/* Test chat */
+.wpiko-wizard-chat {
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    overflow: hidden;
+    margin: 12px 0 20px;
+}
+
+.wpiko-wizard-chat-messages {
+    height: 280px;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--wpiko-surface-alt);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wpiko-wizard-chat-msg {
+    display: flex;
+}
+
+.wpiko-wizard-chat-msg > div {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.wpiko-wizard-chat-msg > div p {
+    margin: 0 0 8px;
+}
+
+.wpiko-wizard-chat-msg > div p:last-child {
+    margin-bottom: 0;
+}
+
+.wpiko-wizard-chat-msg.is-user {
+    justify-content: flex-end;
+}
+
+.wpiko-wizard-chat-msg.is-user > div {
+    background: var(--wpiko-primary);
+    color: var(--wpiko-text-inverse);
+    border-bottom-right-radius: 4px;
+}
+
+.wpiko-wizard-chat-msg.is-bot > div {
+    background: var(--wpiko-surface);
+    border: 1px solid var(--wpiko-border-light);
+    color: var(--wpiko-text);
+    border-bottom-left-radius: 4px;
+}
+
+.wpiko-wizard-chat-msg.is-typing > div {
+    color: var(--wpiko-text-muted);
+    font-style: italic;
+}
+
+.wpiko-wizard-chat-msg.is-error > div {
+    background: var(--wpiko-danger-tint);
+    border: 1px solid var(--wpiko-danger-soft);
+    color: var(--wpiko-danger-hover);
+    max-width: 100%;
+}
+
+.wpiko-wizard-chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px 0;
+    background: var(--wpiko-surface);
+}
+
+.wpiko-wizard-chat-input {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: var(--wpiko-surface);
+}
+
+.wpiko-wizard-chat-input input {
+    flex: 1;
+    min-width: 0;
+}
+
+.wpiko-wizard-toggle {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius);
+    background: var(--wpiko-surface-alt);
+    cursor: pointer;
+}
+
+.wpiko-wizard-toggle input {
+    margin-top: 2px;
+}
+
+.wpiko-wizard-toggle strong {
+    display: block;
+    color: var(--wpiko-text-strong);
+    margin-bottom: 2px;
+}
+
+.wpiko-wizard-done {
+    margin-top: 20px;
+}
+
+.wpiko-wizard-done p + p {
+    margin-top: 14px;
+}
+
+/* "Learn from your website" panel */
+.wpiko-site-knowledge {
+    border: 1px solid var(--wpiko-border);
+    border-radius: var(--wpiko-radius-lg);
+    padding: 18px 20px;
+    background: var(--wpiko-surface);
+    margin: 16px 0;
+}
+
+.wpiko-site-knowledge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.wpiko-site-knowledge-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 4px;
+    font-size: 15px;
+}
+
+.wpiko-site-knowledge-header .description {
+    margin: 0;
+}
+
+.wpiko-site-knowledge-count {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.wpiko-site-knowledge-count.is-full {
+    background: var(--wpiko-warning-tint);
+    color: var(--wpiko-warning-text);
+}
+
+.wpiko-site-knowledge-note {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: var(--wpiko-radius-sm);
+    font-size: 13px;
+}
+
+.wpiko-site-knowledge-note.is-ok {
+    background: var(--wpiko-success-tint);
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-site-knowledge-note.is-warning {
+    background: var(--wpiko-warning-tint);
+    color: var(--wpiko-warning-text);
+}
+
+.wpiko-site-knowledge-list {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--wpiko-border-light);
+    border-radius: var(--wpiko-radius);
+}
+
+.wpiko-site-knowledge-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wpiko-site-knowledge-list li {
+    margin: 0;
+    border-bottom: 1px solid var(--wpiko-border-light);
+}
+
+.wpiko-site-knowledge-list li:last-child {
+    border-bottom: 0;
+}
+
+.wpiko-site-knowledge-list label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+}
+
+.wpiko-site-knowledge-list label:hover {
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-site-knowledge-list input {
+    grid-row: 1 / span 2;
+    margin-top: 2px;
+}
+
+.wpiko-site-knowledge-list li.is-disabled label {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.wpiko-site-knowledge-title {
+    font-weight: 500;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-site-knowledge-meta {
+    font-size: 12px;
+    color: var(--wpiko-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wpiko-site-knowledge-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-primary-tint);
+    color: var(--wpiko-primary);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.wpiko-site-knowledge-loading,
+.wpiko-site-knowledge-empty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 14px;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-site-knowledge-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.wpiko-site-knowledge-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-site-knowledge-result.is-ok {
+    color: var(--wpiko-success-hover);
+    font-weight: 500;
+}
+
+.wpiko-site-knowledge-result.is-error {
+    color: var(--wpiko-danger);
+    font-weight: 500;
+}
+
+.wpiko-site-knowledge-pro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--wpiko-border);
+    color: var(--wpiko-text-muted);
+    font-size: 13px;
+}
+
+.wpiko-site-knowledge-pro .dashicons {
+    color: var(--wpiko-gold);
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Locked Pro training tools (shown when Pro is not installed) */
+.wpiko-pro-locked-button.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wpiko-text-muted);
+    border-style: dashed;
+}
+
+.wpiko-pro-locked-button .wpiko-pro-pill {
+    padding: 0 6px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-gold-light);
+    color: var(--wpiko-text-strong);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    letter-spacing: 0.04em;
+}
+
+.wpiko-pro-locked-info {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: var(--wpiko-radius);
+    background: var(--wpiko-surface-alt);
+    border: 1px solid var(--wpiko-border-light);
+}
+
+.wpiko-pro-locked-info p {
+    margin: 0 0 8px;
+}
+
+@media screen and (max-width: 782px) {
+    .wpiko-wizard-intro,
+    .wpiko-wizard-step {
+        padding: 16px;
+    }
+
+    .wpiko-wizard-basics {
+        grid-template-columns: 1fr;
+    }
+
+    .wpiko-wizard-nav .button-hero {
+        width: 100%;
+        text-align: center;
+    }
+
+    .wpiko-wizard-chat-msg > div {
+        max-width: 92%;
+    }
+
+    .wpiko-site-knowledge-header {
+        flex-direction: column;
+    }
+}
+
+/* Pages already covered by Pro's Scan Website */
+.wpiko-site-knowledge-list li.is-covered label {
+    cursor: default;
+    opacity: 0.75;
+}
+
+.wpiko-site-knowledge-badge.is-covered {
+    background: var(--wpiko-success-tint);
+    color: var(--wpiko-success-hover);
+}
+
+.wpiko-site-knowledge-build.is-remove.button-primary {
+    background: var(--wpiko-danger);
+    border-color: var(--wpiko-danger);
+}
+
+.wpiko-site-knowledge-build.is-remove.button-primary:hover,
+.wpiko-site-knowledge-build.is-remove.button-primary:focus {
+    background: var(--wpiko-danger-hover);
+    border-color: var(--wpiko-danger-hover);
+}
+
+/* Quick learn vs Scan Website comparison */
+.wpiko-knowledge-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.wpiko-knowledge-compare-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--wpiko-border-light);
+    border-radius: var(--wpiko-radius);
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-knowledge-compare-card.is-pro {
+    background: var(--wpiko-primary-tint);
+    border-color: var(--wpiko-primary-soft);
+}
+
+.wpiko-knowledge-compare-card strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-knowledge-compare-card strong .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--wpiko-primary);
+}
+
+.wpiko-knowledge-compare-card .wpiko-pro-pill {
+    padding: 0 6px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-gold-light);
+    color: var(--wpiko-text-strong);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+.wpiko-knowledge-compare-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wpiko-knowledge-compare-card li {
+    position: relative;
+    margin: 0 0 2px;
+    padding-left: 16px;
+    font-size: 12.5px;
+    color: var(--wpiko-text);
+}
+
+.wpiko-knowledge-compare-card li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--wpiko-success);
+    font-weight: 700;
+}
+
+.wpiko-knowledge-compare-card .button {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.wpiko-knowledge-compare-tip {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 12px;
+    color: var(--wpiko-text-muted);
+}
+
+/* Brief highlight when the list refreshes after a change elsewhere */
+.wpiko-site-knowledge {
+    transition: box-shadow 0.4s ease;
+}
+
+.wpiko-site-knowledge.is-updated {
+    box-shadow: 0 0 0 3px var(--wpiko-primary-glow-strong);
+}
+
+@media screen and (max-width: 782px) {
+    .wpiko-knowledge-compare {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quick learn: labels that say what each tick means */
+.wpiko-site-knowledge-badge.is-learned {
+    background: var(--wpiko-success-tint);
+    color: var(--wpiko-success-hover);
+}
+
+.wpiko-site-knowledge-note.is-empty {
+    background: var(--wpiko-surface-alt);
+    border: 1px dashed var(--wpiko-border);
+    color: var(--wpiko-text);
+}
+
+.wpiko-site-knowledge-pending {
+    color: var(--wpiko-warning-text);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.wpiko-site-knowledge-pending:empty {
+    display: none;
+}
+
+.wpiko-site-knowledge.has-pending .wpiko-site-knowledge-result:empty {
+    display: none;
+}

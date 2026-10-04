@@ -10,13 +10,13 @@ function wpiko_chatbot_ai_configuration_section()
         check_admin_referer('save_ai_configuration', 'ai_configuration_nonce');
 
         // Update Responses API settings
-        $submitted_responses_model = isset($_POST['responses_model']) ? sanitize_text_field(wp_unslash($_POST['responses_model'])) : get_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+        $submitted_responses_model = isset($_POST['responses_model']) ? sanitize_text_field(wp_unslash($_POST['responses_model'])) : get_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
         if (isset($_POST['responses_model'])) {
             $supported_models = function_exists('wpiko_chatbot_get_responses_api_models')
                 ? wpiko_chatbot_get_responses_api_models()
-                : array('gpt-5.6-luna' => 'GPT-5.6 Luna');
+                : array('gpt-6-luna' => 'GPT-6 Luna');
             if (!isset($supported_models[$submitted_responses_model])) {
-                $submitted_responses_model = 'gpt-5.6-luna';
+                $submitted_responses_model = 'gpt-6-luna';
             }
             update_option('wpiko_chatbot_responses_model', $submitted_responses_model);
         }
@@ -34,7 +34,7 @@ function wpiko_chatbot_ai_configuration_section()
         echo '<div class="updated"><p>AI Configuration updated successfully.</p></div>';
     }
 
-    $responses_model = get_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+    $responses_model = get_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
     $reasoning_effort = get_option('wpiko_chatbot_responses_reasoning_effort', 'medium');
     if (function_exists('wpiko_chatbot_normalize_responses_reasoning_effort')) {
         $reasoning_effort = wpiko_chatbot_normalize_responses_reasoning_effort($responses_model, $reasoning_effort);
@@ -71,11 +71,11 @@ function wpiko_chatbot_ai_configuration_section()
                                             // Use the same canonical registry as request validation.
                                             $available_models = function_exists('wpiko_chatbot_get_responses_api_models')
                                                 ? wpiko_chatbot_get_responses_api_models()
-                                                : array('gpt-5.6-luna' => 'GPT-5.6 Luna');
+                                                : array('gpt-6-luna' => 'GPT-6 Luna');
 
                                             // Previously saved deprecated models fall back to the current default.
                                             if (!isset($available_models[$responses_model])) {
-                                                $responses_model = 'gpt-5.6-luna';
+                                                $responses_model = 'gpt-6-luna';
                                             }
                                             foreach ($available_models as $model_value => $model_label) {
                                                 printf(
@@ -244,6 +244,12 @@ function wpiko_chatbot_ai_configuration_section()
                                                         ?>">
                                                     <p class="description">Customize how your AI assistant introduces itself
                                                         and understands your website's purpose and content.</p>
+                                                    <?php if (trim($instructions['main']) === '' && get_option('wpiko_chatbot_responses_assistant_type', '') === '' && get_option('wpiko_chatbot_responses_website_specialization', '') === '') : ?>
+                                                        <div class="wpiko-default-instructions-note">
+                                                            <strong><?php esc_html_e('Using the built-in default until you save your own:', 'wpiko-chatbot'); ?></strong>
+                                                            <p><?php echo esc_html(wpiko_chatbot_get_default_main_instructions()); ?></p>
+                                                        </div>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         </table>
@@ -261,23 +267,11 @@ Keep responses under 3 sentences when possible.
 For support inquiries, direct users to contact@example.com."><?php echo esc_textarea($instructions['specific']); ?></textarea>
                                                     <p class="description">Enter specific rules and guidelines for how your
                                                         assistant should behave and respond.</p>
-                                                </td>
-                                            </tr>
-                                            <tr valign="top">
-                                                <th scope="row">Knowledge System Instructions</th>
-                                                <td>
-                                                    <textarea name="responses_knowledge_system_instructions"
-                                                        id="responses_knowledge_system_instructions" class="large-text"
-                                                        rows="5"><?php
-                                                        echo esc_textarea($instructions['knowledge']);
-                                                        ?></textarea>
-                                                    <p class="description">Edit knowledge-related system instructions for
-                                                        your assistant. These instructions help the AI
-                                                        understand how to use uploaded files and knowledge base.</p>
+                                                    <p class="description"><?php esc_html_e('Knowledge, WooCommerce product and order instructions are managed automatically by the plugin when the relevant features are available. Use this field for additional preferences, such as response length or recommendation style.', 'wpiko-chatbot'); ?></p>
                                                 </td>
                                             </tr>
                                             <?php
-                                            // Action hook for adding advanced system instructions (e.g., WooCommerce products/orders instructions)
+                                            // Allow extensions to add other advanced configuration controls.
                                             do_action('wpiko_chatbot_responses_advanced_system_instructions');
                                             ?>
                                         </table>
@@ -399,8 +393,66 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
                             <?php if (wpiko_chatbot_is_woocommerce_active()): ?>
                                 <?php do_action('wpiko_chatbot_responses_woocommerce_integration_button'); ?>
                             <?php endif; ?>
+                        <?php else: ?>
+                            <?php
+                            // Pro training tools, shown locked so free users know they exist.
+                            $wpiko_locked_tools = array(
+                                'scan' => array(
+                                    'icon' => 'dashicons-search',
+                                    'label' => __('Scan Website', 'wpiko-chatbot'),
+                                    'info' => __('Scan all your website pages and turn them into AI-written questions and answers, with no page limit.', 'wpiko-chatbot'),
+                                ),
+                                'qa' => array(
+                                    'icon' => 'dashicons-editor-help',
+                                    'label' => __('Q&A Builder', 'wpiko-chatbot'),
+                                    'info' => __('Write and edit exact answers for the questions your visitors ask most, so the chatbot always replies the way you want.', 'wpiko-chatbot'),
+                                ),
+                            );
+                            if (wpiko_chatbot_is_woocommerce_active()) {
+                                $wpiko_locked_tools['woo'] = array(
+                                    'icon' => 'dashicons-cart',
+                                    'label' => __('WooCommerce', 'wpiko-chatbot'),
+                                    'info' => __('Keep your products and orders in sync so the chatbot can recommend products, show product cards and answer order questions.', 'wpiko-chatbot'),
+                                );
+                            }
+                            foreach ($wpiko_locked_tools as $wpiko_tool_id => $wpiko_tool) : ?>
+                                <button type="button" class="button button-secondary wpiko-pro-locked-button" aria-expanded="false" aria-controls="wpiko-pro-locked-info" data-info="<?php echo esc_attr($wpiko_tool['info']); ?>">
+                                    <span class="dashicons <?php echo esc_attr($wpiko_tool['icon']); ?>" aria-hidden="true"></span>
+                                    <?php echo esc_html($wpiko_tool['label']); ?>
+                                    <span class="wpiko-pro-pill">PRO</span>
+                                </button>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
+
+                    <?php if (!has_action('wpiko_chatbot_responses_scan_website_button')): ?>
+                        <div id="wpiko-pro-locked-info" class="wpiko-pro-locked-info" hidden>
+                            <p class="wpiko-pro-locked-text"></p>
+                            <a href="https://wpiko.com/chatbot-pricing/" class="button button-primary" target="_blank" rel="noopener noreferrer"><?php esc_html_e('See WPiko Chatbot Pro', 'wpiko-chatbot'); ?></a>
+                        </div>
+                        <script>
+                            (function () {
+                                var info = document.getElementById('wpiko-pro-locked-info');
+                                document.querySelectorAll('.wpiko-pro-locked-button').forEach(function (button) {
+                                    button.addEventListener('click', function () {
+                                        var isOpen = button.getAttribute('aria-expanded') === 'true';
+                                        document.querySelectorAll('.wpiko-pro-locked-button').forEach(function (other) {
+                                            other.setAttribute('aria-expanded', 'false');
+                                        });
+                                        if (isOpen) {
+                                            info.hidden = true;
+                                            return;
+                                        }
+                                        button.setAttribute('aria-expanded', 'true');
+                                        info.querySelector('.wpiko-pro-locked-text').textContent = button.getAttribute('data-info');
+                                        info.hidden = false;
+                                    });
+                                });
+                            })();
+                        </script>
+                    <?php endif; ?>
+
+                    <?php wpiko_chatbot_render_site_knowledge_panel('settings'); ?>
 
                     <!-- Modal container for file management is defined globally below -->
 
@@ -444,16 +496,12 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
 
             var modelConfigs = {
                 'gpt-6-astra': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
+                'gpt-6.1-sol': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-6-sol': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-6-luna': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-5': { efforts: ['low', 'medium', 'high'], defaultEffort: 'medium' },
-                'gpt-5-mini': { efforts: ['low', 'medium', 'high'], defaultEffort: 'medium' },
-                'gpt-5-nano': { efforts: ['low', 'medium', 'high'], defaultEffort: 'medium' },
-                'gpt-5.1': { efforts: ['none', 'low', 'medium', 'high'], defaultEffort: 'none' },
                 'gpt-5.2': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
                 'gpt-5.4': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
                 'gpt-5.4-mini': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
-                'gpt-5.4-nano': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
                 'gpt-5.5-2026-04-23': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
                 'gpt-5.6-sol': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-5.6-terra': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },

@@ -23,7 +23,8 @@ function wpiko_chatbot_get_default_error_messages()
         'connection_issue' => __("We are having trouble connecting to the server. Please check your internet connection.", 'wpiko-chatbot'),
         'server_busy' => __("The system is currently busy. Please try again in a few moments.", 'wpiko-chatbot'),
         'auth_failed' => __("Your session has expired. Please refresh the page and try again.", 'wpiko-chatbot'),
-        'feature_restricted' => __("This feature is currently unavailable.", 'wpiko-chatbot')
+        'feature_restricted' => __("This feature is currently unavailable.", 'wpiko-chatbot'),
+        'service_unavailable' => __("The chat assistant is temporarily unavailable. Please try again later.", 'wpiko-chatbot')
     );
 }
 
@@ -39,7 +40,8 @@ function wpiko_chatbot_get_error_message_labels()
         'connection_issue' => __('Connection Issues (Timeouts, Offline)', 'wpiko-chatbot'),
         'server_busy' => __('Server Busy (Rate Limits, Overloaded)', 'wpiko-chatbot'),
         'auth_failed' => __('Authentication Failed (Session Expired)', 'wpiko-chatbot'),
-        'feature_restricted' => __('Feature Unavailable', 'wpiko-chatbot')
+        'feature_restricted' => __('Feature Unavailable', 'wpiko-chatbot'),
+        'service_unavailable' => __('Service Unavailable (OpenAI key or billing problem)', 'wpiko-chatbot')
     );
 }
 
@@ -73,6 +75,11 @@ function wpiko_chatbot_api_call_with_retry($url, $args, $max_retries = WPIKO_CHA
         $is_retryable = is_wp_error($response)
             || in_array($response_code, array(408, 409, 425, 429), true)
             || $response_code >= 500;
+
+        // An account without credit also returns 429, but retrying cannot help.
+        if ($response_code === 429 && strpos((string) wp_remote_retrieve_body($response), 'insufficient_quota') !== false) {
+            $is_retryable = false;
+        }
 
         if (!$is_retryable) {
             return $response;
@@ -114,7 +121,7 @@ function wpiko_chatbot_get_ai_feature_config($feature)
             'max_retries' => 2,
         ),
         'qa_generation' => array(
-            'model' => 'gpt-6-sol',
+            'model' => 'gpt-6.1-sol',
             'reasoning_effort' => 'low',
             'verbosity' => 'medium',
             // Includes both visible output and reasoning tokens in the Responses API.
@@ -284,6 +291,9 @@ function wpiko_chatbot_get_user_friendly_error_message($error_message, $context 
         'timed out' => 'connection_issue',
         '504' => 'connection_issue',
         '400' => 'connection_issue',
+
+        // OpenAI account problems (invalid key, no credit, no model access)
+        'OpenAI account problem' => 'service_unavailable',
 
         // Server Busy / Rate Limits
         'Rate limit exceeded' => 'server_busy',

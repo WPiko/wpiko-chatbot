@@ -1286,18 +1286,13 @@
     cursor: help;
 }
 
-.user-country.locked .lock-icon {
-    font-size: 16px;
-    color: var(--wpiko-text-faint);
-    transition: color 0.2s ease;
+.user-country.locked .premium-feature-badge,
+.contact-user-locked .premium-feature-badge {
+    flex-shrink: 0;
 }
 
 .user-country.locked:hover {
     color: var(--wpiko-text-muted);
-}
-
-.user-country.locked:hover .lock-icon {
-    color: var(--wpiko-primary);
 }
 
 /* Additional Info Section */
@@ -1426,31 +1421,18 @@
     position: relative;
 }
 
-.contact-user-locked .lock-icon {
-    font-size: 16px;
-    color: var(--wpiko-text-faint);
-    transition: color 0.2s ease;
-    position: absolute;
-    right: 16px;
-}
-
 .contact-user-locked .button-content {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     flex: 1;
-    margin-right: 24px;
 }
 
 .contact-user-locked .button-content .button-icon {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-}
-
-.contact-user-locked:hover .lock-icon {
-    color: var(--wpiko-primary);
 }
 
 .download-conversation {

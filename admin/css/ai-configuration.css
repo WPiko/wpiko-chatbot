@@ -604,15 +604,15 @@
     transform: scale(1.1);
 }
 
-/* Premium Feature Badge Positioning */
+/* Pro feature badge positioning */
 .assistant-action-buttons .button.premium-feature {
     padding-top: 25px;
 }
 
 .assistant-action-buttons .premium-feature-badge {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: 10px;
+    right: 10px;
 }
 
 /* Assistant Type Inline Field */
@@ -1072,4 +1072,19 @@
 
 .wpiko-config-field.full-width {
     width: 100%;
+}
+
+/* Built-in default instructions note */
+.wpiko-default-instructions-note {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--wpiko-info-tint, #f0f9ff);
+    border: 1px solid var(--wpiko-info-soft, #bae0fd);
+    border-radius: var(--wpiko-radius, 8px);
+    color: var(--wpiko-text, #334155);
+}
+
+.wpiko-default-instructions-note p {
+    margin: 6px 0 0;
+    font-style: italic;
 }

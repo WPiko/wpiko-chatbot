@@ -1074,3 +1074,133 @@ textarea.large-text:focus {
     padding-bottom: 20px;
     border: none;
 }
+
+/* TAB - API KEY: setup steps and connection status */
+.wpiko-api-key-steps {
+    list-style: none;
+    counter-reset: wpiko-step;
+    margin: 20px 0 8px;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.wpiko-api-key-steps li {
+    counter-increment: wpiko-step;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 14px 16px 14px 56px;
+    background: var(--wpiko-surface-alt);
+    border: 1px solid var(--wpiko-border-light);
+    border-radius: var(--wpiko-radius);
+}
+
+.wpiko-api-key-steps li::before {
+    content: counter(wpiko-step);
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--wpiko-radius-full);
+    background: var(--wpiko-primary);
+    color: var(--wpiko-text-inverse);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wpiko-api-key-steps strong {
+    color: var(--wpiko-text-strong);
+}
+
+.wpiko-api-key-steps span {
+    color: var(--wpiko-text-muted);
+}
+
+.wpiko-api-key-steps a {
+    align-self: flex-start;
+    font-weight: 500;
+}
+
+.wpiko-connection-status {
+    margin-top: 8px;
+    padding: 16px 18px;
+    border-radius: var(--wpiko-radius);
+    border: 1px solid var(--wpiko-border);
+    background: var(--wpiko-surface-alt);
+}
+
+.wpiko-connection-status.is-ok {
+    background: var(--wpiko-success-tint);
+    border-color: var(--wpiko-success-light);
+}
+
+.wpiko-connection-status.is-error {
+    background: var(--wpiko-danger-tint);
+    border-color: var(--wpiko-danger-soft);
+}
+
+.wpiko-connection-status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.wpiko-connection-status.is-ok .wpiko-connection-status-header .dashicons {
+    color: var(--wpiko-success);
+}
+
+.wpiko-connection-status.is-error .wpiko-connection-status-header .dashicons {
+    color: var(--wpiko-danger);
+}
+
+.wpiko-connection-status.is-unknown .wpiko-connection-status-header .dashicons {
+    color: var(--wpiko-info);
+}
+
+.wpiko-connection-status-time {
+    color: var(--wpiko-text-muted);
+    font-size: 12px;
+}
+
+.wpiko-connection-status p {
+    margin: 8px 0 0;
+    color: var(--wpiko-text);
+}
+
+.wpiko-connection-status-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.wpiko-connection-status-actions form {
+    margin: 0;
+}
+
+.wpiko-connection-status-actions .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.wpiko-connection-status-actions .button .dashicons {
+    flex-shrink: 0;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+}
+
+.wpiko-api-key-notice p {
+    font-size: 14px;
+}

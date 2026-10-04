@@ -161,6 +161,9 @@ wpiko_chatbot_render_plugin_header();
                 case 'dashboard':
                     wpiko_chatbot_dashboard_section();
                     break;
+                case 'setup':
+                    wpiko_chatbot_setup_wizard_section();
+                    break;
                 case 'api_key':
                     wpiko_chatbot_api_key_section();
                     break;

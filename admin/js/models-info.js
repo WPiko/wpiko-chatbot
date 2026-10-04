@@ -1,7 +1,7 @@
 /**
  * Wpiko Chatbot - Models Information Handler
  * Displays detailed model information when users select models in the Responses API section
- * GPT-6 Sol and Luna details checked against OpenAI Models documentation on September 23, 2026
+ * GPT-6 family details checked against OpenAI Models documentation on September 30, 2026
  */
 
 jQuery(document).ready(function ($) {
@@ -18,6 +18,16 @@ jQuery(document).ready(function ($) {
             contextWindow: '1,050,000',
             maxOutputTokens: '128,000',
             cost: '$10.00 / $50.00'
+        },
+        'gpt-6.1-sol': {
+            displayName: 'GPT-6.1 Sol',
+            description: 'Near-Astra performance for complex coding, computer use, and professional work at a lower cost',
+            reasoning: 5,
+            intelligence: null,
+            speed: 4,
+            contextWindow: '1,050,000',
+            maxOutputTokens: '128,000',
+            cost: '$2.00 / $10.00'
         },
         'gpt-6-sol': {
             displayName: 'GPT-6 Sol',
@@ -99,16 +109,6 @@ jQuery(document).ready(function ($) {
             maxOutputTokens: '128,000',
             cost: '$0.75 / $4.50'
         },
-        'gpt-5.4-nano': {
-            displayName: 'GPT-5.4 Nano',
-            description: 'Lowest-cost GPT-5.4 model for simpler, high-volume workloads',
-            reasoning: 3,
-            intelligence: null,
-            speed: 4,
-            contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.20 / $1.25'
-        },
         'gpt-5.2': {
             displayName: 'GPT-5.2',
             description: 'The best model for coding and agentic tasks across industries',
@@ -118,46 +118,6 @@ jQuery(document).ready(function ($) {
             contextWindow: '400,000',
             maxOutputTokens: '128,000',
             cost: '$1.75 / $14.00'
-        },
-        'gpt-5.1': {
-            displayName: 'GPT-5.1',
-            description: 'The best model for coding and agentic tasks with configurable reasoning effort',
-            reasoning: 4,
-            intelligence: null,
-            speed: 3,
-            contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$1.25 / $10.00'
-        },
-        'gpt-5': {
-            displayName: 'GPT-5',
-            description: 'Previous intelligent reasoning model for coding and agentic tasks with',
-            reasoning: 4,
-            intelligence: null,
-            speed: 3,
-            contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$1.25 / $10.00'
-        },
-        'gpt-5-mini': {
-            displayName: 'GPT-5 Mini',
-            description: 'A faster, cost-efficient version of GPT-5 for well-defined tasks',
-            reasoning: 3,
-            intelligence: null,
-            speed: 4,
-            contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.25 / $2.00'
-        },
-        'gpt-5-nano': {
-            displayName: 'GPT-5 Nano',
-            description: 'Fastest, most cost-efficient version of GPT-5',
-            reasoning: 2,
-            intelligence: null,
-            speed: 5,
-            contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.05 / $0.40'
         },
         'gpt-4.1': {
             displayName: 'GPT-4.1',
@@ -322,9 +282,9 @@ jQuery(document).ready(function ($) {
     function getModelRecommendations() {
         return {
             'cost-effective': ['gpt-6-luna', 'gpt-5.6-luna'],
-            'balanced': ['gpt-6-sol', 'gpt-5.6-terra'],
-            'advanced': ['gpt-6-astra', 'gpt-6-sol'],
-            'speed': ['gpt-6-luna', 'gpt-5-nano'],
+            'balanced': ['gpt-6.1-sol', 'gpt-5.6-terra'],
+            'advanced': ['gpt-6-astra', 'gpt-6.1-sol'],
+            'speed': ['gpt-6-luna'],
             'multimodal': ['gpt-4.1', 'gpt-4.1-mini']
         };
     }

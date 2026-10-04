@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WPiko Chatbot
  * Plugin URI: https://wpiko.com/chatbot
- * Description: A WordPress plugin that integrates OpenAI's AI models to create an intelligent chatbot for WordPress websites. 
- * Version: 2.0.8
+ * Description: AI chatbot for WordPress powered by your own OpenAI account. Learns your pages and answers visitors 24/7.
+ * Version: 2.1.0
  * Requires at least: 6.0
  * Tested up to: 7.1
  * Requires PHP: 7.0
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_PLUGIN_FILE', __FILE__);
 define('WPIKO_CHATBOT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPIKO_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPIKO_CHATBOT_VERSION', '2.0.8');
+define('WPIKO_CHATBOT_VERSION', '2.1.0');
 
 // Ensures that the default options is set
 function wpiko_chatbot_set_default_options()
@@ -33,7 +33,7 @@ function wpiko_chatbot_set_default_options()
 
     // Set default to Responses API for new installations
     add_option('wpiko_chatbot_api_type', 'responses');
-    add_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+    add_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
     add_option('wpiko_chatbot_responses_reasoning_effort', 'medium');
     add_option('wpiko_chatbot_responses_verbosity', 'medium');
 }
@@ -79,6 +79,54 @@ function wpiko_chatbot_maybe_upgrade_database()
     }
 }
 
+/**
+ * Whether the chatbot's front-end assets are needed on the current page.
+ *
+ * The chat script, styles and sounds are only loaded where the chatbot is
+ * actually displayed, so pages without it stay as fast as before.
+ *
+ * @return bool
+ */
+function wpiko_chatbot_should_load_frontend_assets()
+{
+    $load = wpiko_chatbot_floating_should_display() || wpiko_chatbot_current_page_has_shortcode();
+
+    /**
+     * Filter whether WPiko Chatbot loads its front-end assets on this page.
+     *
+     * Return true for pages that render the chatbot in a way the plugin
+     * cannot detect in advance (for example a page builder template).
+     *
+     * @param bool $load Whether to load the assets.
+     */
+    return (bool) apply_filters('wpiko_chatbot_load_frontend_assets', $load);
+}
+
+/**
+ * Run every front-end enqueue callback (core and add-ons) once.
+ *
+ * Add-ons hook their chatbot assets to 'wpiko_chatbot_enqueue_frontend_assets'
+ * instead of 'wp_enqueue_scripts' so they follow the same loading rules.
+ *
+ * @return void
+ */
+function wpiko_chatbot_run_frontend_enqueue()
+{
+    if (did_action('wpiko_chatbot_enqueue_frontend_assets')) {
+        return;
+    }
+
+    do_action('wpiko_chatbot_enqueue_frontend_assets');
+}
+
+function wpiko_chatbot_maybe_enqueue_frontend_assets()
+{
+    if (wpiko_chatbot_should_load_frontend_assets()) {
+        wpiko_chatbot_run_frontend_enqueue();
+    }
+}
+add_action('wp_enqueue_scripts', 'wpiko_chatbot_maybe_enqueue_frontend_assets', 9);
+
 // Enqueuing the necessary scripts and files
 function wpiko_chatbot_enqueue_scripts()
 {
@@ -86,7 +134,9 @@ function wpiko_chatbot_enqueue_scripts()
     $version = WPIKO_CHATBOT_VERSION;
     $version = apply_filters('wpiko_chatbot_asset_version', $version);
 
-    wp_enqueue_script('wpiko-chatbot-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot.js', array('jquery'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-dompurify', WPIKO_CHATBOT_PLUGIN_URL . 'js/vendor/dompurify/purify.min.js', array(), '3.4.16', true);
+    wp_enqueue_script('wpiko-chatbot-message-safety', WPIKO_CHATBOT_PLUGIN_URL . 'js/message-safety.js', array('wpiko-chatbot-dompurify'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot.js', array('jquery', 'wpiko-chatbot-message-safety'), $version, true);
     wp_enqueue_style('wpiko-chatbot-css', WPIKO_CHATBOT_PLUGIN_URL . 'css/wpiko-chatbot.css', array(), $version);
 
     // Proactive greeting behavior (only when enabled alongside the floating chatbot)
@@ -107,12 +157,13 @@ function wpiko_chatbot_enqueue_scripts()
         'frontendTranscriptCss' => $css_content
     ));
 }
-add_action('wp_enqueue_scripts', 'wpiko_chatbot_enqueue_scripts');
+add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_chatbot_enqueue_scripts');
 
 // Include files
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/admin-page.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/plugin-header.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/style-presets.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/deactivation-feedback.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/dashboard-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/api-key-section.php';
@@ -127,15 +178,19 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/conversations-section.ph
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/user-limits-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/error-messages-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/debug-log-section.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/setup-wizard-section.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'chatbot-interface.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/logging.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/floating-chatbot.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/responses-tools.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/responses-api.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/conversation-handler.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/markdown-handler.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/api-helpers.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/openai-health.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/site-knowledge.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/sound-functions.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/files-list-handler.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/instructions-handler.php';
@@ -154,6 +209,16 @@ function wpiko_chatbot_shortcode($atts)
     $atts = shortcode_atts(array(
         // You can add custom attributes here if needed
     ), $atts);
+
+    // Until an API key is added, only site admins see the chatbot.
+    if (!wpiko_chatbot_is_configured() && !current_user_can('manage_options')) {
+        return '';
+    }
+
+    // Load the assets now if the shortcode was not detected in advance
+    // (for example inside a widget or a page builder layout). Scripts are
+    // printed in the footer, so enqueueing here still works.
+    wpiko_chatbot_run_frontend_enqueue();
 
     // Return the chatbot display
     return wpiko_chatbot_display();
@@ -217,6 +282,8 @@ function wpiko_chatbot_ajax_handler()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
 
+    do_action('wpiko_chatbot_before_chat_request');
+
     $is_streaming_request = wpiko_chatbot_is_streaming_request();
 
     $encrypted_api_key = get_option('wpiko_chatbot_api_key', '');
@@ -259,6 +326,7 @@ function wpiko_chatbot_ajax_handler()
 
     $message = sanitize_textarea_field(wp_unslash($_POST['message']));
     $conversation_id = isset($_POST['thread_id']) ? sanitize_text_field(wp_unslash($_POST['thread_id'])) : null;
+    $conversation_id = wpiko_chatbot_bind_chat_session($conversation_id);
     $user_email = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
 
     // Optimistic Response ID: Accept previous_response_id from frontend to prevent race conditions
@@ -336,7 +404,9 @@ function wpiko_chatbot_ajax_handler()
         wp_send_json_error($result['data']);
     } else {
         // Debug logging
-        wpiko_chatbot_log('Responses API result: ' . json_encode($result), 'info');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Responses API result: ' . json_encode($result), 'info');
+        }
 
         $response_data = wpiko_chatbot_prepare_frontend_response_data($result);
         wp_send_json_success($response_data);
@@ -421,11 +491,20 @@ function wpiko_chatbot_localize_script()
         )
     );
 
+    // Site admins testing the chat get setup hints instead of the generic visitor error.
+    if (current_user_can('manage_options')) {
+        $script_data['adminNotice'] = array(
+            'missingKey' => __('Admin notice: the chatbot has no OpenAI API key yet, so it cannot answer. Add your key in WPiko Chatbot → API Key. (Visitors see a generic error message.)', 'wpiko-chatbot'),
+            'apiKeyUrl' => add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'api_key', '_wpnonce' => wp_create_nonce('wpiko_chatbot_tab_nonce')), admin_url('admin.php')),
+            'apiKeyLabel' => __('Add your API key', 'wpiko-chatbot'),
+        );
+    }
+
     $script_data = apply_filters('wpiko_chatbot_frontend_script_data', $script_data);
 
     wp_localize_script('wpiko-chatbot-js', 'wpikoChatbot', $script_data);
 }
-add_action('wp_enqueue_scripts', 'wpiko_chatbot_localize_script');
+add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_chatbot_localize_script');
 
 // Function to encrypt the API key
 function wpiko_chatbot_encrypt_api_key($api_key)
@@ -450,6 +529,23 @@ function wpiko_chatbot_decrypt_api_key($encrypted_api_key)
     list($encrypted_data, $iv) = explode('::', base64_decode($encrypted_api_key), 2);
 
     return openssl_decrypt($encrypted_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+}
+
+/**
+ * Stop an admin AJAX request unless the current user can manage the plugin.
+ *
+ * The 'wpiko_chatbot_nonce' nonce is also printed on the front end for the chat
+ * widget, so a valid nonce alone never proves the request comes from an admin.
+ * Every admin-only AJAX handler must call this after verifying its nonce.
+ *
+ * @param string $capability Capability required. Default 'manage_options'.
+ * @return void
+ */
+function wpiko_chatbot_require_admin_ajax($capability = 'manage_options')
+{
+    if (!current_user_can($capability)) {
+        wp_send_json_error(array('message' => __('You do not have permission to do this.', 'wpiko-chatbot')), 403);
+    }
 }
 
 /**
@@ -488,8 +584,9 @@ function wpiko_chatbot_check_new_messages() {
     $thread_id = isset($_POST['thread_id']) ? sanitize_text_field(wp_unslash($_POST['thread_id'])) : '';
     $last_id = isset($_POST['last_message_id']) ? intval($_POST['last_message_id']) : 0;
 
-    if (empty($thread_id)) {
-        wp_send_json_error(array('message' => 'Missing thread ID'));
+    if (empty($thread_id) || !wpiko_chatbot_chat_session_is_bound($thread_id)) {
+        wp_send_json_error(array('message' => 'Conversation unavailable.'));
+        return;
     }
 
     global $wpdb;
@@ -537,8 +634,9 @@ function wpiko_chatbot_user_heartbeat() {
 
     $thread_id = isset($_POST['thread_id']) ? sanitize_text_field(wp_unslash($_POST['thread_id'])) : '';
 
-    if (empty($thread_id)) {
-        wp_send_json_error(array('message' => 'Missing thread ID'));
+    if (empty($thread_id) || !wpiko_chatbot_chat_session_is_bound($thread_id)) {
+        wp_send_json_error(array('message' => 'Conversation unavailable.'));
+        return;
     }
 
     $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'online';

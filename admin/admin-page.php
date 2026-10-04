@@ -59,6 +59,12 @@ function wpiko_chatbot_get_admin_tabs()
             'group' => '',
             'order' => 0,
         ),
+        'setup' => array(
+            'label' => 'Setup Wizard',
+            'icon' => 'dashicons-flag',
+            'group' => '',
+            'order' => 1,
+        ),
         'api_key' => array(
             'label' => 'API Key',
             'icon' => 'dashicons-admin-network',
@@ -132,6 +138,12 @@ function wpiko_chatbot_get_admin_tabs()
             'order' => 30,
         ),
     );
+
+    // The wizard leaves the menu once setup is done. It stays reachable from
+    // the Dashboard ("Run setup again") and comes back if the API key is removed.
+    if (function_exists('wpiko_chatbot_setup_is_complete') && wpiko_chatbot_setup_is_complete()) {
+        unset($tabs['setup']);
+    }
 
     $additional_tabs = apply_filters('wpiko_chatbot_admin_tabs', array());
     $additional_order = 100;
@@ -283,6 +295,53 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
         'apiType' => 'responses'
     ));
 
+    wp_enqueue_style('wpiko-chatbot-setup-wizard-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/setup-wizard.css', array('wpiko-chatbot-admin-css'), $version);
+
+    wp_enqueue_script('wpiko-chatbot-site-knowledge-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/site-knowledge.js', array('jquery'), $version, true);
+    wp_localize_script('wpiko-chatbot-site-knowledge-js', 'wpikoSiteKnowledge', array(
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('wpiko_chatbot_nonce'),
+        'i18n' => array(
+            'homepage' => __('Homepage', 'wpiko-chatbot'),
+            /* translators: %d: number of words. */
+            'words' => __('%d words', 'wpiko-chatbot'),
+            /* translators: 1: selected pages, 2: page limit. */
+            'selected' => __('%1$d of %2$d selected', 'wpiko-chatbot'),
+            'loadError' => __('Could not load your pages. Refresh the page to try again.', 'wpiko-chatbot'),
+            'noPages' => __('No published pages found. Publish a page (for example "About" or "FAQ"), or upload a document in File Management.', 'wpiko-chatbot'),
+            'building' => __('Reading your pages and teaching your chatbot. This can take up to a minute…', 'wpiko-chatbot'),
+            'buildError' => __('Something went wrong. Check the Debug Log, then try again.', 'wpiko-chatbot'),
+            'buildButton' => __('Teach my chatbot these pages', 'wpiko-chatbot'),
+            'updateButton' => __('Update what my chatbot knows', 'wpiko-chatbot'),
+            'removeButton' => __('Remove these pages from my chatbot', 'wpiko-chatbot'),
+            'removing' => __('Removing the pages from your chatbot…', 'wpiko-chatbot'),
+            /* translators: %s: page titles. */
+            'nowCovered' => __('Updated: %s now covered by Scan Website, so removed from Quick learn.', 'wpiko-chatbot'),
+            /* translators: 1: number of pages, 2: time ago. */
+            'builtStatus' => __('Your chatbot knows %1$s pages (updated %2$s ago).', 'wpiko-chatbot'),
+            /* translators: 1: number of pages (always 1), 2: time ago. */
+            'builtStatusOne' => __('Your chatbot knows %1$s page (updated %2$s ago).', 'wpiko-chatbot'),
+            'stale' => __('Some of these pages changed since your chatbot last learned them. Click "Update" to refresh its knowledge.', 'wpiko-chatbot'),
+            'learnedBadge' => __('Learned', 'wpiko-chatbot'),
+            'notLearned' => __('Your chatbot has not learned any pages yet.', 'wpiko-chatbot'),
+            'pending' => __('Not saved yet. Click the button to update your chatbot.', 'wpiko-chatbot'),
+            'pendingFirst' => __('Not learned yet. Click the button to teach your chatbot.', 'wpiko-chatbot'),
+        ),
+    ));
+
+    wp_enqueue_script('wpiko-chatbot-setup-wizard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/setup-wizard.js', array('jquery', 'wpiko-chatbot-site-knowledge-js'), $version, true);
+    wp_localize_script('wpiko-chatbot-setup-wizard-js', 'wpikoSetupWizard', array(
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('wpiko_chatbot_nonce'),
+        'i18n' => array(
+            'testing' => __('Testing…', 'wpiko-chatbot'),
+            'testingLong' => __('Sending a tiny test message to OpenAI…', 'wpiko-chatbot'),
+            'enterKey' => __('Paste your OpenAI API key first.', 'wpiko-chatbot'),
+            'thinking' => __('Thinking…', 'wpiko-chatbot'),
+            'genericError' => __('Something went wrong. Please try again.', 'wpiko-chatbot'),
+        ),
+    ));
+
     wp_enqueue_script('wpiko-chatbot-style-tab-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/chatbot-style.js', array(), $version, true);
     wp_localize_script('wpiko-chatbot-style-tab-js', 'wpikoChatbotStyle', array(
         'presets' => wpiko_chatbot_get_style_presets_for_js(),
@@ -294,6 +353,7 @@ add_action('admin_enqueue_scripts', 'wpiko_chatbot_admin_enqueue_scripts');
 function wpiko_chatbot_load_file_management_callback()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
+    wpiko_chatbot_require_admin_ajax();
 
     ob_start();
     include WPIKO_CHATBOT_PLUGIN_DIR . 'admin/templates/file-management.php';
@@ -307,6 +367,7 @@ add_action('wp_ajax_wpiko_chatbot_load_file_management', 'wpiko_chatbot_load_fil
 function wpiko_chatbot_load_scan_website_callback()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
+    wpiko_chatbot_require_admin_ajax();
 
     // Allow Pro plugin to handle this earlier with priority 20
     if (!did_action('wp_ajax_wpiko_chatbot_load_scan_website')) {
@@ -320,6 +381,7 @@ add_action('wp_ajax_wpiko_chatbot_load_scan_website', 'wpiko_chatbot_load_scan_w
 function wpiko_chatbot_load_qa_management_callback()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
+    wpiko_chatbot_require_admin_ajax();
 
     // Allow Pro plugin to handle this earlier with priority 20
     if (!did_action('wp_ajax_wpiko_chatbot_load_qa_management')) {
@@ -333,6 +395,7 @@ add_action('wp_ajax_wpiko_chatbot_load_qa_management', 'wpiko_chatbot_load_qa_ma
 function wpiko_chatbot_load_woocommerce_integration_callback()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
+    wpiko_chatbot_require_admin_ajax();
 
     // Allow Pro plugin to handle this earlier with priority 20
     if (!did_action('wp_ajax_wpiko_chatbot_load_woocommerce_integration')) {

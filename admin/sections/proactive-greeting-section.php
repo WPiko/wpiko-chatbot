@@ -54,7 +54,7 @@ function wpiko_chatbot_proactive_greeting_styles() {
     wp_enqueue_style('wpiko-chatbot-proactive-inline');
     wp_add_inline_style('wpiko-chatbot-proactive-inline', $css_content);
 }
-add_action('wp_enqueue_scripts', 'wpiko_chatbot_proactive_greeting_styles');
+add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_chatbot_proactive_greeting_styles');
 
 function wpiko_chatbot_proactive_greeting_section() {
     if (isset($_POST['action']) && $_POST['action'] == 'save_proactive_greeting') {

@@ -3,51 +3,127 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+/**
+ * Whether the chatbot has an API key and can answer visitors.
+ *
+ * @return bool
+ */
+function wpiko_chatbot_is_configured()
+{
+    static $configured = null;
+    if ($configured === null) {
+        $configured = (string) wpiko_chatbot_decrypt_api_key(get_option('wpiko_chatbot_api_key', '')) !== '';
+    }
+    return $configured;
+}
+
+/**
+ * Whether the floating chatbot should be shown on the current front-end page.
+ *
+ * Until an API key is added, the chatbot is only shown to site admins, so
+ * visitors never see a chatbot that cannot answer.
+ *
+ * @return bool
+ */
+function wpiko_chatbot_floating_should_display()
+{
+    static $result = null;
+    if ($result !== null) {
+        return $result;
+    }
+
+    $result = false;
+
+    if (!get_option('wpiko_chatbot_enable_floating', false)) {
+        return $result;
+    }
+
+    if (!wpiko_chatbot_is_configured() && !current_user_can('manage_options')) {
+        return $result;
+    }
+
+    $exclude_home = get_option('wpiko_chatbot_exclude_home', false);
+    $exclude_blog = get_option('wpiko_chatbot_exclude_blog', false);
+    $exclude_articles = get_option('wpiko_chatbot_exclude_articles', false);
+    $exclude_cart = get_option('wpiko_chatbot_exclude_cart', false);
+    $exclude_checkout = get_option('wpiko_chatbot_exclude_checkout', false);
+    $custom_exclusions = get_option('wpiko_chatbot_custom_exclusions', '');
+
+    $body_class = get_body_class();
+    $show_chatbot = true;
+
+    // The page embeds the chatbot with the shortcode, so the floating one is not needed.
+    if (wpiko_chatbot_current_page_has_shortcode()) {
+        $show_chatbot = false;
+    }
+
+    // Exclusion checks
+    if (in_array('home', $body_class) && $exclude_home) {
+        $show_chatbot = false;
+    } elseif (in_array('blog', $body_class) && $exclude_blog) {
+        $show_chatbot = false;
+    } elseif (in_array('post-template-default', $body_class) && $exclude_articles) {
+        $show_chatbot = false;
+    } elseif (function_exists('is_cart') && is_cart() && $exclude_cart) {
+        $show_chatbot = false;
+    } elseif (function_exists('is_checkout') && is_checkout() && $exclude_checkout) {
+        $show_chatbot = false;
+    }
+
+    // Check custom exclusions
+    if ($show_chatbot && !empty($custom_exclusions)) {
+        $request_uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        $current_url = trailingslashit(wp_parse_url($request_uri, PHP_URL_PATH));
+        $exclusion_list = array_map('trim', explode("\n", $custom_exclusions));
+        foreach ($exclusion_list as $exclusion) {
+            if ($exclusion !== '' && trailingslashit($exclusion) === $current_url) {
+                $show_chatbot = false;
+                break;
+            }
+        }
+    }
+
+    $result = (bool) apply_filters('wpiko_chatbot_show_floating', $show_chatbot);
+    return $result;
+}
+
+/**
+ * Whether the current singular page embeds the [wpiko_chatbot] shortcode.
+ *
+ * Covers the post content and Elementor data. Other page builders are covered
+ * by the late-loading fallback in the shortcode callback.
+ *
+ * @return bool
+ */
+function wpiko_chatbot_current_page_has_shortcode()
+{
+    static $has_shortcode = null;
+    if ($has_shortcode !== null) {
+        return $has_shortcode;
+    }
+
+    $has_shortcode = false;
+    $post = get_queried_object();
+
+    if ($post instanceof WP_Post) {
+        if (has_shortcode($post->post_content, 'wpiko_chatbot')) {
+            $has_shortcode = true;
+        } else {
+            $elementor_data = get_post_meta($post->ID, '_elementor_data', true);
+            if (is_string($elementor_data) && strpos($elementor_data, 'wpiko_chatbot') !== false) {
+                $has_shortcode = true;
+            }
+        }
+    }
+
+    return $has_shortcode;
+}
+
 // Function to display the floating chatbot
 function wpiko_chatbot_add_floating_icon()
 {
-    if (get_option('wpiko_chatbot_enable_floating', false)) {
-        $exclude_home = get_option('wpiko_chatbot_exclude_home', false);
-        $exclude_blog = get_option('wpiko_chatbot_exclude_blog', false);
-        $exclude_articles = get_option('wpiko_chatbot_exclude_articles', false);
-        $exclude_cart = get_option('wpiko_chatbot_exclude_cart', false);
-        $exclude_checkout = get_option('wpiko_chatbot_exclude_checkout', false);
-        $custom_exclusions = get_option('wpiko_chatbot_custom_exclusions', '');
-
-        $body_class = get_body_class();
+    if (wpiko_chatbot_floating_should_display()) {
         $show_chatbot = true;
-
-        // Check if current page/post has the shortcode
-        global $post;
-        if ($post && has_shortcode($post->post_content, 'wpiko_chatbot')) {
-            $show_chatbot = false;
-        }
-
-        // Exclusion checks
-        if (in_array('home', $body_class) && $exclude_home) {
-            $show_chatbot = false;
-        } elseif (in_array('blog', $body_class) && $exclude_blog) {
-            $show_chatbot = false;
-        } elseif (in_array('post-template-default', $body_class) && $exclude_articles) {
-            $show_chatbot = false;
-        } elseif (function_exists('is_cart') && is_cart() && $exclude_cart) {
-            $show_chatbot = false;
-        } elseif (function_exists('is_checkout') && is_checkout() && $exclude_checkout) {
-            $show_chatbot = false;
-        }
-
-        // Check custom exclusions
-        if ($show_chatbot && !empty($custom_exclusions)) {
-            $request_uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '';
-            $current_url = trailingslashit(wp_parse_url($request_uri, PHP_URL_PATH));
-            $exclusion_list = array_map('trim', explode("\n", $custom_exclusions));
-            foreach ($exclusion_list as $exclusion) {
-                if (trailingslashit($exclusion) === $current_url) {
-                    $show_chatbot = false;
-                    break;
-                }
-            }
-        }
 
         if ($show_chatbot) {
             // Use defined version constant

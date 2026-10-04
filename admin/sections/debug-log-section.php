@@ -19,6 +19,14 @@ function wpiko_chatbot_debug_log_section()
         return;
     }
 
+    // Save the "delete data on uninstall" preference.
+    if (isset($_POST['wpiko_chatbot_uninstall_pref_nonce'])) {
+        check_admin_referer('wpiko_chatbot_uninstall_pref', 'wpiko_chatbot_uninstall_pref_nonce');
+        update_option('wpiko_chatbot_delete_data_on_uninstall', isset($_POST['wpiko_chatbot_delete_data_on_uninstall']) ? '1' : '0');
+        echo '<div class="notice notice-success"><p>' . esc_html__('Preference saved.', 'wpiko-chatbot') . '</p></div>';
+    }
+    $delete_on_uninstall = get_option('wpiko_chatbot_delete_data_on_uninstall', '0') === '1';
+
     // Get current settings and stats
     $debug_logging_enabled = wpiko_chatbot_is_debug_logging_enabled();
     $logs = wpiko_chatbot_get_debug_logs('', 100); // Get last 100 logs
@@ -156,6 +164,25 @@ function wpiko_chatbot_debug_log_section()
                 <p><strong>Note:</strong> Disable debug logging when not actively troubleshooting to optimize website
                     performance.</p>
             </div>
+        </div>
+
+        <!-- Plugin data on uninstall -->
+        <div class="wpiko-card wpiko-uninstall-card">
+            <div class="wpiko-card-header">
+                <div class="header-title">
+                    <h3><span class="dashicons dashicons-database-remove"></span> <?php esc_html_e('Plugin data', 'wpiko-chatbot'); ?></h3>
+                    <p class="description"><?php esc_html_e('By default your settings and conversations are kept when the plugin is deleted, so nothing is lost if you reinstall it.', 'wpiko-chatbot'); ?></p>
+                </div>
+            </div>
+            <form method="post" action="" style="padding: 0 24px 20px;">
+                <?php wp_nonce_field('wpiko_chatbot_uninstall_pref', 'wpiko_chatbot_uninstall_pref_nonce'); ?>
+                <label>
+                    <input type="checkbox" name="wpiko_chatbot_delete_data_on_uninstall" value="1" <?php checked($delete_on_uninstall); ?>>
+                    <?php esc_html_e('Delete all WPiko Chatbot settings, conversations and logs from this site when the plugin is deleted', 'wpiko-chatbot'); ?>
+                </label>
+                <p class="description"><?php esc_html_e('Files you uploaded to OpenAI stay in your OpenAI account. Delete the knowledge base in AI Configuration first if you also want those removed.', 'wpiko-chatbot'); ?></p>
+                <?php submit_button(__('Save preference', 'wpiko-chatbot'), 'secondary', 'submit', false); ?>
+            </form>
         </div>
 
         <!-- Hidden data for JavaScript -->

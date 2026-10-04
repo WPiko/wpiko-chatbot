@@ -89,7 +89,7 @@ function wpiko_floating_chatbot_styles() {
     wp_add_inline_style('wpiko-chatbot-floating-position-inline', $css_content);
 }
 
-add_action('wp_enqueue_scripts', 'wpiko_floating_chatbot_styles');
+add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_floating_chatbot_styles');
 
 function wpiko_chatbot_floating_chatbot_section() {
     if (isset($_POST['action']) && $_POST['action'] == 'save_floating_chatbot') {

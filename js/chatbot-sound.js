@@ -1,55 +1,66 @@
 document.addEventListener('DOMContentLoaded', function () {
     /**
-     * Calibrated volume levels for consistent perceived loudness
-     * 
-     * These values are tuned to balance the different audio files:
-     * - Message notification: Base reference volume (0.5)
-     * - Error notification: Reduced to match message notification level (0.35)
-     * - Clear chat notification: Reduced significantly as this file is inherently louder (0.25)
-     * 
-     * Adjust these values if sounds still seem inconsistent on different devices.
+     * Playback volume for each sound (0 to 1).
+     *
+     * The sound files are loudness-matched, so these values only set how
+     * prominent each sound is:
+     * - Message: the main notification, clearly audible but gentle (0.6)
+     * - Error: slightly quieter so it informs without startling (0.45)
+     * - Clear chat: a short, subtle confirmation (0.5)
      */
     const VOLUME_LEVELS = {
-        message: 0.8,      // Base reference - gentle notification chime
-        error: 0.6,       // Error alert - calibrated to match message volume
-        clearChat: 0.9    // Clear chat confirmation - calibrated to match message volume
+        message: 0.6,
+        error: 0.45,
+        clearChat: 0.5
     };
 
-    // Initialize all sound instances with calibrated volumes
-    const messageReceivedSound = new Howl({
-        src: [wpikoChatbotSound.messageReceivedSound],
-        volume: VOLUME_LEVELS.message,
-        preload: true
-    });
+    // Sounds are created on first use instead of on page load, so visitors who
+    // never open the chat do not download the audio files.
+    const sounds = {};
 
-    const errorSound = new Howl({
-        src: [wpikoChatbotSound.errorSound],
-        volume: VOLUME_LEVELS.error,
-        preload: true
-    });
+    function getSound(key, src, volume) {
+        if (!sounds[key]) {
+            sounds[key] = new Howl({
+                src: [src],
+                volume: volume,
+                preload: true
+            });
+        }
+        return sounds[key];
+    }
 
-    const clearChatSound = new Howl({
-        src: [wpikoChatbotSound.clearChatSound],
-        volume: VOLUME_LEVELS.clearChat,
-        preload: true
-    });
+    // Warm the cache once the visitor interacts with the chat, so the first
+    // reply chime plays without a delay.
+    let warmed = false;
+    function warmSounds() {
+        if (warmed) {
+            return;
+        }
+        warmed = true;
+        getSound('message', wpikoChatbotSound.messageReceivedSound, VOLUME_LEVELS.message);
+    }
+    document.addEventListener('click', function (event) {
+        if (event.target && event.target.closest && event.target.closest('#wpiko-chatbot-floating-icon, #wpiko-chatbot-container, #wpiko-chatbot-proactive-greeting')) {
+            warmSounds();
+        }
+    }, { passive: true });
 
     // Event listeners for sound triggers
     document.addEventListener('wpiko-chatbot-message-received', function (event) {
         if (event.detail.isSoundEnabled) {
-            messageReceivedSound.play();
+            getSound('message', wpikoChatbotSound.messageReceivedSound, VOLUME_LEVELS.message).play();
         }
     });
 
     document.addEventListener('wpiko-chatbot-error', function (event) {
         if (event.detail.isSoundEnabled) {
-            errorSound.play();
+            getSound('error', wpikoChatbotSound.errorSound, VOLUME_LEVELS.error).play();
         }
     });
 
     document.addEventListener('wpiko-chatbot-clear', function (event) {
         if (event.detail.isSoundEnabled) {
-            clearChatSound.play();
+            getSound('clearChat', wpikoChatbotSound.clearChatSound, VOLUME_LEVELS.clearChat).play();
         }
     });
 });

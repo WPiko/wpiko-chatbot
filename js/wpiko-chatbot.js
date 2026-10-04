@@ -2,6 +2,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Check for cache version mismatch and notify if needed
     checkCacheVersion();
 
+    // Clear private answers when this tab changes account, or first upgrades to controlled lookup.
+    if (wpikoChatbot.private_history_scope) {
+        if (sessionStorage.getItem('wpiko_chatbot_history_scope') !== wpikoChatbot.private_history_scope) {
+            ['wpiko_chatbot_messages', 'wpiko_chatbot_thread_id', 'wpiko_chatbot_last_response_id',
+                'wpiko_chatbot_unread_count'].forEach(function (key) { sessionStorage.removeItem(key); });
+        }
+        sessionStorage.setItem('wpiko_chatbot_history_scope', wpikoChatbot.private_history_scope);
+    }
+
     const inputField = document.getElementById('chatbot-input');
     const sendButton = document.getElementById('chatbot-send');
     const messagesContainer = document.getElementById('chatbot-messages');
@@ -454,7 +463,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Check if the chatbot is offline
             if (!wpikoChatbot.configComplete) {
-                appendMessage('error', wpikoChatbot.errors.general_error, 'config_error');
+                if (wpikoChatbot.adminNotice && wpikoChatbot.adminNotice.missingKey) {
+                    appendMessage('error', wpikoChatbot.adminNotice.missingKey, 'config_error', false, false, {
+                        adminLink: wpikoChatbot.adminNotice.apiKeyUrl,
+                        adminLinkLabel: wpikoChatbot.adminNotice.apiKeyLabel
+                    });
+                } else {
+                    appendMessage('error', wpikoChatbot.errors.general_error, 'config_error');
+                }
                 updateChatbotStatus();
                 return;
             }
@@ -555,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     removeLoadingIndicator();
-                    appendMessage('error', getStreamingErrorMessage(errorInfo), getStreamingErrorType(errorInfo));
+                    appendMessage('error', getStreamingErrorMessage(errorInfo), getStreamingErrorType(errorInfo), false, false, getAdminErrorMeta(errorInfo));
                     updateChatbotStatus(errorInfo && errorInfo.keepOnline ? true : undefined);
                     finishMessageRequest();
                 });
@@ -599,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (response.data && response.data.debug && response.data.debug.status) {
                         msg += ' (code: ' + response.data.debug.status + ')';
                     }
-                    appendMessage('error', msg, (response.data && response.data.type) || 'general_error');
+                    appendMessage('error', msg, (response.data && response.data.type) || 'general_error', false, false, getAdminErrorMeta(response.data));
                     updateChatbotStatus(false);
                 } else {
                     appendMessage('bot', response.data.response);
@@ -631,6 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeLoadingIndicator();
                 let errorMessage = wpikoChatbot.errors.general_error;
                 let errorType = 'general_error';
+                let errorMeta = {};
 
                 // Handle specific error types with actionable messages
                 if (status === 'timeout') {
@@ -656,6 +673,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (typeof xhr.responseJSON.data === 'object' && xhr.responseJSON.data.message) {
                         errorMessage = xhr.responseJSON.data.message;
                         errorType = xhr.responseJSON.data.type || 'general_error';
+                        errorMeta = getAdminErrorMeta(xhr.responseJSON.data);
                     } else if (typeof xhr.responseJSON.data === 'string') {
                         errorMessage = xhr.responseJSON.data;
                     }
@@ -663,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     errorMessage = wpikoChatbot.errors.general_error + ' (Status: ' + xhr.status + ')';
                 }
 
-                appendMessage('error', errorMessage, errorType);
+                appendMessage('error', errorMessage, errorType, false, false, errorMeta);
                 updateChatbotStatus();
             },
             complete: function () {
@@ -778,7 +796,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw {
                         message: errorData.message,
                         type: errorData.type || 'general_error',
-                        debug: errorData.debug
+                        debug: errorData.debug,
+                        admin_link: errorData.admin_link,
+                        admin_link_label: errorData.admin_link_label
                     };
                 }
             }
@@ -788,7 +808,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const parsedEvent = parseSseEvent(buffer);
             if (parsedEvent && parsedEvent.event === 'error') {
                 const errorData = parsedEvent.data || {};
-                throw { message: errorData.message, type: errorData.type || 'general_error' };
+                throw {
+                    message: errorData.message,
+                    type: errorData.type || 'general_error',
+                    admin_link: errorData.admin_link,
+                    admin_link_label: errorData.admin_link_label
+                };
             }
         }
 
@@ -981,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (st.finalHtml) {
-            st.textSpan.innerHTML = String(st.finalHtml).replace(/\n/g, '<br>');
+            st.textSpan.innerHTML = window.wpikoChatbotSanitizeMessage(String(st.finalHtml).replace(/\n/g, '<br>'));
         } else if (st.finalHtml === '') {
             st.textSpan.innerHTML = renderStreamingMarkdown(st.raw);
         }
@@ -1081,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         out = out.replace(/\n/g, '<br>');
         out = out.replace(/<\/(h[1-3])><br>/g, '</$1>');
 
-        return out;
+        return window.wpikoChatbotSanitizeMessage(out);
     }
 
     function handleSuccessfulResponseData(data) {
@@ -1118,6 +1143,20 @@ document.addEventListener('DOMContentLoaded', function () {
         removeLoadingIndicator();
         isRequestInProgress = false;
         setInputState(true);
+    }
+
+    /**
+     * Admin-only "how to fix it" link sent by the server with an error.
+     * Only site admins ever receive admin_link, so visitors never see it.
+     */
+    function getAdminErrorMeta(errorData) {
+        if (!errorData || !errorData.admin_link) {
+            return {};
+        }
+        return {
+            adminLink: errorData.admin_link,
+            adminLinkLabel: errorData.admin_link_label || errorData.admin_link
+        };
     }
 
     function getStreamingErrorMessage(errorInfo) {
@@ -1244,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 content = String(content || '');
             }
 
-            content = content.replace(/\n/g, '<br>');
+            content = window.wpikoChatbotSanitizeMessage(content.replace(/\n/g, '<br>'));
             messageElement.innerHTML = `
                 <div class="message-wrapper bot-message-wrapper">
                     <img src="${wpikoChatbot.botAvatarUrl}" alt="Bot" class="message-avatar bot-avatar">
@@ -1269,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 showNotificationBadge();
             }
 
-            content = String(content || '').replace(/\n/g, '<br>');
+            content = escapeHtml(String(content || '')).replace(/\n/g, '<br>');
             messageElement.innerHTML = `
                 <div class="message-wrapper admin-message-wrapper">
                     ${adminAvatar
@@ -1289,7 +1328,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             messageElement.innerHTML = `<div class="system-message-pill">${escapeHtml(content)}</div>`;
         } else if (type === 'error') {
-            messageElement.innerHTML = `<div class="error-message ${errorType}">${escapeHtml(content)}</div>`;
+            let adminLinkHtml = '';
+            if (meta && meta.adminLink && /^https?:\/\//i.test(meta.adminLink)) {
+                adminLinkHtml = `<a class="error-message-admin-link" href="${escapeAttribute(meta.adminLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(meta.adminLinkLabel || meta.adminLink)}</a>`;
+            }
+            messageElement.innerHTML = `<div class="error-message ${escapeAttribute(errorType)}">${escapeHtml(content)}${adminLinkHtml}</div>`;
 
             // Trigger error sound
             if (isSoundEnabled) {

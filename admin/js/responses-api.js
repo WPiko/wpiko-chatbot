@@ -233,10 +233,7 @@ jQuery(document).ready(function ($) {
             responses_reasoning_effort: $('#responses_reasoning_effort').val(),
             responses_verbosity: $('#responses_verbosity').val(),
             main_system_instructions: $('#responses_main_system_instructions').val(),
-            specific_system_instructions: $('#responses_specific_system_instructions').val(),
-            knowledge_system_instructions: $('#responses_knowledge_system_instructions').val(),
-            products_system_instructions: $('#responses_products_system_instructions').val(),
-            orders_system_instructions: $('#responses_orders_system_instructions').val()
+            specific_system_instructions: $('#responses_specific_system_instructions').val()
         };
 
         $.post(wpikoChatbotAdmin.ajax_url, data, function (response) {

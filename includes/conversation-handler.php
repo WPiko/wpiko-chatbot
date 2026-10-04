@@ -552,19 +552,7 @@ function wpiko_chatbot_fetch_conversation()
         // Format messages HTML
         $messages_html = '<div class="messages-container">';
         foreach ($conversations as $conversation) {
-            // Properly decode message content including emojis
-            $message = wpiko_chatbot_process_emoji($conversation->message);
-
-            // Process messages with URL-safe formatting
-            if ($conversation->role === 'assistant') {
-                // First convert newlines to <br> tags for proper spacing
-                $message = nl2br($message);
-                // Then process with URL-safe formatting
-                $message = wpiko_chatbot_process_message($message);
-            } else {
-                // Convert newlines to <br> tags and preserve paragraphs for non-bot messages
-                $message = nl2br($message);
-            }
+            $message = wpiko_chatbot_render_message($conversation->message, $conversation->role);
             $role_class = $conversation->role === 'user' ? 'user' : ($conversation->role === 'error' ? 'error' : ($conversation->role === 'admin' ? 'admin' : 'bot'));
 
             // Determine display label for message header
@@ -608,7 +596,7 @@ function wpiko_chatbot_fetch_conversation()
                     esc_html($role_label),
                     esc_html($timestamp)
                 ),
-                $message // Using unescaped output to preserve emojis
+                $message // Already escaped or allowlisted by wpiko_chatbot_render_message().
             );
         }
         $messages_html .= '</div>';
@@ -742,8 +730,7 @@ function wpiko_chatbot_generate_transcript($conversations)
         }
         $timestamp = gmdate('Y-m-d H:i:s', strtotime($conversation->timestamp));
 
-        // Properly decode and handle the message with emoji support
-        $message = wpiko_chatbot_process_emoji($conversation->message);
+        $message = wpiko_chatbot_render_message($conversation->message, $conversation->role);
 
         $transcript .= "<div class='message {$role}'><div class='message-content'><span class='role-label'>" .
             esc_html($role_label) . "</span> <span class='timestamp'>[{$timestamp}]</span><div class='message-text'>{$message}</div></div></div>";

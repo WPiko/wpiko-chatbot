@@ -112,7 +112,7 @@ function wpiko_chatbot_dashboard_section() {
         $proactive_tab = 'proactive_greeting';
     }
 
-    $selected_model = get_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+    $selected_model = get_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
     $sound_enabled = get_option('wpiko_chatbot_sound_enabled', '1');
     $transcript_download = get_option('wpiko_chatbot_enable_transcript_download', '1');
 
@@ -134,10 +134,52 @@ function wpiko_chatbot_dashboard_section() {
         $attention_items[] = array(
             'severity' => 'critical',
             'icon' => 'dashicons-admin-network',
-            'title' => __('Connect OpenAI to activate the chatbot', 'wpiko-chatbot'),
-            'description' => __('Add your API key before visitors can receive chatbot responses.', 'wpiko-chatbot'),
-            'url' => wp_nonce_url('?page=ai-chatbot&tab=api_key', 'wpiko_chatbot_tab_nonce'),
-            'action_label' => __('Add API key', 'wpiko-chatbot'),
+            'title' => __('Finish setting up your chatbot', 'wpiko-chatbot'),
+            'description' => __('Connect OpenAI, teach the chatbot about your business and test it. It takes about 5 minutes.', 'wpiko-chatbot'),
+            'url' => wpiko_chatbot_setup_wizard_url(),
+            'action_label' => __('Start the setup wizard', 'wpiko-chatbot'),
+        );
+    }
+
+    // Configured but not shown anywhere: the most common "nothing happens" moment.
+    if ($is_configured && !$floating_enabled) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One cheap lookup on the plugin dashboard only.
+        $shortcode_page = $wpdb->get_var($wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type NOT IN ('revision', 'nav_menu_item') AND post_content LIKE %s LIMIT 1",
+            '%' . $wpdb->esc_like('[wpiko_chatbot') . '%'
+        ));
+
+        if (!$shortcode_page) {
+            $attention_items[] = array(
+                'severity' => 'warning',
+                'icon' => 'dashicons-hidden',
+                'title' => __('Your chatbot is not visible on your site yet', 'wpiko-chatbot'),
+                'description' => __('Turn on the floating chatbot to show it on every page, or add the [wpiko_chatbot] shortcode to a page.', 'wpiko-chatbot'),
+                'url' => wp_nonce_url('?page=ai-chatbot&tab=floating_chatbot', 'wpiko_chatbot_tab_nonce'),
+                'action_label' => __('Turn on floating chatbot', 'wpiko-chatbot'),
+            );
+        }
+    }
+
+    $openai_health = $is_configured ? wpiko_chatbot_get_openai_health() : array();
+    if (!empty($openai_health)) {
+        $health_titles = array(
+            'no_credit' => __('Your OpenAI account has no credit', 'wpiko-chatbot'),
+            'invalid_key' => __('OpenAI rejected your API key', 'wpiko-chatbot'),
+            'model_access' => __('Your OpenAI account cannot use the selected model', 'wpiko-chatbot'),
+            'forbidden' => __('OpenAI refused the chatbot\'s requests', 'wpiko-chatbot'),
+        );
+        $health_title = isset($health_titles[$openai_health['code']]) ? $health_titles[$openai_health['code']] : __('The chatbot cannot answer visitors', 'wpiko-chatbot');
+        $has_external_fix = !empty($openai_health['link']);
+
+        $attention_items[] = array(
+            'severity' => 'critical',
+            'icon' => 'dashicons-warning',
+            'title' => $health_title,
+            'description' => $openai_health['message'],
+            'url' => $has_external_fix ? $openai_health['link'] : wp_nonce_url('?page=ai-chatbot&tab=api_key', 'wpiko_chatbot_tab_nonce'),
+            'action_label' => $has_external_fix ? $openai_health['link_label'] : __('Test the connection', 'wpiko-chatbot'),
+            'external' => $has_external_fix,
         );
     }
 
@@ -206,11 +248,20 @@ function wpiko_chatbot_dashboard_section() {
                 </div>
             </div>
             <div class="welcome-status">
-                <?php if ($is_configured): ?>
+                <?php if ($is_configured && !empty($openai_health)): ?>
+                    <div class="status-indicator status-inactive" role="status">
+                        <span class="dashicons dashicons-warning"></span>
+                        <span><?php esc_html_e('Needs Attention', 'wpiko-chatbot'); ?></span>
+                    </div>
+                <?php elseif ($is_configured): ?>
                     <div class="status-indicator status-active" role="status">
                         <span class="dashicons dashicons-yes-alt"></span>
                         <span><?php esc_html_e('Chatbot Active', 'wpiko-chatbot'); ?></span>
                     </div>
+                    <a class="wpiko-rerun-setup" href="<?php echo esc_url(wpiko_chatbot_setup_wizard_url()); ?>">
+                        <span class="dashicons dashicons-flag" aria-hidden="true"></span>
+                        <?php esc_html_e('Run setup again', 'wpiko-chatbot'); ?>
+                    </a>
                 <?php else: ?>
                     <div class="status-indicator status-inactive" role="status">
                         <span class="dashicons dashicons-warning"></span>
@@ -343,7 +394,7 @@ function wpiko_chatbot_dashboard_section() {
                                             <?php endif; ?>
                                         </div>
                                         <?php if (!empty($attention_item['url']) && !empty($attention_item['action_label'])): ?>
-                                            <a href="<?php echo esc_url($attention_item['url']); ?>" class="attention-action">
+                                            <a href="<?php echo esc_url($attention_item['url']); ?>" class="attention-action"<?php if (!empty($attention_item['external'])): ?> target="_blank" rel="noopener noreferrer"<?php endif; ?>>
                                                 <?php echo esc_html($attention_item['action_label']); ?>
                                             </a>
                                         <?php endif; ?>

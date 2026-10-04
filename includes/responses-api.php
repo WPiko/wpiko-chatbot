@@ -13,22 +13,16 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
     // Known to support tools/file_search
     $supports = array(
         'gpt-6-astra',
+        'gpt-6.1-sol',
         'gpt-6-sol',
         'gpt-6-luna',
         'gpt-4.1',
         'gpt-4.1-mini',
-        // GPT-5 family (latest)
-        'gpt-5',
-        'gpt-5-mini',
-        'gpt-5-nano',
-        // GPT-5.1 family
-        'gpt-5.1',
         // GPT-5.2 family
         'gpt-5.2',
         // GPT-5.4 family
         'gpt-5.4',
         'gpt-5.4-mini',
-        'gpt-5.4-nano',
         // GPT-5.5 family
         'gpt-5.5-2026-04-23',
         // GPT-5.6 family
@@ -40,7 +34,7 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
         return true;
     }
     // Heuristic: most modern 4.1/5-series variants support tools
-    if (preg_match('/^(gpt-4\.1|gpt-5|gpt-5\.1|gpt-5\.2|gpt-5\.4|gpt-5\.5|gpt-5\.6|gpt-6)/', $model)) {
+    if (preg_match('/^(gpt-4\.1|gpt-5|gpt-5\.2|gpt-5\.4|gpt-5\.5|gpt-5\.6|gpt-6)/', $model)) {
         return true;
     }
     return false;
@@ -50,16 +44,12 @@ function wpiko_chatbot_get_responses_reasoning_effort_config()
 {
     return array(
         'gpt-6-astra' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
+        'gpt-6.1-sol' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-6-sol' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-6-luna' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
-        'gpt-5' => array('allowed' => array('low', 'medium', 'high'), 'default' => 'medium'),
-        'gpt-5-mini' => array('allowed' => array('low', 'medium', 'high'), 'default' => 'medium'),
-        'gpt-5-nano' => array('allowed' => array('low', 'medium', 'high'), 'default' => 'medium'),
-        'gpt-5.1' => array('allowed' => array('none', 'low', 'medium', 'high'), 'default' => 'none'),
         'gpt-5.2' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh'), 'default' => 'none'),
         'gpt-5.4' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh'), 'default' => 'none'),
         'gpt-5.4-mini' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh'), 'default' => 'none'),
-        'gpt-5.4-nano' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh'), 'default' => 'none'),
         'gpt-5.5-2026-04-23' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh'), 'default' => 'none'),
         'gpt-5.6-sol' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-5.6-terra' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
@@ -96,7 +86,7 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     $user_id = get_current_user_id();
 
     // Use conversation_id or generate one
-    $conversation_id = $conversation_id ?: 'resp_' . wp_generate_password(12, false);
+    $conversation_id = wpiko_chatbot_bind_chat_session($conversation_id ?: 'resp_' . wp_generate_password(12, false));
 
     if (empty($api_key)) {
         wpiko_chatbot_log('API key is missing', 'error');
@@ -112,13 +102,13 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     $system_instructions = wpiko_chatbot_combine_responses_instructions();
 
     // Get the selected model for Responses API
-    $model = get_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+    $model = get_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
 
     // Ensure model is one of the latest supported models; otherwise fall back
     $latest_models = wpiko_chatbot_get_responses_api_models();
     if (!isset($latest_models[$model])) {
-        wpiko_chatbot_log('Selected Responses model is legacy or unsupported. Falling back to gpt-5.6-luna. Selected: ' . $model, 'warning');
-        $model = 'gpt-5.6-luna';
+        wpiko_chatbot_log('Selected Responses model is legacy or unsupported. Falling back to gpt-6-luna. Selected: ' . $model, 'warning');
+        $model = 'gpt-6-luna';
     }
 
     $takeover_handoff_context = function_exists('wpiko_chatbot_build_takeover_handoff_context')
@@ -203,9 +193,8 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     $using_file_search = false;
     if (!empty($responses_vector_store_id) && wpiko_chatbot_responses_model_supports_file_search($model)) {
         // Check if vector store has files before enabling file search
-        $files_list = wpiko_chatbot_list_responses_files();
-        if ($files_list['success'] && !empty($files_list['files'])) {
-            wpiko_chatbot_log('Vector store has ' . count($files_list['files']) . ' files available for search', 'info');
+        if (wpiko_chatbot_vector_store_has_files($responses_vector_store_id)) {
+            wpiko_chatbot_log('Vector store has files available for search', 'info');
 
             // Declare the tool and provide vector store configuration per latest Responses API shape
             $request_body['tools'] = array(
@@ -221,6 +210,20 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
         }
     }
 
+    // Knowledge-base rules ("answer only from the uploaded files") only make
+    // sense when there are files to search. Without them they make the bot
+    // refuse almost every question, so leave them out.
+    if (!$using_file_search) {
+        $system_instructions = wpiko_chatbot_combine_responses_instructions(false);
+        if (!empty($system_instructions)) {
+            $request_body['instructions'] = $system_instructions;
+        } else {
+            unset($request_body['instructions']);
+        }
+    }
+
+    $request_body = wpiko_chatbot_prepare_response_tools($request_body, $conversation_id);
+
     // If using tools/file_search, we don't need the assistants beta header for Responses API
     // The Responses API handles tools natively without beta headers
 
@@ -231,7 +234,9 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     if ($using_file_search) {
         wpiko_chatbot_log('File search tool configuration: ' . json_encode($request_body['tools']), 'info');
     }
-    wpiko_chatbot_log('Request body: ' . json_encode($request_body), 'info');
+    if (!wpiko_chatbot_private_orders_retired()) {
+        wpiko_chatbot_log('Request body: ' . json_encode($request_body), 'info');
+    }
 
     // Increase execution time to prevent timeouts - High reasoning effort can take a long time
     if (function_exists('set_time_limit')) {
@@ -244,71 +249,40 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
         'timeout' => 120 // Increased to 120s to accommodate High Reasoning Effort models
     ));
 
+    $response = wpiko_chatbot_run_response_tools($response, $request_body, $headers);
+
     if (is_wp_error($response)) {
         $error_message = $response->get_error_message();
         wpiko_chatbot_log('Failed to call Responses API: ' . $error_message, 'error');
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message('Failed to call Responses API', 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array('wp_error' => $error_message);
-        }
-        return array('success' => false, 'data' => $data);
+        $classification = wpiko_chatbot_classify_openai_error(0, null, $error_message, $model);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array('wp_error' => $error_message));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        return array('success' => false, 'data' => $error_response['data']);
     }
 
     $status_code = wp_remote_retrieve_response_code($response);
     $raw_body = wp_remote_retrieve_body($response);
     $response_body = json_decode($raw_body, true);
 
-    // CRITICAL DEBUG: Log exactly what we got
-    wpiko_chatbot_log('RAW RESPONSE BODY: ' . $raw_body, 'info');
-    wpiko_chatbot_log('RESPONSE BODY TYPE: ' . gettype($response_body), 'info');
-    wpiko_chatbot_log('RESPONSE BODY CONTENT: ' . wp_json_encode($response_body), 'info');
-
-    // Check if file_search tool was called in the response
-    if (isset($response_body['output']) && is_array($response_body['output'])) {
-        foreach ($response_body['output'] as $output_item) {
-            if (isset($output_item['file_search_call'])) {
-                wpiko_chatbot_log('FILE SEARCH TOOL WAS CALLED: ' . json_encode($output_item['file_search_call']), 'info');
-            }
-            if (isset($output_item['tool_calls'])) {
-                wpiko_chatbot_log('TOOL CALLS FOUND: ' . json_encode($output_item['tool_calls']), 'info');
-            }
-        }
+    wpiko_chatbot_log('Responses API HTTP status: ' . $status_code, 'info');
+    if (!wpiko_chatbot_private_orders_retired()) {
+        wpiko_chatbot_log('Responses API payload: ' . $raw_body, 'info');
     }
-
-    // Log the response for debugging
-    wpiko_chatbot_log('Response from OpenAI Responses API: ' . $raw_body . ' (status ' . $status_code . ')', 'info');
-    wpiko_chatbot_log('Parsed response body structure: ' . json_encode($response_body), 'info');
 
     if ($status_code !== 200) {
         $api_error_message = isset($response_body['error']['message']) ? $response_body['error']['message'] : (is_string($raw_body) ? $raw_body : 'Unknown error');
-        wpiko_chatbot_log('Responses API HTTP error (' . $status_code . '): ' . $api_error_message, 'error');
-
-        // Determine specific error type based on status code and error message
-        $error_key = 'Responses API request failed'; // Default
-
-        switch ($status_code) {
-            case 401:
-                $error_key = 'Authentication failed';
-                break;
-            case 429:
-                $error_key = 'Rate limit exceeded';
-                break;
-            case 500:
-            case 502:
-            case 503:
-                $error_key = 'Model overloaded';
-                break;
-            case 504:
-                $error_key = 'Response timeout';
-                break;
-            default:
-                $error_key = 'Responses API request failed';
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Responses API HTTP error (' . $status_code . '): ' . $api_error_message, 'error');
         }
 
-        // Fallback: if we were using file_search, retry without tools to keep chat working
-        if ($using_file_search) {
+        // Work out what went wrong so admins get an actionable explanation.
+        $classification = wpiko_chatbot_classify_openai_error($status_code, $response_body, '', $model);
+
+        // Fallback: if we were using file_search, retry without tools to keep chat working.
+        // Skip it for account and rate-limit problems, where a second request cannot succeed.
+        $has_function_tools = !empty(array_filter($request_body['tools'] ?? array(), function ($tool) { return ($tool['type'] ?? '') === 'function'; }));
+        $can_retry_without_tools = !$has_function_tools && !$classification['account_problem'] && $classification['code'] !== 'rate_limited';
+        if ($using_file_search && $can_retry_without_tools) {
             wpiko_chatbot_log('Retrying Responses API without tools/file_search as a fallback', 'warning');
             $fallback_headers = $headers;
             // No need to remove beta header since we're not using it for Responses API
@@ -339,64 +313,53 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
             }
         }
 
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message($error_key, 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array(
-                'status' => $status_code,
-                'openai_error' => $api_error_message,
-                'request' => $request_body,
-                'fallback_attempted' => $using_file_search
-            );
-        }
-        return array('success' => false, 'data' => $data);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array(
+            'status' => $status_code,
+            'openai_error' => $api_error_message,
+            'request' => $request_body,
+            'fallback_attempted' => $using_file_search && $can_retry_without_tools
+        ));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        return array('success' => false, 'data' => $error_response['data']);
     }
 
     if (isset($response_body['error'])) {
         $api_error_message = is_array($response_body['error']) && isset($response_body['error']['message']) ? $response_body['error']['message'] : json_encode($response_body['error']);
         $status_code = wp_remote_retrieve_response_code($response);
-        wpiko_chatbot_log('Responses API error (' . $status_code . '): ' . $api_error_message, 'error');
-
-        // Determine specific error type based on error message and status code
-        $error_key = 'Response generation failed'; // Default
-
-        if (isset($response_body['error']['type'])) {
-            switch ($response_body['error']['type']) {
-                case 'authentication_error':
-                case 'permission_error':
-                    $error_key = 'Authentication failed';
-                    break;
-                case 'rate_limit_error':
-                    $error_key = 'Rate limit exceeded';
-                    break;
-                case 'server_error':
-                    $error_key = 'Model overloaded';
-                    break;
-                default:
-                    $error_key = 'Response generation failed';
-            }
-        } elseif (strpos(strtolower($api_error_message), 'timeout') !== false) {
-            $error_key = 'Response timeout';
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Responses API error (' . $status_code . '): ' . $api_error_message, 'error');
         }
 
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message($error_key, 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array(
-                'status' => $status_code,
-                'openai_error' => $api_error_message,
-                'request' => $request_body
-            );
+        // Map OpenAI error types onto the HTTP status they normally come with.
+        $error_type = isset($response_body['error']['type']) ? $response_body['error']['type'] : '';
+        $type_status_map = array(
+            'authentication_error' => 401,
+            'permission_error' => 403,
+            'insufficient_quota' => 429,
+            'rate_limit_error' => 429,
+            'server_error' => 500,
+        );
+        $effective_status = isset($type_status_map[$error_type]) ? $type_status_map[$error_type] : $status_code;
+        if ($effective_status === 200) {
+            $effective_status = strpos(strtolower($api_error_message), 'timeout') !== false ? 504 : 400;
         }
-        return array('success' => false, 'data' => $data);
+
+        $classification = wpiko_chatbot_classify_openai_error($effective_status, $response_body, '', $model);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array(
+            'status' => $status_code,
+            'openai_error' => $api_error_message,
+            'request' => $request_body
+        ));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        return array('success' => false, 'data' => $error_response['data']);
     }
 
     // Extract assistant message from Responses API
     $assistant_message = wpiko_chatbot_extract_responses_output_text($response_body);
     if ($assistant_message === null || $assistant_message === '') {
-        wpiko_chatbot_log('Unable to extract text from Responses API payload: ' . json_encode($response_body), 'error');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Unable to extract text from Responses API payload: ' . json_encode($response_body), 'error');
+        }
         $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message('Invalid response format', 'responses');
         wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
         return array('success' => false, 'data' => array('message' => $user_friendly_error, 'type' => 'responses_api_error'));
@@ -404,7 +367,9 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
 
     // Ensure we have a string, not an array
     if (is_array($assistant_message)) {
-        wpiko_chatbot_log('Assistant message is an array, attempting to extract text: ' . json_encode($assistant_message), 'warning');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Assistant message is an array, attempting to extract text: ' . json_encode($assistant_message), 'warning');
+        }
 
         // Try to extract text from common array structures
         if (isset($assistant_message['text'])) {
@@ -434,25 +399,36 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     if (!is_string($assistant_message)) {
         $message_type = gettype($assistant_message);
         $message_value = is_array($assistant_message) ? wp_json_encode($assistant_message) : (string) $assistant_message;
-        wpiko_chatbot_log('Converting assistant message to string from type: ' . $message_type . ' - Value: ' . $message_value, 'warning');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Converting assistant message to string from type: ' . $message_type . ' - Value: ' . $message_value, 'warning');
+        }
         $assistant_message = is_array($assistant_message) ? json_encode($assistant_message) : (string) $assistant_message;
     }
 
     // Process the message similar to Assistant API
-    wpiko_chatbot_log('Before processing message, type: ' . gettype($assistant_message), 'info');
+    if (!wpiko_chatbot_private_orders_retired()) {
+        wpiko_chatbot_log('Before processing message, type: ' . gettype($assistant_message), 'info');
+    }
     $assistant_message = wpiko_chatbot_format_responses_reply($assistant_message);
-    wpiko_chatbot_log('After processing message, type: ' . gettype($assistant_message), 'info');
+    if (!wpiko_chatbot_private_orders_retired()) {
+        wpiko_chatbot_log('After processing message, type: ' . gettype($assistant_message), 'info');
+    }
 
     // Ensure the message is a string
     if (!is_string($assistant_message)) {
         $message_type = gettype($assistant_message);
         $message_value = is_array($assistant_message) ? wp_json_encode($assistant_message) : (string) $assistant_message;
-        wpiko_chatbot_log('Assistant message is not a string after processing: ' . $message_type . ' - Value: ' . $message_value, 'warning');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Assistant message is not a string after processing: ' . $message_type . ' - Value: ' . $message_value, 'warning');
+        }
         $assistant_message = is_array($assistant_message) ? json_encode($assistant_message) : (string) $assistant_message;
     }
 
     // Save assistant message to database
     wpiko_chatbot_save_message($user_id, $conversation_id, 'assistant', $assistant_message, $user_email);
+
+    // A successful answer means any stored OpenAI account problem is resolved.
+    wpiko_chatbot_clear_openai_health();
 
     // Store OpenAI response ID for multi-turn conversations
     // The response 'id' will be used as 'previous_response_id' in the next API call
@@ -464,6 +440,8 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
             wpiko_chatbot_log('Stored response ID for next turn: ' . $new_response_id, 'info');
         }
     }
+
+    wpiko_chatbot_record_private_response($conversation_id, $new_response_id);
 
     return array(
         'response' => $assistant_message,
@@ -615,7 +593,7 @@ function wpiko_chatbot_build_responses_request_context($message, $conversation_i
 {
     $encrypted_api_key = get_option('wpiko_chatbot_api_key', '');
     $api_key = wpiko_chatbot_decrypt_api_key($encrypted_api_key);
-    $conversation_id = $conversation_id ?: 'resp_' . wp_generate_password(12, false);
+    $conversation_id = wpiko_chatbot_bind_chat_session($conversation_id ?: 'resp_' . wp_generate_password(12, false));
 
     if (empty($api_key)) {
         wpiko_chatbot_log('API key is missing', 'error');
@@ -635,12 +613,12 @@ function wpiko_chatbot_build_responses_request_context($message, $conversation_i
     );
 
     $system_instructions = wpiko_chatbot_combine_responses_instructions();
-    $model = get_option('wpiko_chatbot_responses_model', 'gpt-5.6-luna');
+    $model = get_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
     $latest_models = wpiko_chatbot_get_responses_api_models();
 
     if (!isset($latest_models[$model])) {
-        wpiko_chatbot_log('Selected Responses model is legacy or unsupported. Falling back to gpt-5.6-luna. Selected: ' . $model, 'warning');
-        $model = 'gpt-5.6-luna';
+        wpiko_chatbot_log('Selected Responses model is legacy or unsupported. Falling back to gpt-6-luna. Selected: ' . $model, 'warning');
+        $model = 'gpt-6-luna';
     }
 
     $takeover_handoff_context = function_exists('wpiko_chatbot_build_takeover_handoff_context')
@@ -694,9 +672,8 @@ function wpiko_chatbot_build_responses_request_context($message, $conversation_i
 
     $using_file_search = false;
     if (!empty($responses_vector_store_id) && wpiko_chatbot_responses_model_supports_file_search($model)) {
-        $files_list = wpiko_chatbot_list_responses_files();
-        if ($files_list['success'] && !empty($files_list['files'])) {
-            wpiko_chatbot_log('Vector store has ' . count($files_list['files']) . ' files available for search', 'info');
+        if (wpiko_chatbot_vector_store_has_files($responses_vector_store_id)) {
+            wpiko_chatbot_log('Vector store has files available for search', 'info');
             $request_body['tools'] = array(
                 array(
                     'type' => 'file_search',
@@ -709,6 +686,18 @@ function wpiko_chatbot_build_responses_request_context($message, $conversation_i
             wpiko_chatbot_log('Vector store exists but has no files, file search disabled', 'warning');
         }
     }
+
+    // Knowledge-base rules only make sense when there are files to search.
+    if (!$using_file_search) {
+        $system_instructions = wpiko_chatbot_combine_responses_instructions(false);
+        if (!empty($system_instructions)) {
+            $request_body['instructions'] = $system_instructions;
+        } else {
+            unset($request_body['instructions']);
+        }
+    }
+
+    $request_body = wpiko_chatbot_prepare_response_tools($request_body, $conversation_id);
 
     return array(
         'success' => true,
@@ -783,7 +772,9 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     wpiko_chatbot_log('Streaming request to OpenAI Responses API with file search enabled: ' . ($context['using_file_search'] ? 'YES' : 'NO'), 'info');
     wpiko_chatbot_log('Vector Store ID: ' . $context['responses_vector_store_id'], 'info');
     wpiko_chatbot_log('Model: ' . $context['model'] . ' (supports file search: ' . (wpiko_chatbot_responses_model_supports_file_search($context['model']) ? 'YES' : 'NO') . ')', 'info');
-    wpiko_chatbot_log('Streaming request body: ' . json_encode($request_body), 'info');
+    if (!wpiko_chatbot_private_orders_retired()) {
+        wpiko_chatbot_log('Streaming request body: ' . json_encode($request_body), 'info');
+    }
 
     if (function_exists('set_time_limit')) {
         set_time_limit(200);
@@ -795,6 +786,7 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
         'response_id' => null,
         'completed_response' => null,
         'error' => null,
+        'error_code' => '',
         'raw_body' => '',
         'event_name' => 'message',
         'data_lines' => array(),
@@ -837,12 +829,10 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
 
     if ($curl_result === false || !empty($curl_error)) {
         wpiko_chatbot_log('Streaming Responses API cURL error: ' . $curl_error, 'error');
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message('Failed to call Responses API', 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array('wp_error' => $curl_error, 'status' => $status_code);
-        }
+        $classification = wpiko_chatbot_classify_openai_error(0, null, $curl_error !== '' ? $curl_error : 'connection failed', $context['model']);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array('wp_error' => $curl_error, 'status' => $status_code));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        $data = $error_response['data'];
         if (isset($callbacks['error']) && is_callable($callbacks['error'])) {
             call_user_func($callbacks['error'], $data);
         }
@@ -851,13 +841,25 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
 
     if (!empty($stream_state['error'])) {
         $api_error_message = $stream_state['error'];
-        wpiko_chatbot_log('Streaming Responses API error: ' . $api_error_message, 'error');
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message('Response generation failed', 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array('status' => $status_code, 'openai_error' => $api_error_message);
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Streaming Responses API error: ' . $api_error_message, 'error');
         }
+        $stream_error_body = array('error' => array('message' => $api_error_message));
+        if (!empty($stream_state['error_code'])) {
+            $stream_error_body['error']['code'] = $stream_state['error_code'];
+        }
+        $stream_error_status = ($status_code === 200 || $status_code === 0) ? 400 : $status_code;
+        if (!empty($stream_state['error_code']) && $stream_state['error_code'] === 'insufficient_quota') {
+            $stream_error_status = 429;
+        } elseif (!empty($stream_state['error_code']) && $stream_state['error_code'] === 'rate_limit_exceeded') {
+            $stream_error_status = 429;
+        } elseif (!empty($stream_state['error_code']) && $stream_state['error_code'] === 'server_error') {
+            $stream_error_status = 500;
+        }
+        $classification = wpiko_chatbot_classify_openai_error($stream_error_status, $stream_error_body, '', $context['model']);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array('status' => $status_code, 'openai_error' => $api_error_message));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        $data = $error_response['data'];
         if (isset($callbacks['error']) && is_callable($callbacks['error'])) {
             call_user_func($callbacks['error'], $data);
         }
@@ -867,29 +869,43 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     if ($status_code !== 200) {
         $decoded_error = json_decode($stream_state['raw_body'], true);
         $api_error_message = isset($decoded_error['error']['message']) ? $decoded_error['error']['message'] : $stream_state['raw_body'];
-        wpiko_chatbot_log('Streaming Responses API HTTP error (' . $status_code . '): ' . $api_error_message, 'error');
-
-        $error_key = 'Responses API request failed';
-        if ($status_code === 401) {
-            $error_key = 'Authentication failed';
-        } elseif ($status_code === 429) {
-            $error_key = 'Rate limit exceeded';
-        } elseif (in_array($status_code, array(500, 502, 503), true)) {
-            $error_key = 'Model overloaded';
-        } elseif ($status_code === 504) {
-            $error_key = 'Response timeout';
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Streaming Responses API HTTP error (' . $status_code . '): ' . $api_error_message, 'error');
         }
 
-        $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message($error_key, 'responses');
-        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
-        $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
-        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
-            $data['debug'] = array('status' => $status_code, 'openai_error' => $api_error_message, 'request' => $request_body);
-        }
+        $classification = wpiko_chatbot_classify_openai_error($status_code, is_array($decoded_error) ? $decoded_error : $stream_state['raw_body'], '', $context['model']);
+        $error_response = wpiko_chatbot_build_api_error_response($classification, array('status' => $status_code, 'openai_error' => $api_error_message, 'request' => $request_body));
+        wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $error_response['visitor_message'], $user_email);
+        $data = $error_response['data'];
         if (isset($callbacks['error']) && is_callable($callbacks['error'])) {
             call_user_func($callbacks['error'], $data);
         }
         return array('success' => false, 'data' => $data);
+    }
+
+    // Function arguments are never relayed as text. Complete one bounded lookup round.
+    if (is_array($stream_state['completed_response']) && wpiko_chatbot_response_has_function_calls($stream_state['completed_response'])) {
+        $tool_headers = array('Content-Type' => 'application/json');
+        foreach ($context['headers'] as $header) {
+            if (strpos($header, 'Authorization: ') === 0) {
+                $tool_headers['Authorization'] = substr($header, 15);
+            }
+        }
+        $tool_response = wpiko_chatbot_run_response_tools(array(
+            'response' => array('code' => 200),
+            'body' => wp_json_encode($stream_state['completed_response']),
+        ), $request_body, $tool_headers);
+        if (is_wp_error($tool_response) || wp_remote_retrieve_response_code($tool_response) !== 200) {
+            $data = array('message' => 'The order lookup could not be completed. Please try again later.', 'type' => 'responses_api_error');
+            wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $data['message'], $user_email);
+            if (isset($callbacks['error']) && is_callable($callbacks['error'])) {
+                call_user_func($callbacks['error'], $data);
+            }
+            return array('success' => false, 'data' => $data);
+        }
+        $stream_state['completed_response'] = json_decode(wp_remote_retrieve_body($tool_response), true);
+        $stream_state['assistant_message'] = wpiko_chatbot_extract_responses_output_text($stream_state['completed_response']);
+        $stream_state['response_id'] = $stream_state['completed_response']['id'] ?? null;
     }
 
     $assistant_message = $stream_state['assistant_message'];
@@ -898,7 +914,9 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     }
 
     if ($assistant_message === null || $assistant_message === '') {
-        wpiko_chatbot_log('Unable to extract text from streaming Responses API payload: ' . $stream_state['raw_body'], 'error');
+        if (!wpiko_chatbot_private_orders_retired()) {
+            wpiko_chatbot_log('Unable to extract text from streaming Responses API payload: ' . $stream_state['raw_body'], 'error');
+        }
         $user_friendly_error = wpiko_chatbot_get_user_friendly_error_message('Invalid response format', 'responses');
         wpiko_chatbot_save_message($user_id, $conversation_id, 'error', $user_friendly_error, $user_email);
         $data = array('message' => $user_friendly_error, 'type' => 'responses_api_error');
@@ -919,6 +937,9 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
 
     wpiko_chatbot_save_message($user_id, $conversation_id, 'assistant', $assistant_message, $user_email);
 
+    // A successful answer means any stored OpenAI account problem is resolved.
+    wpiko_chatbot_clear_openai_health();
+
     $new_response_id = $stream_state['response_id'];
     if (empty($new_response_id) && is_array($stream_state['completed_response']) && !empty($stream_state['completed_response']['id'])) {
         $new_response_id = $stream_state['completed_response']['id'];
@@ -928,6 +949,8 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
         wpiko_chatbot_save_response_id($conversation_id, $new_response_id);
         wpiko_chatbot_log('Stored streaming response ID for next turn: ' . $new_response_id, 'info');
     }
+
+    wpiko_chatbot_record_private_response($conversation_id, $new_response_id);
 
     $result = array(
         'response' => $assistant_message,
@@ -1016,7 +1039,7 @@ function wpiko_chatbot_dispatch_openai_stream_event(&$stream_state, $callbacks)
         $delta = $payload['text'];
     }
 
-    if ($delta !== null && (strpos($event_name, 'delta') !== false || $event_name === 'response.output_text.delta')) {
+    if ($delta !== null && $event_name === 'response.output_text.delta') {
         $stream_state['assistant_message'] .= $delta;
         $visible_delta = wpiko_chatbot_filter_file_citation_stream_delta($delta, $stream_state['citation_pending']);
         if ($visible_delta !== '' && isset($callbacks['delta']) && is_callable($callbacks['delta'])) {
@@ -1041,6 +1064,14 @@ function wpiko_chatbot_dispatch_openai_stream_event(&$stream_state, $callbacks)
     }
 
     if (strpos($event_name, 'error') !== false || $event_name === 'response.failed' || $event_name === 'response.incomplete') {
+        if (isset($payload['error']['code']) && is_string($payload['error']['code'])) {
+            $stream_state['error_code'] = $payload['error']['code'];
+        } elseif (isset($payload['response']['error']['code']) && is_string($payload['response']['error']['code'])) {
+            $stream_state['error_code'] = $payload['response']['error']['code'];
+        } elseif (isset($payload['code']) && is_string($payload['code'])) {
+            $stream_state['error_code'] = $payload['code'];
+        }
+
         if (isset($payload['error']['message'])) {
             $stream_state['error'] = $payload['error']['message'];
         } elseif (isset($payload['response']['error']['message'])) {
@@ -1053,11 +1084,57 @@ function wpiko_chatbot_dispatch_openai_stream_event(&$stream_state, $callbacks)
     }
 }
 
+/**
+ * Whether the vector store contains at least one file.
+ *
+ * The answer is cached for 10 minutes so each chat message does not need an
+ * extra OpenAI request. Uploads and deletions refresh the cache.
+ *
+ * @param string $vector_store_id Vector store ID.
+ * @return bool
+ */
+function wpiko_chatbot_vector_store_has_files($vector_store_id)
+{
+    if (empty($vector_store_id)) {
+        return false;
+    }
+
+    $cache_key = 'wpiko_chatbot_vs_has_files_' . md5($vector_store_id);
+    if (get_transient($cache_key) === '1') {
+        return true;
+    }
+
+    $files_list = wpiko_chatbot_list_responses_files();
+    $has_files = !empty($files_list['success']) && !empty($files_list['files']);
+
+    // Only remember a positive answer: a store that just received its first
+    // file must be used right away.
+    if ($has_files) {
+        set_transient($cache_key, '1', 10 * MINUTE_IN_SECONDS);
+    }
+
+    return $has_files;
+}
+
+/**
+ * Forget the cached "vector store has files" answer.
+ *
+ * @return void
+ */
+function wpiko_chatbot_clear_vector_store_files_cache()
+{
+    $vector_store_id = get_option('wpiko_chatbot_responses_vector_store_id', '');
+    if (!empty($vector_store_id)) {
+        delete_transient('wpiko_chatbot_vs_has_files_' . md5($vector_store_id));
+    }
+}
+
 // Function to get available models for Responses API
 function wpiko_chatbot_get_responses_api_models()
 {
     return array(
         'gpt-6-astra' => 'GPT-6 Astra',
+        'gpt-6.1-sol' => 'GPT-6.1 Sol',
         'gpt-6-sol' => 'GPT-6 Sol',
         'gpt-6-luna' => 'GPT-6 Luna',
         'gpt-5.6-sol' => 'GPT-5.6 Sol',
@@ -1066,12 +1143,7 @@ function wpiko_chatbot_get_responses_api_models()
         'gpt-5.5-2026-04-23' => 'GPT-5.5 (2026-04-23)',
         'gpt-5.4' => 'GPT-5.4',
         'gpt-5.4-mini' => 'GPT-5.4 Mini',
-        'gpt-5.4-nano' => 'GPT-5.4 Nano',
         'gpt-5.2' => 'GPT-5.2',
-        'gpt-5.1' => 'GPT-5.1',
-        'gpt-5' => 'GPT-5',
-        'gpt-5-mini' => 'GPT-5 Mini',
-        'gpt-5-nano' => 'GPT-5 Nano',
         'gpt-4.1' => 'GPT-4.1',
         'gpt-4.1-mini' => 'GPT-4.1 Mini'
     );
@@ -1086,7 +1158,7 @@ function wpiko_chatbot_update_responses_config()
         wp_send_json_error(array('message' => 'Unauthorized'));
     }
 
-    $model = isset($_POST['model']) ? sanitize_text_field(wp_unslash($_POST['model'])) : 'gpt-5.6-luna';
+    $model = isset($_POST['model']) ? sanitize_text_field(wp_unslash($_POST['model'])) : 'gpt-6-luna';
 
     $supported_models = wpiko_chatbot_get_responses_api_models();
     if (!isset($supported_models[$model])) {
@@ -1122,21 +1194,16 @@ function wpiko_chatbot_update_responses_config()
         update_option('wpiko_chatbot_responses_verbosity', sanitize_text_field(wp_unslash($_POST['responses_verbosity'])));
     }
 
-    // Update system instructions if provided
-    if (isset($_POST['main_system_instructions']) || isset($_POST['specific_system_instructions']) || isset($_POST['knowledge_system_instructions'])) {
-        $main_instructions = isset($_POST['main_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['main_system_instructions'])) : '';
-        $specific_instructions = isset($_POST['specific_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['specific_system_instructions'])) : '';
-        $knowledge_instructions = isset($_POST['knowledge_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['knowledge_system_instructions'])) : '';
-        $products_instructions = isset($_POST['products_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['products_system_instructions'])) : '';
-        $orders_instructions = isset($_POST['orders_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['orders_system_instructions'])) : '';
+    // Only main and specific instructions are editable. Ignore legacy managed fields.
+    if (isset($_POST['main_system_instructions']) || isset($_POST['specific_system_instructions'])) {
+        $instructions = wpiko_chatbot_get_system_instructions();
+        $main_instructions = isset($_POST['main_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['main_system_instructions'])) : $instructions['main'];
+        $specific_instructions = isset($_POST['specific_system_instructions']) ? sanitize_textarea_field(wp_unslash($_POST['specific_system_instructions'])) : $instructions['specific'];
 
         // Update system instructions in the database
         wpiko_chatbot_update_system_instructions(
             $main_instructions,
-            $specific_instructions,
-            $knowledge_instructions,
-            $products_instructions,
-            $orders_instructions
+            $specific_instructions
         );
     }
 
@@ -1152,7 +1219,7 @@ function wpiko_chatbot_responses_model_uses_fixed_sampling($model)
 {
     if (!$model || !is_string($model))
         return false;
-    $fixed = array('gpt-6-astra', 'gpt-6-sol', 'gpt-6-luna', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5.1', 'gpt-5.2', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano', 'gpt-5.5-2026-04-23', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna');
+    $fixed = array('gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-sol', 'gpt-6-luna', 'gpt-5.2', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.5-2026-04-23', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna');
     if (in_array($model, $fixed, true))
         return true;
     return (bool) preg_match('/^gpt-(5|6)(\.\d+)?($|[-_])/', $model);
@@ -1281,6 +1348,13 @@ function wpiko_chatbot_get_responses_vector_store_id($create_if_missing = true)
 
 function wpiko_chatbot_upload_file_to_responses($file)
 {
+    if (wpiko_chatbot_private_orders_retired() && strtolower(basename($file['name'])) === 'woocommerce_orders.json') {
+        return array('success' => false, 'message' => 'Order exports cannot be uploaded. Use controlled Order Assistance.');
+    }
+
+    // The file list is about to change.
+    wpiko_chatbot_clear_vector_store_files_cache();
+
     $encrypted_api_key = get_option('wpiko_chatbot_api_key', '');
     $api_key = wpiko_chatbot_decrypt_api_key($encrypted_api_key);
     if (empty($api_key)) {
@@ -1346,7 +1420,7 @@ function wpiko_chatbot_upload_file_to_responses($file)
     );
     $add_resp = wp_remote_post("https://api.openai.com/v1/vector_stores/{$vector_store_id}/files", array(
         'headers' => $headers,
-        'body' => json_encode(array('file_id' => $file_id)),
+        'body' => wp_json_encode(wpiko_chatbot_vector_file_attachment($file_id, $file_name)),
         'timeout' => 30
     ));
     if (is_wp_error($add_resp)) {
@@ -1450,9 +1524,9 @@ function wpiko_chatbot_list_responses_files()
         }
         $resp_code = wp_remote_retrieve_response_code($resp);
         $body = json_decode(wp_remote_retrieve_body($resp), true);
-        if (isset($body['error'])) {
+        if ($resp_code !== 200 || !isset($body['data']) || !is_array($body['data']) || isset($body['error'])) {
             // Check if vector store was not found
-            if ($resp_code === 404 || strpos($body['error']['message'], 'No vector store found') !== false) {
+            if ($resp_code === 404 || strpos($body['error']['message'] ?? '', 'No vector store found') !== false) {
                 delete_option('wpiko_chatbot_responses_vector_store_id');
                 wpiko_chatbot_log('Vector Store not found during file list (deleted externally). Cleared local reference.', 'warning');
                 return array(
@@ -1529,6 +1603,8 @@ function wpiko_chatbot_list_responses_files()
     return array(
         'success' => true,
         'files' => $files_with_details,
+        // Migration callers must distinguish a full live listing from partial results.
+        'complete' => !$has_more && count($files_with_details) === count($all_file_ids),
         'performance' => array(
             'total_files' => count($files_with_details),
             'cached_files' => count($all_file_ids) - count($files_to_fetch),
@@ -1546,6 +1622,9 @@ function wpiko_chatbot_list_responses_files()
 
 function wpiko_chatbot_delete_responses_file($file_id)
 {
+    // The file list is about to change.
+    wpiko_chatbot_clear_vector_store_files_cache();
+
     $encrypted_api_key = get_option('wpiko_chatbot_api_key', '');
     $api_key = wpiko_chatbot_decrypt_api_key($encrypted_api_key);
     $vector_store_id = get_option('wpiko_chatbot_responses_vector_store_id', '');
@@ -1591,6 +1670,13 @@ function wpiko_chatbot_delete_responses_file($file_id)
         wpiko_chatbot_remove_cached_file($file_id);
     }
 
+    /**
+     * Fires after a knowledge file was deleted from OpenAI.
+     *
+     * @param string $file_id Deleted file ID.
+     */
+    do_action('wpiko_chatbot_responses_file_deleted', $file_id);
+
     return array('success' => true);
 }
 
@@ -1599,6 +1685,9 @@ function wpiko_chatbot_delete_responses_file($file_id)
  */
 function wpiko_chatbot_delete_responses_vector_store()
 {
+    // The file list is about to change.
+    wpiko_chatbot_clear_vector_store_files_cache();
+
     $encrypted_api_key = get_option('wpiko_chatbot_api_key', '');
     $api_key = wpiko_chatbot_decrypt_api_key($encrypted_api_key);
     $vector_store_id = get_option('wpiko_chatbot_responses_vector_store_id', '');
@@ -1726,6 +1815,12 @@ function wpiko_chatbot_delete_responses_vector_store()
     }
 
     wpiko_chatbot_log($success_message, 'info');
+
+    /**
+     * Fires after the whole knowledge store (and its files) was deleted.
+     */
+    do_action('wpiko_chatbot_responses_vector_store_deleted');
+
     return array(
         'success' => true,
         'message' => $success_message,

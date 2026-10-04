@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>WPiko message security regression</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'">
+<style>body{font:16px system-ui;margin:40px;max-width:1000px;background:#f5f7fa;color:#172b4d}h1{font-size:28px}#result{font-weight:bold;font-size:20px}li{margin:8px 0}.pass{color:#146b42}.fail{color:#a52020}#chatbot-messages,#rendered{max-height:180px;overflow:auto;background:white;border:1px solid #dde3eb;padding:16px;margin:16px 0}img{max-width:40px}button{padding:8px 16px}</style>
+<h1>WPiko 2.1.0 — message security checks</h1><p>Actual plugin JavaScript and PHP-rendered fixtures. All chat responses are simulated; no AI requests or database writes.</p><p id="result">Running…</p><ol id="checks"></ol>
+<details><summary>Test chat</summary><div id="chatbot-messages"></div><input id="chatbot-input"><button id="chatbot-send">Send</button></details><div id="rendered" hidden></div>
+<script src="jquery.js"></script><script src="js/vendor/dompurify/purify.min.js"></script><script src="js/message-safety.js"></script>
+<script>
+const originalFetch = window.fetch.bind(window);
+let executions = 0;
+window.alert = function () { executions++; };
+const attack = '<img src=x onerror=alert(123)><script>alert(123)<\/script>';
+const finalReply = '<strong>Safe streamed reply 😊</strong>' + attack;
+const wpikoChatbot = {configComplete:true,streaming_enabled:'1',sound_enabled:'0',enable_transcript_download:'0',is_license_active:true,enable_contact_form:'1',enable_recaptcha:'0',is_user_logged_in:false,ajax_url:'/mock-chat',nonce:'test-only',welcome_message:'',heartbeat_enabled:false,pro_takeover_frontend:true,botAvatarUrl:'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',errors:{general_error:'Test transport error'}};
+sessionStorage.clear();
+sessionStorage.setItem('wpiko_chatbot_messages', JSON.stringify([{type:'bot',content:attack}]));
+window.fetch = async function (url, options) {
+ if (url !== '/mock-chat') return originalFetch(url, options);
+ const events = 'event: start\ndata: '+JSON.stringify({thread_id:'security-fixture'})+'\n\n'+'event: delta\ndata: '+JSON.stringify({delta:'Safe streamed reply 😊'})+'\n\n'+'event: done\ndata: '+JSON.stringify({response:finalReply,thread_id:'security-fixture'})+'\n\n';
+ return new Response(events,{headers:{'Content-Type':'text/event-stream'}});
+};
+jQuery.ajax = function (options) {
+ if (options.data.action !== 'wpiko_chatbot_send_message') throw new Error('Unexpected network request');
+ options.success({success:true,data:{response:finalReply,thread_id:'security-fixture'}});
+ if(options.complete) options.complete();
+};
+</script>
+<script src="js/wpiko-chatbot.js"></script><script src="contact-form.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+ let count=0;
+ function check(condition,label){if(!condition)throw new Error(label);count++;const li=document.createElement('li');li.className='pass';li.textContent='PASS — '+label;document.querySelector('#checks').append(li);}
+ function safe(node){return !node.querySelector(node.id === 'chatbot-messages' ? 'script,iframe,math,object,embed,.bot-message svg,.admin-message svg' : 'script,iframe,svg,math,object,embed') && !Array.from(node.querySelectorAll('*')).some(el=>Array.from(el.attributes).some(a=>/^on/i.test(a.name)||a.name==='srcdoc'||(['href','src'].includes(a.name)&&/^(javascript|vbscript):/i.test(a.value.replace(/[\s\x00-\x20]/g,'')))))}
+ const chat=document.querySelector('#chatbot-messages'),box=document.querySelector('#rendered');
+ try {
+  check(safe(chat)&&!chat.innerHTML.includes('onerror'), 'Historical browser-cached replies are sanitized on restore');
+  const data=await originalFetch('/fixtures.json').then(r=>r.json());
+  for(const value of data.payloads){box.innerHTML=window.wpikoChatbotSanitizeMessage(value);if(!safe(box))throw new Error('Browser sanitizer payload failed');}
+  check(true,'Browser sanitizer blocks scripts, event handlers, SVG, malformed HTML and unsafe links');
+  box.innerHTML=window.wpikoChatbotSanitizeMessage('<img src="data:image/svg+xml;base64,PHN2Zy8+">');
+  check(!box.querySelector('img').hasAttribute('src'),'Data URLs are removed from message images');
+  for(const fixture of data.fixtures){jQuery(box).html(fixture.html);if(!safe(box))throw new Error('PHP fixture failed: '+fixture.name);}
+  check(true,'All PHP-rendered history fixtures remain safe through jQuery .html()');
+  for(const type of ['bot','user','admin','error'])window.wpikoChatbotAppendMessage(type,attack,'general_error',true,true);
+  check(safe(chat),'Actual frontend append function protects bot, visitor, admin and error messages');
+  document.querySelector('#chatbot-input').value='Stream test';document.querySelector('#chatbot-send').click();
+  for(let i=0;i<150;i++){if(chat.querySelector('.stream-text')&&!chat.querySelector('.streaming'))break;await new Promise(r=>setTimeout(r,30));}
+  check(!!chat.querySelector('.stream-text strong')&&safe(chat)&&!chat.querySelector('.streaming'),'Streaming completion sanitizes final server HTML and preserves formatting');
+  wpikoChatbot.streaming_enabled='0';document.querySelector('#chatbot-input').value='JSON test';document.querySelector('#chatbot-send').click();
+  check(safe(chat)&&chat.lastElementChild.querySelector('strong'),'Non-streamed response passes through safe rendering');
+  const contacts=data.fixtures.filter(f=>f.name==='Contact button');
+  for(const contact of contacts){
+   window.wpikoChatbotAppendMessage('bot',contact.html,'general_error',true,true);
+   const link=chat.lastElementChild.querySelector('a.wpiko-contact-button');const expected=JSON.parse(link.getAttribute('data-wpiko-prefill'));
+   link.click();const form=chat.querySelector('#contact-form-container');
+   if(!form||form.querySelector('textarea').value!==expected.message)throw new Error('Contact prefill failed');
+   form.querySelector('#contact-form-cancel').click();
+  }
+  check(true,'Pro contact buttons open and preserve Unicode, quotes, URLs, email addresses and encoded text');
+  window.wpikoChatbotAppendMessage('bot','<a href="javascript:void(0)" onclick="alert(123)" class="wpiko-contact-button">Contact Form</a>','general_error',true,true);
+  chat.lastElementChild.querySelector('a').click();
+  check(!!chat.querySelector('#contact-form-container'),'Legacy contact buttons still open after their inline JavaScript is removed');
+  chat.querySelector('#contact-form-cancel').click();
+  const saved=window.DOMPurify;window.DOMPurify=undefined;box.innerHTML=window.wpikoChatbotSanitizeMessage(attack);window.DOMPurify=saved;
+  check(!box.querySelector('img,script')&&box.textContent.includes('<img'),'Missing sanitizer dependency fails closed to plain text');
+  await new Promise(r=>setTimeout(r,200));
+  check(executions===0,'No test JavaScript payload executed');
+  const result=document.querySelector('#result');result.className='pass';result.textContent=count+' browser checks passed';
+ }catch(error){const result=document.querySelector('#result');result.className='fail';result.textContent='FAIL: '+error.message;console.error(error);}
+});
+</script></html>
