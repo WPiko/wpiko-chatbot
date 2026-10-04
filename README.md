@@ -4,7 +4,7 @@
 
 WPiko Chatbot brings OpenAI-powered conversations to your website. Answer visitor questions around the clock, share knowledge about your business, and create a chat experience that fits your brand and language.
 
-[Download on WordPress.org](https://wordpress.org/plugins/wpiko-chatbot/) · [Visit WPiko](https://wpiko.com/chatbot) · [Watch the video](https://www.youtube.com/watch?v=IJXvW04aBYc)
+[Download on WordPress.org](https://wordpress.org/plugins/wpiko-chatbot/) · [Visit WPiko](https://wpiko.com/chatbot) · [Watch the video](https://www.youtube.com/watch?v=yRSKh06YWRc)
 
 ## Features
 
