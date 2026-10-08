@@ -22,6 +22,11 @@ function wpiko_chatbot_uninstall_site()
 {
     global $wpdb;
 
+    // Rate-limit counters are temporary and are always removed on uninstall.
+    wp_clear_scheduled_hook('wpiko_chatbot_cleanup_rate_limits');
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}wpiko_chatbot_rate_limits");
+    delete_option('wpiko_chatbot_rate_limits_schema');
+
     // Always: transients and caches.
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     $wpdb->query(

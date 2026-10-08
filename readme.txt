@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -158,42 +158,17 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 == Changelog ==
 
-= 2.1.0 =
-* Security: Fixed stored cross-site scripting in conversation messages and HTML transcripts, and secured completed and cached chatbot replies. Thanks to Ali Hidayat for responsibly reporting the assistant-message vulnerability.
-* Update: Removed deprecated GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-5.1, and GPT-5.4 Nano from AI Configuration and their model metadata. Saved selections of unsupported models use the existing GPT-6 Luna fallback.
-* Feature: Added GPT-6.1 Sol to AI Configuration with supported reasoning efforts, file search, and model details.
-* Added controlled WooCommerce order lookup: signed-in owners receive enabled details, visitors matching an order number and checkout email receive basic status only.
-* Retired order file syncing and added background removal of old order exports, with knowledge-file filtering and browser/account-bound AI history.
-* Update: Fresh installations now default to GPT-6 Luna. Existing saved model selections are preserved.
-* Security: Admin-only AJAX actions now check user permissions.
-* Feature: Setup wizard that opens after activation: connect OpenAI, teach the chatbot about your business, test it and go live. It leaves the menu once setup is done and can be run again from the Dashboard.
-* Feature: "Quick learn from your pages": pick up to 10 pages and the chatbot answers from their content. Pages that change are flagged for a refresh. Untick every page to remove them from the chatbot again.
-* Improve: Pages already added with WPiko Chatbot Pro's Scan Website are marked "Covered by Scan Website" in Quick learn and are never stored twice. The list updates by itself when pages are scanned or files are deleted, and a short side-by-side comparison explains Quick learn and Scan Website.
-* Feature: The API key is now tested with a real (tiny) request, so a key on an OpenAI account without credit is detected immediately instead of failing silently later.
-* Feature: "Test connection" button and connection status on the API Key screen.
-* Feature: Optional feedback form when deactivating the plugin.
-* Feature: Optional "Delete all data when the plugin is deleted" setting and a proper uninstall routine.
-* Improve: New chatbots get site-aware default instructions (site name, tagline, reply in the visitor's language, never invent business details) instead of empty instructions.
-* Improve: Knowledge, WooCommerce product and order instructions are now managed by the plugin for all installations. Previous custom text in those fields is no longer used, Specific System Instructions remain editable for additional preferences.
-* Improve: Revised knowledge instructions search when business facts are needed, explain and combine retrieved information, and handle missing answers naturally.
-* Improve: WooCommerce product guidance now handles missing fields, product variations, recorded prices and stock, and recommendations based on synced catalog data more carefully.
-* Improve: "Answer only from the uploaded files" knowledge rules now apply only when knowledge files exist.
-* Improve: The floating chatbot switches on automatically after the first successful connection, and the dashboard warns when the chatbot is not visible anywhere on the site.
-* Improve: Until an API key is added, the chatbot is only shown to site admins, never to visitors.
-* Performance: Scripts, styles and sounds (including Pro's) now load only on pages where the chatbot is displayed.
-* Performance: Notification sounds are no longer downloaded on page load, they load after the visitor starts chatting.
-* Improve: New notification sounds: a softer message chime, a gentler error tone and a soft swoosh when the chat is cleared. The sound files are about 80% smaller (20 KB in total instead of 110 KB).
-* Performance: Each chat message no longer makes an extra OpenAI request to list knowledge files (the result is cached).
-* Improve: Requests that fail because the OpenAI account has no credit are no longer retried, so visitors get an answer faster.
-* Improve: AI Configuration shows Pro training tools (Scan Website, Q&A Builder, WooCommerce) with a short explanation when Pro is not installed.
-* Developer: New `wpiko_chatbot_enqueue_frontend_assets` and `wpiko_chatbot_responses_file_deleted` actions, plus `wpiko_chatbot_site_knowledge_covered_pages`, `wpiko_chatbot_load_frontend_assets`, `wpiko_chatbot_show_floating`, `wpiko_chatbot_site_knowledge_page_limit` and `wpiko_chatbot_default_main_instructions` filters.
+= 2.1.1 =
+* Security: Added default-on chat limits and mandatory server-side per-IP and site-wide caps to reduce unauthenticated OpenAI API cost abuse. Existing installations receive safety caps automatically, including those with limits disabled. Thanks to Ali Hidayat for responsibly reporting this issue.
+* Security: Replaced transient counters with atomic database reservations, rejected requests when rate-limit storage or the client IP is unavailable, and bounded chat input and AI output size.
+* Improve: User Limits now explains safety caps and includes an adjustable site-wide daily limit. Rejected chat traffic no longer creates conversation error rows.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.0 =
-Added: Adds a setup wizard, "Quick learn from your pages" and clear OpenAI error messages. WPiko Chatbot Pro users: update Pro to 2.1.0 as well.
+= 2.1.1 =
+Security update: adds automatic chat abuse protection for new and existing installations. Review User Limits for per-IP and site-wide daily caps. Public guest chat remains available.
 
 == External Services ==
 

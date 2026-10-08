@@ -664,7 +664,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     errorMessage = wpikoChatbot.errors.auth_failed;
                     errorType = 'auth_error';
                 } else if (xhr.status === 429) {
-                    errorMessage = wpikoChatbot.errors.server_busy;
+                    errorMessage = xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message
+                        ? xhr.responseJSON.data.message : wpikoChatbot.errors.server_busy;
                     errorType = 'rate_limit_error';
                 } else if (xhr.status >= 500) {
                     errorMessage = wpikoChatbot.errors.server_busy;

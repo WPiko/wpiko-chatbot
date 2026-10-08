@@ -32,3 +32,24 @@ php -d disable_functions=curl_init,curl_setopt,curl_exec,curl_error,curl_getinfo
 ```
 
 Exclude development tests from public release ZIPs.
+
+
+## Chat cost-abuse regression tests
+
+Run `php tests/rate-limits.php` from the plugin directory. This checks the real
+AJAX handler, request builder and limit policy with fake credentials and storage:
+default and opt-out/zero settings, hourly/daily/burst caps, the site-wide ceiling,
+normal and streaming rejections, signed-in requests, custom-limit bypass,
+canonical IPs, untrusted proxy headers, input/output bounds, and failed storage.
+It makes no network calls.
+
+On a local disposable WordPress database, also run:
+
+```sh
+wp --skip-plugins --skip-themes eval-file tests/rate-limits-db.php
+```
+
+This requires PHP `pcntl`. It creates and removes a uniquely named test table,
+checks 240 reservations through 24 independent MySQL connections against a cap
+of 25, verifies expiry, and checks that missing storage blocks requests. It does
+not change site settings or conversations and does not call OpenAI.

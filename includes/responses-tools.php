@@ -61,6 +61,8 @@ function wpiko_chatbot_bind_chat_session($conversation_id) {
 }
 
 function wpiko_chatbot_prepare_response_tools($body, $conversation_id) {
+    // Bounds output (including reasoning) for normal, streaming and tool follow-up calls.
+    $body['max_output_tokens'] = 8192;
     if (wpiko_chatbot_private_orders_retired()) {
         unset($body['previous_response_id']);
         $state = get_transient(wpiko_chatbot_chat_state_key($conversation_id));

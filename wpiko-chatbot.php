@@ -3,7 +3,7 @@
  * Plugin Name: WPiko Chatbot
  * Plugin URI: https://wpiko.com/chatbot
  * Description: AI chatbot for WordPress powered by your own OpenAI account. Learns your pages and answers visitors 24/7.
- * Version: 2.1.0
+ * Version: 2.1.1
  * Requires at least: 6.0
  * Tested up to: 7.1
  * Requires PHP: 7.0
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_PLUGIN_FILE', __FILE__);
 define('WPIKO_CHATBOT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPIKO_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPIKO_CHATBOT_VERSION', '2.1.0');
+define('WPIKO_CHATBOT_VERSION', '2.1.1');
 
 // Ensures that the default options is set
 function wpiko_chatbot_set_default_options()
@@ -306,19 +306,22 @@ function wpiko_chatbot_ajax_handler()
         wp_die();
     }
 
-    // Use Responses API
-    if (!isset($_POST['message']) || empty($_POST['message'])) {
+    // Reject malformed or oversized input before reserving capacity.
+    if (!isset($_POST['message']) || !is_string($_POST['message']) || trim($_POST['message']) === '' || strlen(wp_unslash($_POST['message'])) > 16000) {
+        $input_error = isset($_POST['message']) && is_string($_POST['message']) && strlen(wp_unslash($_POST['message'])) > 16000
+            ? __('Your message is too long. Please shorten it and try again.', 'wpiko-chatbot')
+            : __('Please enter a message.', 'wpiko-chatbot');
         if ($is_streaming_request) {
             wpiko_chatbot_send_stream_headers();
             wpiko_chatbot_send_stream_event('error', array(
-                'message' => 'No message provided.',
+                'message' => $input_error,
                 'type' => 'input_error'
             ));
             wp_die();
         }
 
         wp_send_json_error(array(
-            'message' => 'No message provided.',
+            'message' => $input_error,
             'type' => 'input_error'
         ));
         wp_die();
@@ -347,16 +350,12 @@ function wpiko_chatbot_ajax_handler()
         $user_email = $current_user->user_email;
     }
 
-    // Enforce per-IP request limits (opt-in, bypassed during admin takeover)
+    // Reserve per-IP and site-wide capacity before normal or streaming AI requests.
     $limit_status = wpiko_chatbot_user_limits_check_and_record($conversation_id);
     if (isset($limit_status['allowed']) && $limit_status['allowed'] === false) {
         $limit_message = isset($limit_status['message']) ? $limit_status['message'] : wpiko_chatbot_user_limits_default_message();
 
-        // Log the blocked request to the conversation with role='error'
-        $log_session_id = !empty($conversation_id) ? $conversation_id : 'resp_' . wp_generate_password(12, false);
-        $log_user_name = isset($user_name) ? $user_name : '';
-        wpiko_chatbot_save_error_message(get_current_user_id(), $log_session_id, $limit_message, $user_email, $log_user_name);
-
+        // Do not persist rejected traffic: a flood must not create conversation rows.
         if ($is_streaming_request) {
             wpiko_chatbot_send_stream_headers();
             wpiko_chatbot_send_stream_event('error', array(
@@ -369,7 +368,7 @@ function wpiko_chatbot_ajax_handler()
         wp_send_json_error(array(
             'message' => $limit_message,
             'type' => 'rate_limit'
-        ));
+        ), 429);
         wp_die();
     }
 
