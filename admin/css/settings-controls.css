@@ -1,0 +1,450 @@
+/* Shared settings page controls, aligned with wpiko SEO.
+ * Use these classes as each chatbot settings screen is redesigned.
+ * All palette and dimension values come from the shared root UI tokens.
+ */
+.wpiko-chatbot-settings-page { color: var(--wpiko-ui-text); }
+.wpiko-chatbot-settings-page [hidden] { display: none !important; }
+.wpiko-chatbot-settings-page input[type="checkbox"] { color: var(--wpiko-ui-text); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-header { margin-bottom: 20px; padding: 0; border: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-header h1 {
+    margin: 0 12px 4px 0;
+    padding: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--wpiko-ui-text);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-subtitle {
+    max-width: 760px;
+    margin: 4px 0 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--wpiko-ui-text-secondary);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-content,
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-form {
+    display: grid;
+    gap: var(--wpiko-ui-gap);
+    min-width: 0;
+    margin: 0;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-card {
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+    padding: 18px 20px 20px;
+    overflow: visible;
+    background: var(--wpiko-ui-surface);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius);
+    box-shadow: var(--wpiko-ui-shadow);
+    transition: none;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-card:hover { box-shadow: var(--wpiko-ui-shadow); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-card-title {
+    display: block;
+    margin: 0 0 12px;
+    padding: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--wpiko-ui-text);
+    background: transparent;
+    border: 0;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--wpiko-ui-text);
+    list-style: none;
+    cursor: pointer;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure-title::-webkit-details-marker { display: none; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure-title::after {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin: -3px 2px 0;
+    border-right: 1.5px solid var(--wpiko-ui-text-secondary);
+    border-bottom: 1.5px solid var(--wpiko-ui-text-secondary);
+    transform: rotate(45deg);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure[open] > .wpiko-chatbot-settings-disclosure-title::after { margin-top: 3px; transform: rotate(225deg); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure-title:focus-visible { outline: 2px solid var(--wpiko-ui-accent); outline-offset: 4px; border-radius: 2px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-disclosure-content { margin-top: 16px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-extension-table { margin: 0; border-collapse: collapse; background: transparent; border-radius: var(--wpiko-ui-radius); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-extension-table:empty { display: none; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-extension-table th,
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-extension-table td {
+    padding: 16px 0;
+    color: var(--wpiko-ui-text);
+    border: 0;
+    border-bottom: 1px solid var(--wpiko-ui-line);
+    font-size: 13px;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-extension-table th { width: 200px; padding-right: 20px; padding-left: 0 !important; font-weight: 600; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-repeater { display: grid; gap: 10px; margin-top: 16px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-repeater-row { display: flex; align-items: start; gap: 8px; min-width: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-repeater-row input[type="text"] { flex: 1; min-width: 0; max-width: none; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-repeater-row .button { flex: none; }
+/* Locked Pro pages share Email Capture's feature list and card spacing. */
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-benefits {
+    margin: 12px 0 16px;
+    padding-left: 18px;
+    list-style: disc;
+    color: var(--wpiko-ui-text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-benefits li { margin: 0 0 4px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-upgrade > .wpiko-chatbot-settings-notice { margin-bottom: 12px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-empty {
+    margin: 16px 0 0;
+    padding: 16px;
+    color: var(--wpiko-ui-muted);
+    background: var(--wpiko-ui-sunken);
+    border: 1px dashed var(--wpiko-ui-line-strong);
+    border-radius: var(--wpiko-ui-radius-sm);
+    font-size: 13px;
+    line-height: 1.5;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-card > p.description {
+    margin: 0 0 12px;
+    padding: 0;
+}
+.wpiko-chatbot-settings-page .description,
+.wpiko-chatbot-settings-page .form-table p.description {
+    max-width: 600px;
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1.5;
+    color: var(--wpiko-ui-muted);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-row {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--wpiko-ui-line);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-label {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-control { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-control > .button { align-self: flex-start; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-description {
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1.5;
+    color: var(--wpiko-ui-muted);
+    overflow-wrap: anywhere;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-description a { color: var(--wpiko-ui-accent); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="color"] {
+    box-sizing: border-box;
+    flex: none;
+    width: 36px;
+    height: 30px;
+    min-height: 30px;
+    margin: 0;
+    padding: 3px;
+    background: var(--wpiko-ui-surface);
+    border: 1px solid var(--wpiko-ui-line-strong);
+    border-radius: var(--wpiko-ui-radius-sm);
+    cursor: pointer;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="color"]::-moz-color-swatch { border: 0; border-radius: 3px; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="text"] {
+    width: 100px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="text"].is-invalid {
+    border-color: var(--wpiko-ui-danger);
+    box-shadow: 0 0 0 1px var(--wpiko-ui-danger);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color input[type="color"]:focus-visible {
+    outline: 2px solid var(--wpiko-ui-accent);
+    outline-offset: 2px;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-color .wpiko-chatbot-settings-color-reset { width: 30px; padding: 0; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-media-preview img {
+    display: block;
+    max-width: 100px;
+    height: auto;
+    margin-top: 4px;
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-code {
+    align-self: flex-start;
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text);
+    background: var(--wpiko-ui-sunken);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    padding: 16px 0 0;
+    text-align: left;
+    justify-content: flex-start;
+    background: transparent;
+    border: 0;
+}
+.wpiko-chatbot-settings-page input[type="password"],
+.wpiko-chatbot-settings-page input[type="text"],
+.wpiko-chatbot-settings-page input[type="email"],
+.wpiko-chatbot-settings-page input[type="date"],
+.wpiko-chatbot-settings-page input[type="search"],
+.wpiko-chatbot-settings-page input[type="number"],
+.wpiko-chatbot-settings-page textarea,
+.wpiko-chatbot-settings-page select {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 600px;
+    min-height: 30px;
+    margin: 0;
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text);
+    background-color: var(--wpiko-ui-surface);
+    border: 1px solid var(--wpiko-ui-line-strong);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+.wpiko-chatbot-settings-page select { max-width: 400px; padding-right: 28px; }
+.wpiko-chatbot-settings-page input[type="number"] { max-width: 140px; }
+.wpiko-chatbot-settings-page textarea { min-height: 80px; resize: vertical; }
+.wpiko-chatbot-settings-page input::placeholder,
+.wpiko-chatbot-settings-page textarea::placeholder { color: var(--wpiko-ui-muted); }
+.wpiko-chatbot-settings-page input[type="password"]:focus,
+.wpiko-chatbot-settings-page input[type="text"]:focus,
+.wpiko-chatbot-settings-page input[type="email"]:focus,
+.wpiko-chatbot-settings-page input[type="date"]:focus,
+.wpiko-chatbot-settings-page input[type="search"]:focus,
+.wpiko-chatbot-settings-page input[type="number"]:focus,
+.wpiko-chatbot-settings-page textarea:focus,
+.wpiko-chatbot-settings-page select:focus {
+    border-color: var(--wpiko-ui-accent);
+    box-shadow: 0 0 0 1px var(--wpiko-ui-accent);
+    outline: none;
+}
+
+.wpiko-chatbot-settings-page .button {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 30px;
+    margin: 0;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 2.153846;
+    text-decoration: none;
+    text-shadow: none;
+    letter-spacing: 0.2px;
+    transition: border-color var(--wpiko-ui-transition), color var(--wpiko-ui-transition), background var(--wpiko-ui-transition), box-shadow var(--wpiko-ui-transition);
+    color: var(--wpiko-ui-accent);
+    background: var(--wpiko-ui-surface);
+    border: 1px solid var(--wpiko-ui-accent);
+    border-radius: var(--wpiko-ui-radius-sm);
+    box-shadow: none;
+    cursor: pointer;
+}
+.wpiko-chatbot-settings-page .button:hover,
+.wpiko-chatbot-settings-page .button:focus { color: var(--wpiko-ui-accent-dark); background: var(--wpiko-ui-accent-soft); border-color: var(--wpiko-ui-accent-dark); box-shadow: none; }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-save { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-save:hover,
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-save:focus { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent-dark); }
+.wpiko-chatbot-settings-page .button:focus-visible { outline: 2px solid var(--wpiko-ui-accent); outline-offset: 2px; box-shadow: none; }
+.wpiko-chatbot-settings-page .button:disabled { color: var(--wpiko-ui-muted); background: var(--wpiko-ui-sunken); border-color: var(--wpiko-ui-line-strong); cursor: default; }
+
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-card-title .dashicons { display: none; }
+@media (max-width: 1100px) {
+   .wpiko-chatbot-settings-page .wpiko-chatbot-settings-field-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+@media (max-width: 600px) {
+    .wpiko-chatbot-settings-page input[type="password"],
+    .wpiko-chatbot-settings-page input[type="text"],
+    .wpiko-chatbot-settings-page input[type="date"],
+    .wpiko-chatbot-settings-page input[type="search"],
+    .wpiko-chatbot-settings-page input[type="number"] { font-size: 16px; }
+    .wpiko-chatbot-settings-page .button,
+    .wpiko-chatbot-settings-page input[type="password"],
+    .wpiko-chatbot-settings-page input[type="text"],
+    .wpiko-chatbot-settings-page input[type="date"],
+    .wpiko-chatbot-settings-page input[type="search"],
+    .wpiko-chatbot-settings-page input[type="number"],
+    .wpiko-chatbot-settings-page select { min-height: 40px; }
+}
+
+.wpiko-chatbot-settings-page .button .dashicons {
+    display: block;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-danger {
+    color: var(--wpiko-ui-danger);
+    border-color: var(--wpiko-ui-danger);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-danger:hover,
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-danger:focus {
+    color: var(--wpiko-ui-danger-dark);
+    background: var(--wpiko-ui-error-soft);
+    border-color: var(--wpiko-ui-danger-dark);
+}
+/* Native controls stay focusable, with the same 36px switch as wpiko SEO. */
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch {
+    position: relative;
+    display: inline-flex;
+    gap: 10px;
+    align-items: flex-start;
+    max-width: 100%;
+    cursor: pointer;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch__track {
+    position: relative;
+    flex: none;
+    width: 36px;
+    height: 20px;
+    margin-top: 1px;
+    background: var(--wpiko-ui-line-strong);
+    border-radius: 999px;
+    transition: background-color 0.15s ease-in-out;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch__track::after {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: var(--wpiko-ui-on-dark);
+    border-radius: 50%;
+    box-shadow: var(--wpiko-ui-shadow);
+    transition: transform 0.15s ease-in-out;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch input:checked + .wpiko-chatbot-settings-switch__track { background: var(--wpiko-ui-accent); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch input:checked + .wpiko-chatbot-settings-switch__track::after { transform: translateX(16px); }
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch input:focus-visible + .wpiko-chatbot-settings-switch__track {
+    outline: 2px solid var(--wpiko-ui-accent);
+    outline-offset: 2px;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch__label { font-size: 13px; line-height: 1.5; color: var(--wpiko-ui-text); }
+
+/* Compact groups shared by settings screens. */
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-checkbox-group label {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-checkbox-group input[type="checkbox"] {
+    flex: none;
+    margin: 0;
+    border-color: var(--wpiko-ui-line-strong);
+    border-radius: 3px;
+    accent-color: var(--wpiko-ui-accent);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-checkbox-group input[type="checkbox"]:checked::before {
+    filter: grayscale(1) brightness(0);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-checkbox-group input[type="checkbox"]:focus {
+    border-color: var(--wpiko-ui-accent);
+    box-shadow: 0 0 0 1px var(--wpiko-ui-accent);
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-inline-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+}
+.wpiko-chatbot-settings-page .wpiko-chatbot-settings-inline-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--wpiko-ui-text-secondary);
+}
+@media (prefers-reduced-motion: reduce) {
+    .wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch__track,
+    .wpiko-chatbot-settings-page .wpiko-chatbot-settings-switch__track::after { transition: none; }
+}
+
+/* Shared by admin loading states. */
+@keyframes wpiko-ui-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Shared status pulse for the four training dialogs. */
+@keyframes wpiko-training-pulse {
+    0% { box-shadow: 0 0 0 0 var(--wpiko-ui-training-pulse-start); }
+    70% { box-shadow: 0 0 0 6px var(--wpiko-ui-training-pulse-end); }
+    100% { box-shadow: 0 0 0 0 var(--wpiko-ui-training-pulse-end); }
+}

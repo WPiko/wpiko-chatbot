@@ -1,0 +1,181 @@
+/* Conversations screen components use the shared admin UI tokens. */
+.wpiko-conversations-page {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+.wpiko-conversations-page #conversation-filter-form {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 220px) auto;
+    align-items: end;
+    justify-content: start;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+.wpiko-conversations-page #conversation-filter-form label { color: var(--wpiko-ui-text); font-weight: 600; }
+.wpiko-conversations-page #conversation-filter-form input[type="date"] { width: 100%; height: 30px; min-height: 30px; margin: 0; padding: 4px 8px; border-color: var(--wpiko-ui-line-strong); line-height: 1.5; }
+.wpiko-conversations-page .wpiko-conversation-filter-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.wpiko-conversations-page #conversation-filter-form .button { width: auto; min-width: 0; margin: 0; }
+.wpiko-conversations-page #conversation-filter-form input[type="submit"] { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent); border: 1px solid var(--wpiko-ui-accent); }
+.wpiko-conversations-page #conversation-filter-form #reset-filter { color: var(--wpiko-ui-accent); background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-accent); }
+.wpiko-conversations-page #conversation-filter-form .button:hover { background: var(--wpiko-ui-hover); color: var(--wpiko-ui-text); box-shadow: none; }
+.wpiko-conversations-page #conversation-filter-form input[type="submit"]:hover { background: var(--wpiko-ui-accent-dark); color: var(--wpiko-ui-on-dark); }
+.wpiko-conversations-page .conversations-container {
+    grid-template-columns: 260px minmax(0, 1fr) 260px;
+    height: clamp(580px, calc(100vh - 300px), 760px);
+    min-height: 0;
+    margin: var(--wpiko-ui-gap) 0 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--wpiko-ui-radius);
+    box-shadow: var(--wpiko-ui-shadow);
+}
+.wpiko-conversations-page .conversations-sidebar,
+.wpiko-conversations-page .conversation-details { background: var(--wpiko-ui-surface); }
+.wpiko-conversations-page .conversations-sidebar-header { gap: 12px; padding: 16px; background: var(--wpiko-ui-surface); }
+.wpiko-conversations-page .conversation-panel-header { min-height: 65px; padding: 14px 16px; background: var(--wpiko-ui-surface); }
+.wpiko-conversations-page .conversation-panel-icon,
+.wpiko-conversations-page .conversation-panel-status { display: none; }
+.wpiko-conversations-page .sidebar-title,
+.wpiko-conversations-page .conversation-panel-title { font-size: 15px; font-weight: 600; color: var(--wpiko-ui-text); }
+.wpiko-conversations-page .conversation-panel-subtitle { font-size: 12px; }
+.wpiko-conversations-page .conversations-count { color: var(--wpiko-ui-text-secondary); background: var(--wpiko-ui-sunken); border-color: var(--wpiko-ui-line); font-weight: 500; }
+.wpiko-conversations-page .conversations-search input[type="search"] { max-width: none; min-height: 32px; padding: 4px 30px 4px 32px; border-color: var(--wpiko-ui-line-strong); border-radius: var(--wpiko-ui-radius-sm); }
+.wpiko-conversations-page .conversations-search input[type="search"]:focus { border-color: var(--wpiko-ui-accent); box-shadow: 0 0 0 1px var(--wpiko-ui-accent); }
+.wpiko-conversations-page .conversations-search .clear-search { background: transparent; box-shadow: none; }
+.wpiko-conversations-page .conversations-list { padding: 8px; }
+.wpiko-conversations-page .conversation-item { padding: 12px 10px; border-radius: var(--wpiko-ui-radius-sm); }
+.wpiko-conversations-page .conversation-item:hover { background: var(--wpiko-ui-hover); box-shadow: none; }
+.wpiko-conversations-page .conversation-item.active { background: var(--wpiko-ui-active); box-shadow: none; }
+.wpiko-conversations-page .conversation-item.active::before { background: var(--wpiko-ui-accent); width: 2px; }
+.wpiko-conversations-page .user-avatar .avatar { width: 32px; height: 32px; }
+.wpiko-conversations-page .transcript-placeholder,
+.wpiko-conversations-page .transcript-content { background: var(--wpiko-ui-sunken); }
+.wpiko-conversations-page .transcript-content { padding: 20px 16px; }
+.wpiko-conversations-page .placeholder-card { padding: 20px; background: transparent; border: 0; box-shadow: none; }
+.wpiko-conversations-page .placeholder-icon { width: 44px; height: 44px; margin-bottom: 12px; color: var(--wpiko-ui-muted); background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius); box-shadow: none; }
+.wpiko-conversations-page .placeholder-icon .dashicons { width: 22px; height: 22px; font-size: 22px; line-height: 22px; }
+.wpiko-conversations-page .placeholder-title { font-size: 14px; font-weight: 600; }
+.wpiko-conversations-page .placeholder-hint { font-size: 12px; }
+.wpiko-conversations-page .message { max-width: 92%; }
+.wpiko-conversations-page .message-content { border-radius: var(--wpiko-ui-radius); box-shadow: none; overflow-wrap: anywhere; }
+.wpiko-conversations-page .message.user .message-content { background: var(--wpiko-ui-accent); box-shadow: none; }
+.wpiko-conversations-page .details-content { padding: 16px; }
+.wpiko-conversations-page .user-avatar-large { width: 56px; height: 56px; }
+.wpiko-conversations-page .user-info-section h3 { font-size: 15px; }
+.wpiko-conversations-page .additional-info-section h4 { font-size: 13px; text-transform: none; letter-spacing: normal; }
+.wpiko-conversations-page .actions { gap: 8px; }
+.wpiko-conversations-page .actions .button { font-size: 12px; min-height: 32px; font-weight: 400; padding: 0 8px; }
+.wpiko-conversations-page .contact-user { border-color: var(--wpiko-ui-accent) !important; }
+.wpiko-conversations-page .delete-conversation { border-color: var(--wpiko-ui-danger) !important; }
+.wpiko-conversations-page .integrated-download-button { border-color: var(--wpiko-ui-accent); }
+.wpiko-conversations-page .translation-icon-button { padding: 0 8px; border-right-color: var(--wpiko-ui-accent); }
+.wpiko-conversations-page .translation-icon-button.active { background: var(--wpiko-ui-info-soft); }
+.wpiko-conversations-page .translation-icon-button.active .button-icon { color: var(--wpiko-ui-info); }
+.wpiko-conversations-page .actions .contact-user,
+.wpiko-conversations-page .actions .delete-conversation,
+.wpiko-conversations-page .integrated-download-button { box-sizing: border-box; width: 100%; height: 32px; min-height: 32px; }
+.wpiko-conversations-page .integrated-download-button .download-conversation,
+.wpiko-conversations-page .integrated-download-button .translation-icon-button { box-sizing: border-box; height: 100%; min-height: 0; line-height: 1.2; }
+.wpiko-conversations-page .integrated-download-button .translation-icon-button { flex: none; width: 32px; }
+.wpiko-conversations-page .translation-dropdown { border-radius: var(--wpiko-ui-radius-sm); box-shadow: var(--wpiko-ui-shadow-lg); }
+.wpiko-conversations-page .button-icon { width: 16px; height: 16px; flex: none; }
+.wpiko-conversations-page .settings-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--wpiko-ui-gap); margin: var(--wpiko-ui-gap) 0 0; }
+.wpiko-conversations-page .settings-container > .notice { grid-column: 1 / -1; }
+.wpiko-conversations-page .auto-delete-section,
+.wpiko-conversations-page .download-emails-section { min-width: 0; max-width: none; margin: 0; padding: 18px 20px 20px; border-radius: var(--wpiko-ui-radius); box-shadow: var(--wpiko-ui-shadow); transition: none; }
+.wpiko-conversations-page .auto-delete-section:hover,
+.wpiko-conversations-page .download-emails-section:hover { transform: none; box-shadow: var(--wpiko-ui-shadow); }
+.wpiko-conversations-page .auto-delete-section::before,
+.wpiko-conversations-page .download-emails-section::before { display: none; }
+.wpiko-conversations-page .wpiko-settings-card-header { margin-bottom: 12px; padding: 0; border: 0; }
+.wpiko-conversations-page .wpiko-settings-card-header .wpiko-chatbot-settings-card-title { margin: 0; }
+.wpiko-conversations-page .auto-delete-form { gap: 16px; }
+.wpiko-conversations-page .auto-delete-toggle-row { margin: 0; padding: 0; background: transparent; border: 0; }
+.wpiko-conversations-page .auto-delete-field { gap: 6px; }
+.wpiko-conversations-page .wpiko-select-wrap { max-width: 400px; }
+.wpiko-conversations-page .wpiko-select-wrap::after { display: block; right: 12px; width: 6px; height: 6px; border-right: 1.5px solid var(--wpiko-ui-text-secondary); border-bottom: 1.5px solid var(--wpiko-ui-text-secondary); }
+.wpiko-conversations-page .wpiko-select-wrap select { height: auto; min-height: 30px; padding: 4px 28px 4px 8px; border: 1px solid var(--wpiko-ui-line-strong); border-radius: var(--wpiko-ui-radius-sm); box-shadow: none; font-size: 13px; font-weight: 400; background-color: var(--wpiko-ui-surface); }
+.wpiko-conversations-page .wpiko-select-wrap select:disabled { color: var(--wpiko-ui-muted); background-color: var(--wpiko-ui-sunken); }
+.wpiko-conversations-page .download-emails-content { gap: 0; align-items: start; }
+.wpiko-conversations-page .download-description { margin: 0; font-size: 12px; }
+.wpiko-conversations-page .download-note { margin: 12px 0 16px; padding: 0; border: 0; background: transparent; font-size: 12px; color: var(--wpiko-ui-muted); }
+.wpiko-conversations-page .auto-delete-description { margin: 16px 0 0; padding: 12px; font-size: 12px; border-radius: var(--wpiko-ui-radius-sm); }
+/* Shared compact actions for cleanup and email exports. */
+.wpiko-conversations-page #download_emails,
+.wpiko-conversations-page .auto-delete-save.button {
+    align-self: start;
+    justify-self: start;
+    gap: 8px;
+    min-height: 30px;
+    height: auto;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid var(--wpiko-ui-accent) !important;
+    border-radius: var(--wpiko-ui-radius-sm);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 2.153846;
+    color: var(--wpiko-ui-on-dark);
+    background: var(--wpiko-ui-accent);
+    box-shadow: none;
+    transition: none;
+}
+.wpiko-conversations-page #download_emails:hover,
+.wpiko-conversations-page .auto-delete-save.button:hover { background: var(--wpiko-ui-accent-dark); box-shadow: none; transform: none; }
+.wpiko-conversations-page .premium-feature-notice.auto-delete-notice { margin: 0; max-width: none; padding: 18px 20px; background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius); box-shadow: var(--wpiko-ui-shadow); }
+.wpiko-conversations-dialog { z-index: 100100; }
+.wpiko-conversations-dialog .modal-content,
+.wpiko-conversations-dialog .ai-review-content { box-sizing: border-box; width: calc(100% - 40px); max-width: 560px; max-height: 90vh; overflow-y: auto; margin: 5vh auto; padding: 20px; background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius); box-shadow: var(--wpiko-ui-shadow-lg); }
+.wpiko-conversations-dialog .ai-review-content { max-width: 800px; }
+#contact-modal.wpiko-conversations-dialog { align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+#contact-modal.wpiko-conversations-dialog .modal-content { width: 100%; margin: 0; max-height: calc(100dvh - 40px); }
+.wpiko-conversations-dialog h2 { margin: 0 0 8px; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.4; color: var(--wpiko-ui-text); }
+.wpiko-conversations-dialog .modal-content > p { margin-bottom: 16px; }
+.wpiko-conversations-dialog .form-group { margin-bottom: 16px; }
+.wpiko-conversations-dialog .form-group label { margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.wpiko-conversations-dialog .form-group input[type="text"],
+.wpiko-conversations-dialog .form-group textarea { margin: 0; padding: 4px 8px; border-color: var(--wpiko-ui-line-strong); border-radius: var(--wpiko-ui-radius-sm); }
+.wpiko-conversations-dialog .form-group textarea { min-height: 120px; }
+.wpiko-conversations-dialog .form-actions { flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding-top: 0; margin-top: 16px; }
+.wpiko-conversations-dialog .form-actions .button { margin: 0; }
+.wpiko-conversations-dialog .form-actions .button.cancel-contact { padding: 0 10px !important; }
+.wpiko-conversations-dialog .message-toolbar { position: static; flex: 1 1 auto; flex-wrap: wrap; gap: 8px; height: auto; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.wpiko-conversations-dialog .wpiko-contact-form-buttons { display: flex; flex: none; align-items: center; gap: 8px; margin-left: auto; }
+.wpiko-conversations-dialog .wpiko-contact-form-buttons .button { width: auto; flex: none; }
+.wpiko-conversations-dialog .ai-enhance-button,
+.wpiko-conversations-dialog .emoji-picker-button,
+.wpiko-conversations-dialog .file-label { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin: 0; padding: 4px; background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line-strong); border-radius: var(--wpiko-ui-radius-sm); box-shadow: none; }
+.wpiko-conversations-dialog .tone-selector { width: auto; height: 30px; font-size: 12px; }
+@media (max-width: 1420px) {
+    .wpiko-conversations-page .conversations-container { grid-template-columns: minmax(0, 1fr); height: 560px; min-height: 0; }
+    .wpiko-conversations-page .mobile-nav-buttons,
+    .wpiko-conversations-page .details-mobile-nav { padding: 8px 16px; min-height: 48px; }
+    .wpiko-conversations-page .wpiko-mobile-nav-button.button { min-height: 30px; padding: 0 10px !important; font-size: 13px !important; font-weight: 400; border-radius: var(--wpiko-ui-radius-sm) !important; border-color: var(--wpiko-ui-accent) !important; color: var(--wpiko-ui-accent) !important; background: var(--wpiko-ui-surface) !important; box-shadow: none !important; }
+}
+@media (max-width: 1100px) {
+    .wpiko-conversations-page #conversation-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: stretch; }
+    .wpiko-conversations-page .wpiko-conversation-filter-actions { grid-column: 1 / -1; }
+}
+@media (max-width: 782px) {
+    .wpiko-conversations-page .settings-container { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+    .wpiko-conversations-page #conversation-filter-form input[type="date"] { height: 40px; }
+    .wpiko-conversations-page #conversation-filter-form input[type="date"],
+    .wpiko-conversations-page .conversations-search input[type="search"],
+    .wpiko-conversations-page #download_emails,
+    .wpiko-conversations-page .auto-delete-save.button,
+    .wpiko-conversations-page .wpiko-select-wrap select { min-height: 40px; }
+}
+@media (max-width: 480px) {
+    .wpiko-conversations-page #conversation-filter-form { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wpiko-conversations-page *, .wpiko-conversations-page *::before { animation: none; transition: none !important; }
+}

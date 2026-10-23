@@ -1,0 +1,144 @@
+/* API Key details use the shared settings controls and root palette. */
+.wpiko-api-key-page input[readonly] {
+    color: var(--wpiko-ui-text-secondary);
+    background: var(--wpiko-ui-sunken);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.wpiko-api-key-page .wpiko-api-connection-row {
+    margin-top: 16px;
+    border-top: 1px solid var(--wpiko-ui-line);
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.wpiko-api-key-page .wpiko-connection-status {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 12px 14px;
+    background: var(--wpiko-ui-info-soft);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+
+.wpiko-api-key-page .wpiko-connection-status.is-ok {
+    background: var(--wpiko-ui-ok-soft);
+    border-color: var(--wpiko-ui-line);
+}
+
+.wpiko-api-key-page .wpiko-connection-status.is-error {
+    background: var(--wpiko-ui-error-soft);
+    border-color: var(--wpiko-ui-danger-line);
+}
+
+.wpiko-api-key-page .wpiko-connection-status-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.wpiko-api-key-page .wpiko-connection-status-header strong {
+    font-weight: 600;
+}
+
+.wpiko-api-key-page .wpiko-connection-status-header .dashicons {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+.wpiko-api-key-page .wpiko-connection-status.is-ok .dashicons { color: var(--wpiko-ui-ok); }
+.wpiko-api-key-page .wpiko-connection-status.is-error .dashicons { color: var(--wpiko-ui-danger); }
+.wpiko-api-key-page .wpiko-connection-status.is-unknown .dashicons { color: var(--wpiko-ui-info); }
+
+.wpiko-api-key-page .wpiko-connection-status p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.wpiko-api-key-page .wpiko-connection-status p.wpiko-connection-status-time {
+    color: var(--wpiko-ui-muted);
+}
+
+.wpiko-api-key-page .wpiko-api-connection-actions {
+    padding-top: 6px;
+}
+
+.wpiko-api-key-page .wpiko-api-connection-actions form {
+    margin: 0;
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: wpiko-step;
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps li {
+    counter-increment: wpiko-step;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 12px 0 12px 40px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--wpiko-ui-line);
+    border-radius: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps li::before {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    content: counter(wpiko-step);
+    top: 12px;
+    left: 0;
+    width: 26px;
+    height: 26px;
+    color: var(--wpiko-ui-text);
+    background: var(--wpiko-ui-sunken);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+    font-size: 12px;
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps strong {
+    font-weight: 600;
+    color: var(--wpiko-ui-text);
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps span {
+    font-size: 12px;
+    color: var(--wpiko-ui-muted);
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps a {
+    align-self: flex-start;
+    color: var(--wpiko-ui-accent);
+}
+
+.wpiko-api-key-page .wpiko-api-key-steps a:focus-visible {
+    outline: 2px solid var(--wpiko-ui-accent);
+    outline-offset: 2px;
+    box-shadow: none;
+}

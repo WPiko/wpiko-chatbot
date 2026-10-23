@@ -1,0 +1,79 @@
+/* Shared admin design tokens for WPiko Chatbot and Pro.
+ * Main settings, supporting dialogs, and standalone exports use this palette.
+ */
+:root {
+	--wpiko-ui-surface: #fff;
+	--wpiko-ui-on-dark: #fff;
+	--wpiko-ui-sunken: #f7f7f7;
+	--wpiko-ui-line: #e5e5e5;
+	--wpiko-ui-line-strong: #cfcfcf;
+	--wpiko-ui-text: #161616;
+	--wpiko-ui-muted: #6b6b6b;
+	--wpiko-ui-text-secondary: #4a4a4a;
+	--wpiko-ui-info: #0968fe;
+	--wpiko-ui-info-soft: #eef4ff;
+	--wpiko-ui-purple: #7c5cd6;
+	--wpiko-ui-purple-soft: #f4f0fd;
+	--wpiko-ui-accent: #161616;
+	--wpiko-ui-accent-dark: #2e2e2e;
+	--wpiko-ui-accent-soft: #f2f2f2;
+	--wpiko-ui-hover: #f5f5f5;
+	--wpiko-ui-active: #ececec;
+	--wpiko-ui-dark: #161616;
+	--wpiko-ui-ok: #005c12;
+	--wpiko-ui-ok-soft: #edfaef;
+	--wpiko-ui-warn: #6e4c00;
+	--wpiko-ui-warn-soft: #fcf9e8;
+	--wpiko-ui-warn-accent: #dba617;
+	--wpiko-ui-warn-line: #ecd98c;
+	--wpiko-ui-danger: #d63638;
+	--wpiko-ui-danger-dark: #b32d2e;
+	--wpiko-ui-error: #8a2424;
+	--wpiko-ui-error-soft: #fcf0f1;
+	--wpiko-ui-danger-line: #f0c9c9;
+	--wpiko-ui-radius: 8px;
+	--wpiko-ui-radius-sm: 6px;
+	--wpiko-ui-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--wpiko-ui-shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.08);
+	--wpiko-ui-gap: 16px;
+	--wpiko-ui-width: 1200px;
+
+	/* Supporting controls retain their existing appearance. */
+	--wpiko-ui-radius-pill: 999px;
+	--wpiko-ui-transition: 0.2s ease;
+	--wpiko-ui-transition-slow: 0.3s ease;
+	--wpiko-ui-teal: #03b5aa;
+	--wpiko-ui-teal-dark: #029990;
+	--wpiko-ui-teal-soft: #ecfaf9;
+	--wpiko-ui-knowledge-highlight: #ffd700;
+	--wpiko-ui-knowledge-highlight-soft: #ffed4e;
+	--wpiko-ui-cyan: #0284c7;
+	--wpiko-ui-cyan-line: #bae0fd;
+	--wpiko-ui-cyan-soft: #f0f9ff;
+	--wpiko-ui-knowledge-focus: rgba(9, 104, 254, 0.22);
+	--wpiko-ui-radius-xs: 4px;
+	--wpiko-ui-tooltip-surface: #1e293b;
+	--wpiko-ui-amber: #f59e0b;
+	--wpiko-ui-amber-text: #856404;
+	--wpiko-ui-amber-soft: #fffbeb;
+
+	/* Existing inbox, notice, feedback, and training state colors. */
+	--wpiko-ui-notice-info-line: #c9dafc;
+	--wpiko-ui-notice-ok-line: #b8e2c0;
+	--wpiko-ui-notice-ok-icon: #00a32a;
+	--wpiko-ui-notice-warn-icon: #b07d00;
+	--wpiko-ui-inbox-surface: #f8fafc;
+	--wpiko-ui-inbox-hover: #fbfcfe;
+	--wpiko-ui-icon-solid: #000;
+	--wpiko-ui-feedback-text: #475569;
+	--wpiko-ui-feedback-muted: #64748b;
+	--wpiko-ui-feedback-hover: #f1f5f9;
+	--wpiko-ui-feedback-strong: #0f172a;
+	--wpiko-ui-feedback-help-surface: #f0f6ff;
+	--wpiko-ui-feedback-help-text: #1e3a8a;
+	--wpiko-ui-feedback-line: #e2e8f0;
+	--wpiko-ui-feedback-overlay: rgba(15, 23, 42, 0.55);
+	--wpiko-ui-feedback-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+	--wpiko-ui-training-pulse-start: rgba(3, 181, 170, 0.4);
+	--wpiko-ui-training-pulse-end: rgba(3, 181, 170, 0);
+}

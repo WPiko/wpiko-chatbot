@@ -1,0 +1,505 @@
+/**
+ * Success, error, warning and info messages on every wpiko Chatbot screen.
+ *
+ * Same look as wpiko SEO (and wpiko MCP): a soft tinted panel with an icon
+ * and no coloured left edge. Covers WordPress notices, the plugin's own
+ * settings notices, the setup wizard, messages added by admin-notices.js and
+ * the status lines the Pro add-on writes next to its tools.
+ *
+ * Loaded after the other admin styles so it wins over older per-screen rules.
+ */
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) li.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-notice-js,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message {
+    --wpiko-notice-bg: var(--wpiko-ui-info-soft);
+    --wpiko-notice-line: var(--wpiko-ui-notice-info-line);
+    --wpiko-notice-icon: var(--wpiko-ui-info);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 8.5h2V17h-2zm0-3.5h2v2h-2z'/%3E%3C/svg%3E");
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    margin: 0 0 var(--wpiko-ui-gap, 16px);
+    padding: 12px 16px 12px 46px;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--wpiko-ui-text);
+    background: var(--wpiko-notice-bg);
+    border: 1px solid var(--wpiko-notice-line);
+    border-radius: var(--wpiko-ui-radius);
+    box-shadow: none;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress)::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) li.error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error-message::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-notice-js::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message::before {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 16px;
+    width: 20px;
+    height: 20px;
+    background-color: var(--wpiko-notice-icon);
+    -webkit-mask: var(--wpiko-notice-glyph) center / contain no-repeat;
+    mask: var(--wpiko-notice-glyph) center / contain no-repeat;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice.notice-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice.is-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice.is-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-notice-js.notice-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-success {
+    --wpiko-notice-bg: var(--wpiko-ui-ok-soft);
+    --wpiko-notice-line: var(--wpiko-ui-notice-ok-line);
+    --wpiko-notice-icon: var(--wpiko-ui-notice-ok-icon);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5a1 1 0 1 1 1.4-1.4l1.8 1.8 4.8-4.8a1 1 0 1 1 1.4 1.4z'/%3E%3C/svg%3E");
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice.notice-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) li.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) p.error-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice.is-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice.is-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-error {
+    --wpiko-notice-bg: var(--wpiko-ui-error-soft);
+    --wpiko-notice-line: var(--wpiko-ui-danger-line);
+    --wpiko-notice-icon: var(--wpiko-ui-danger);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 5h2v7h-2zm0 8.5h2v2h-2z'/%3E%3C/svg%3E");
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice.notice-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice.is-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice.is-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-warning {
+    --wpiko-notice-bg: var(--wpiko-ui-warn-soft);
+    --wpiko-notice-line: var(--wpiko-ui-warn-line);
+    --wpiko-notice-icon: var(--wpiko-ui-notice-warn-icon);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM11 9h2v5h-2zm0 6.5h2v2h-2z'/%3E%3C/svg%3E");
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice.notice-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice.is-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice.is-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #file-upload-status.info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status-message .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-processing {
+    --wpiko-notice-bg: var(--wpiko-ui-info-soft);
+    --wpiko-notice-line: var(--wpiko-ui-notice-info-line);
+    --wpiko-notice-icon: var(--wpiko-ui-info);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 8.5h2V17h-2zm0-3.5h2v2h-2z'/%3E%3C/svg%3E");
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice > p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated > p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress) > p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice > p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice > p {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: inherit;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice > p + p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated > p + p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress) > p + p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice > p + p,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice > p + p {
+    margin-top: 8px;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice > :is(.button, ol, ul),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.updated > :is(.button, ol, ul),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) div.error:not(.message, .file-progress) > :is(.button, ol, ul),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice > :is(.button, ol, ul),
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-notice > :is(.button, ol, ul) {
+    margin-top: 8px;
+}
+
+/* The settings notices keep their stacked layout for an action button. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-chatbot-settings-notice > :is(p, .button) {
+    margin: 0;
+}
+
+/* Messages that sit next to a button: same panel, compact. */
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-error,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-info,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-processing,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message {
+    display: inline-block;
+    margin: 0 0 0 10px;
+    padding: 6px 12px 6px 34px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #product_fields_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #order_fields_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-error::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-info::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-processing::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-warning::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message::before {
+    top: 50%;
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+}
+
+/* Lists of results keep their own spacing. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) li.error {
+    list-style: none;
+}
+
+/* Status containers stay out of the layout while they are empty. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) :is(#file-upload-status, #wpiko-test-push-status, #qa-status-message, #url-processing-status, #wpiko-chatbot-license-check-result, #sync_status, #product_fields_status, #order_fields_status, #download_status):empty {
+    display: none;
+}
+
+/* Wrappers that hold status messages add no box of their own. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) :is(#qa-status-message, #qa-status, #url-processing-status) {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) :is(#qa-status-message, #qa-status, #url-processing-status) > :is(.success, .error, .processing) {
+    margin: 16px 0 0;
+}
+
+/* Dismissible: room for the close button. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice.is-dismissible {
+    padding-right: 48px;
+}
+
+/* The close button: a quiet square that lights up on hover, centred on the first line. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss {
+    top: 7px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: var(--wpiko-ui-text-secondary);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss::before {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    line-height: 32px;
+    color: inherit;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss:hover,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss:focus {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss:hover::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss:focus::before {
+    color: var(--wpiko-ui-text);
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .notice-dismiss:focus-visible {
+    outline: 2px solid var(--wpiko-ui-text);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+/* Messages added by admin-notices.js fade in. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-notice-js {
+    animation: wpiko-notice-in 0.18s ease-out;
+}
+
+@keyframes wpiko-notice-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-notice-js {
+        animation: none;
+    }
+}
+
+/* Modals sit outside the content column; give their messages the same width. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-modal-content .wpiko-notice-js,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-conversations-dialog .wpiko-notice-js {
+    margin: 0 0 16px;
+}
+
+/* Setup wizard confirmations ("Connected", "All set!"): the same success panel. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-success,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-site-knowledge-result:is(.is-ok, .is-error) {
+    --wpiko-notice-bg: var(--wpiko-ui-ok-soft);
+    --wpiko-notice-line: var(--wpiko-ui-notice-ok-line);
+    --wpiko-notice-icon: var(--wpiko-ui-notice-ok-icon);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.7 7.7-5.5 5.5a1 1 0 0 1-1.4 0l-2.5-2.5a1 1 0 1 1 1.4-1.4l1.8 1.8 4.8-4.8a1 1 0 1 1 1.4 1.4z'/%3E%3C/svg%3E");
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 12px 16px 12px 46px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--wpiko-ui-text);
+    background: var(--wpiko-notice-bg);
+    border: 1px solid var(--wpiko-notice-line);
+    border-radius: var(--wpiko-ui-radius);
+    box-shadow: none;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-success::before,
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-site-knowledge-result:is(.is-ok, .is-error)::before {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 16px;
+    width: 20px;
+    height: 20px;
+    background-color: var(--wpiko-notice-icon);
+    -webkit-mask: var(--wpiko-notice-glyph) center / contain no-repeat;
+    mask: var(--wpiko-notice-glyph) center / contain no-repeat;
+}
+
+/* The panel draws its own icon. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-wizard-success > .dashicons {
+    display: none;
+}
+
+/* Site knowledge result sits next to its button: compact, like the other inline statuses. */
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-site-knowledge-result:is(.is-ok, .is-error) {
+    display: inline-block;
+    padding: 6px 12px 6px 34px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-site-knowledge-result:is(.is-ok, .is-error)::before {
+    top: 50%;
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+}
+
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .wpiko-site-knowledge-result.is-error {
+    --wpiko-notice-bg: var(--wpiko-ui-error-soft);
+    --wpiko-notice-line: var(--wpiko-ui-danger-line);
+    --wpiko-notice-icon: var(--wpiko-ui-danger);
+    --wpiko-notice-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 5h2v7h-2zm0 8.5h2v2h-2z'/%3E%3C/svg%3E");
+}
