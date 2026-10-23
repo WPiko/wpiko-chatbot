@@ -1,4 +1,4 @@
-/** wpiko Chatbot responsive screen navigation and resource links. */
+/** WPiko AI Chatbot responsive screen navigation and resource links. */
 (function () {
     'use strict';
 

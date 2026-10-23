@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Nonce Refresh Handler for WPiko Chatbot
+ * Nonce Refresh Handler for WPiko AI Chatbot
  * 
  * This file provides an AJAX endpoint to refresh WordPress nonces
  * when cached pages contain expired nonces, preventing "Access denied" errors.

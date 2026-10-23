@@ -3,6 +3,11 @@
 This file contains the release history for versions prior to the current release.
 The current release notes remain in readme.txt for the WordPress.org Plugin Directory.
 
+= 2.1.1 =
+* Security: Added default-on chat limits and mandatory server-side per-IP and site-wide caps to reduce unauthenticated OpenAI API cost abuse. Existing installations receive safety caps automatically, including those with limits disabled. Thanks to Ali Hidayat for responsibly reporting this issue.
+* Security: Replaced transient counters with atomic database reservations, rejected requests when rate-limit storage or the client IP is unavailable, and bounded chat input and AI output size.
+* Improve: User Limits now explains safety caps and includes an adjustable site-wide daily limit. Rejected chat traffic no longer creates conversation error rows.
+
 = 2.1.0 =
 * Security: Fixed stored cross-site scripting in conversation messages and HTML transcripts, and secured completed and cached chatbot replies. Thanks to Ali Hidayat for responsibly reporting the assistant-message vulnerability.
 * Update: Removed deprecated GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-5.1, and GPT-5.4 Nano from AI Configuration and their model metadata. Saved selections of unsupported models use the existing GPT-6 Luna fallback.

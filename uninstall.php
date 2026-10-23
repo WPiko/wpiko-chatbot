@@ -1,6 +1,6 @@
 <?php
 /**
- * Runs when WPiko Chatbot is deleted from the Plugins screen.
+ * Runs when WPiko AI Chatbot is deleted from the Plugins screen.
  *
  * Temporary data is always removed. Settings, conversations and logs are only
  * removed when the admin opted in under Manage & Tools → Debug Log → Plugin data,

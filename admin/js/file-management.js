@@ -163,27 +163,35 @@ jQuery(document).ready(function($) {
                 }
 
                 // Clear file input
-                $fileInput.val('');
+                $fileInput.val('').trigger('change');
             } catch (error) {
                 console.error('Upload process error:', error);
             } finally {
-                $uploadButton.prop('disabled', false);
+                $uploadButton.prop('disabled', !($fileInput[0].files && $fileInput[0].files.length));
             }
         });
 
-        // File Input Change Handler
-        $fileInput.on('change', function() {
-            var fileCount = this.files.length;
-            var fileText = fileCount === 0 ? 'No files chosen' :
-                          fileCount === 1 ? this.files[0].name :
-                          fileCount + ' files selected';
-            $(this).next('.file-name').text(fileText);
+        // File Input Change Handler: show the selection and enable Upload.
+        $fileInput.off('change').on('change', function() {
+            var fileCount = this.files ? this.files.length : 0;
+            var fileText = fileCount === 0 ? '' :
+                          fileCount === 1 ? 'Selected: ' + this.files[0].name :
+                          'Selected: ' + fileCount + ' files';
+            $('#file-drop-zone .file-name').text(fileText);
+            $uploadButton.prop('disabled', fileCount === 0)
+                .text(fileCount > 1 ? 'Upload ' + fileCount + ' files' : 'Upload file' + (fileCount === 1 ? '' : 's'));
+        });
+
+        // Dropping a file next to the drop zone must not open it in the browser.
+        $('#file-management-modal').off('dragover.wpikoDrop drop.wpikoDrop').on('dragover.wpikoDrop drop.wpikoDrop', function(e) {
+            e.preventDefault();
         });
 
         // Drag and Drop Handlers
         var $dropZone = $('#file-drop-zone');
         if ($dropZone.length) {
             $dropZone
+                .off('dragover dragleave drop')
                 .on('dragover', function(e) {
                     e.preventDefault();
                     e.stopPropagation();

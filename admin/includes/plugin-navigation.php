@@ -139,7 +139,7 @@ function wpiko_chatbot_get_navigation_entries() {
 function wpiko_chatbot_render_navigation($current, $id, $class) {
     $navigation = wpiko_chatbot_get_navigation_entries();
     ?>
-    <nav id="<?php echo esc_attr($id); ?>" class="<?php echo esc_attr($class); ?> wpiko-chatbot-navigation" aria-label="<?php esc_attr_e('wpiko Chatbot screens', 'wpiko-chatbot'); ?>">
+    <nav id="<?php echo esc_attr($id); ?>" class="<?php echo esc_attr($class); ?> wpiko-chatbot-navigation" aria-label="<?php esc_attr_e('WPiko AI Chatbot screens', 'wpiko-chatbot'); ?>">
         <?php foreach ($navigation['groups'] as $group_id => $group): ?>
             <?php if (empty($navigation['entries'][$group_id])) { continue; } ?>
             <div class="wpiko-chatbot-navgroup<?php echo !empty($group['class']) ? ' ' . esc_attr(sanitize_html_class($group['class'])) : ''; ?>">

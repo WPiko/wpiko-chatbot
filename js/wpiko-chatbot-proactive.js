@@ -1,5 +1,5 @@
 /**
- * Proactive Greeting for WPiko Chatbot
+ * Proactive Greeting for WPiko AI Chatbot
  *
  * Shows a greeting card next to the floating chat icon based on the
  * configured trigger (immediate / delay / scroll) and frequency

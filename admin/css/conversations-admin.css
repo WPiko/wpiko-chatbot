@@ -126,8 +126,8 @@
     box-shadow: none;
     transition: none;
 }
-.wpiko-conversations-page #download_emails:hover,
-.wpiko-conversations-page .auto-delete-save.button:hover { background: var(--wpiko-ui-accent-dark); box-shadow: none; transform: none; }
+.wpiko-conversations-page #download_emails:is(:hover, :focus),
+.wpiko-conversations-page .auto-delete-save.button:is(:hover, :focus) { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent-dark); box-shadow: none; transform: none; }
 .wpiko-conversations-page .premium-feature-notice.auto-delete-notice { margin: 0; max-width: none; padding: 18px 20px; background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius); box-shadow: var(--wpiko-ui-shadow); }
 .wpiko-conversations-dialog { z-index: 100100; }
 .wpiko-conversations-dialog .modal-content,
@@ -178,4 +178,121 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .wpiko-conversations-page *, .wpiko-conversations-page *::before { animation: none; transition: none !important; }
+}
+
+/* Download emails: stats, export options and Email Capture tip. */
+.wpiko-conversations-page .email-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 14px 0 16px;
+    padding: 0;
+}
+.wpiko-conversations-page .email-stat {
+    min-width: 0;
+    padding: 10px 12px;
+    background: var(--wpiko-ui-sunken);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+.wpiko-conversations-page .email-stat dt {
+    margin: 0 0 4px;
+    overflow: hidden;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--wpiko-ui-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.wpiko-conversations-page .email-stat dd {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--wpiko-ui-text);
+    font-variant-numeric: tabular-nums;
+}
+.wpiko-conversations-page .email-stat dd.email-stat-text {
+    padding-top: 4px;
+    overflow: hidden;
+    font-size: 13px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.wpiko-conversations-page .email-export-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+.wpiko-conversations-page .email-export-range {
+    display: inline-flex;
+    flex: 1 1 220px;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    font-size: 13px;
+    color: var(--wpiko-ui-text-secondary);
+}
+.wpiko-conversations-page .email-export-range .wpiko-select-wrap {
+    flex: 1 1 auto;
+    max-width: 260px;
+}
+.wpiko-conversations-page .email-export-range select { width: 100%; }
+.wpiko-conversations-page .email-export-row #download_emails { align-self: center; }
+.wpiko-conversations-page .email-export-row + .download-note { margin: 10px 0 0; }
+.wpiko-conversations-page .email-empty {
+    margin: 0;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--wpiko-ui-text-secondary);
+    text-align: center;
+    background: var(--wpiko-ui-sunken);
+    border: 1px dashed var(--wpiko-ui-line-strong);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+.wpiko-conversations-page .email-capture-tip {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 16px 0 0;
+    padding: 12px 0 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--wpiko-ui-text-secondary);
+    border-top: 1px solid var(--wpiko-ui-line);
+}
+.wpiko-conversations-page .email-capture-tip .dashicons {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    font-size: 16px;
+    color: var(--wpiko-ui-warn-accent);
+}
+.wpiko-conversations-page .email-capture-tip a { font-weight: 500; white-space: nowrap; }
+.wpiko-conversations-page .email-capture-tip .wpiko-pro-pill {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 5px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    color: var(--wpiko-ui-muted);
+    vertical-align: 1px;
+    background: var(--wpiko-ui-active);
+    border-radius: 3px;
+}
+@media (max-width: 480px) {
+    .wpiko-conversations-page .email-stats { grid-template-columns: 1fr 1fr; }
+    .wpiko-conversations-page .email-stat:last-child { grid-column: 1 / -1; }
+}
+.wpiko-conversations-page .download-emails-content > .email-stats,
+.wpiko-conversations-page .download-emails-content > .email-export-row,
+.wpiko-conversations-page .download-emails-content > .email-empty,
+.wpiko-conversations-page .download-emails-content > .email-capture-tip {
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 100%;
 }

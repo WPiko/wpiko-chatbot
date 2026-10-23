@@ -1,6 +1,6 @@
 <?php
 /**
- * Optional feedback form shown when WPiko Chatbot is deactivated.
+ * Optional feedback form shown when WPiko AI Chatbot is deactivated.
  *
  * Nothing is sent unless the admin chooses a reason and clicks
  * "Submit & deactivate". The site address and email are only included when
@@ -89,7 +89,8 @@ function wpiko_chatbot_deactivation_feedback_assets($hook)
         $reasons[] = array('key' => $key, 'label' => $reason['label'], 'prompt' => $reason['prompt']);
     }
 
-    wp_enqueue_style('wpiko-chatbot-deactivation-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/deactivation-feedback.css', array(), WPIKO_CHATBOT_VERSION);
+    wp_enqueue_style('wpiko-chatbot-design-tokens', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/design-tokens.css', array(), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/design-tokens.css') ?: WPIKO_CHATBOT_VERSION);
+    wp_enqueue_style('wpiko-chatbot-deactivation-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/deactivation-feedback.css', array('wpiko-chatbot-design-tokens'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/deactivation-feedback.css') ?: WPIKO_CHATBOT_VERSION);
     wp_enqueue_script('wpiko-chatbot-deactivation-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/deactivation-feedback.js', array(), WPIKO_CHATBOT_VERSION, true);
     wp_localize_script('wpiko-chatbot-deactivation-js', 'wpikoDeactivation', array(
         'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -101,7 +102,7 @@ function wpiko_chatbot_deactivation_feedback_assets($hook)
         'reasons' => $reasons,
         'i18n' => array(
             'title' => __('Quick question before you go', 'wpiko-chatbot'),
-            'intro' => __('Why are you deactivating WPiko Chatbot? One click helps us make it better.', 'wpiko-chatbot'),
+            'intro' => __('Why are you deactivating WPiko AI Chatbot? One click helps us make it better.', 'wpiko-chatbot'),
             'contact' => __('You can email me about this', 'wpiko-chatbot'),
             'emailLabel' => __('Reply to this email', 'wpiko-chatbot'),
             /* translators: %s: site host name. */

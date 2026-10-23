@@ -4,19 +4,17 @@
     #reset-filter {
         text-align: center!important;
     }
-    
+
     .mobile-nav-buttons,
     .details-mobile-nav {
         display: flex;
         align-items: center;
         flex: 0 0 auto;
         gap: 8px;
-        min-height: 54px;
         box-sizing: border-box;
         margin: 0;
-        padding: 9px 12px;
-        background: var(--wpiko-surface);
-        border-bottom: 1px solid var(--wpiko-border);
+        background: var(--wpiko-ui-surface);
+        border-bottom: 1px solid var(--wpiko-ui-line);
     }
 
     .mobile-nav-buttons {
@@ -34,17 +32,9 @@
         gap: 5px;
         float: none;
         width: auto;
-        min-height: 34px;
         box-sizing: border-box;
         margin: 0 !important;
-        padding: 6px 10px !important;
-        color: var(--wpiko-text-muted) !important;
-        background: var(--wpiko-surface-alt) !important;
-        border: 1px solid var(--wpiko-border) !important;
-        border-radius: 9px !important;
-        box-shadow: none !important;
-        font-size: 12px !important;
-        font-weight: 600;
+        border: 1px solid var(--wpiko-ui-line) !important;
         line-height: 1.2;
         text-decoration: none;
         white-space: nowrap;
@@ -53,17 +43,17 @@
 
     .wpiko-mobile-nav-button.button:hover,
     .wpiko-mobile-nav-button.button:focus {
-        color: var(--wpiko-primary) !important;
-        background: var(--wpiko-primary-tint) !important;
-        border-color: var(--wpiko-primary-soft) !important;
-        box-shadow: 0 0 0 3px var(--wpiko-primary-glow) !important;
+        color: var(--wpiko-ui-accent) !important;
+        background: var(--wpiko-ui-accent-soft) !important;
+        border-color: var(--wpiko-ui-line-strong) !important;
+        box-shadow: 0 0 0 3px transparent !important;
         outline: none;
     }
 
     .wpiko-mobile-nav-button-primary.button {
-        color: var(--wpiko-primary) !important;
-        background: var(--wpiko-primary-tint) !important;
-        border-color: var(--wpiko-primary-soft) !important;
+        color: var(--wpiko-ui-accent) !important;
+        background: var(--wpiko-ui-accent-soft) !important;
+        border-color: var(--wpiko-ui-line-strong) !important;
     }
 
     .mobile-nav-icon {
@@ -71,12 +61,6 @@
         flex: 0 0 15px;
         width: 15px;
         height: 15px;
-    }
-
-    .conversations-container {
-        grid-template-columns: 1fr;
-        height: auto;
-        min-height: 600px;
     }
 
     .conversations-sidebar {
@@ -99,7 +83,7 @@
         display: flex;
         padding-top: 0;
     }
-    
+
     .details-content {
         max-height: none;
     }
@@ -119,26 +103,15 @@
         margin: 5px 0;
     }
 
-    /* Message styles adjustment */
-    .message {
-        max-width: 95%;
-    }
-
     .message-content {
         padding: 8px 12px;
-    }
-
-    /* Modal adjustments */
-    .modal-content {
-        width: 90%;
-        margin: 10% auto;
     }
 
     .text-comparison {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     /* Auto Delete Section adjustments for mobile */
     .auto-delete-section {
         max-width: 100% !important;
@@ -148,7 +121,7 @@
     .download-emails-section {
         max-width: 100% !important;
     }
-    
+
     /* Settings container stacks vertically on mobile */
     .settings-container {
         flex-direction: column;
@@ -177,10 +150,9 @@
         display: flex;
         flex-direction: column;
     }
-    
+
     #download_emails {
         display: block;
-        margin: 0 auto;
         width: fit-content;
     }
 
@@ -188,29 +160,11 @@
     .download-conversation {
         font-size: 13px !important;
     }
-
-    .translation-icon-button {
-        padding: 8px 10px;
-    }
 }
 
 @media screen and (max-width: 480px) {
-    .conversation-item {
-        padding: 10px;
-    }
-
-    .user-avatar .avatar {
-        width: 30px;
-        height: 30px;
-    }
-
-    .user-info-section .user-avatar-large {
-        width: 60px;
-        height: 60px;
-    }
 
     .message {
-        max-width: 100%;
         margin-bottom: 15px;
     }
 
@@ -228,14 +182,12 @@
     }
 
     .message-toolbar {
-        position: relative;
         justify-content: center;
         margin-bottom: 10px;
     }
 
     .form-actions .button {
         width: 100%;
-        margin: 5px 0;
         margin-left: 0;
     }
 

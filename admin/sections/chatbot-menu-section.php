@@ -4,6 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 function wpiko_chatbot_menu_section() {
+    $settings_saved = false;
     if (isset($_POST['action']) && $_POST['action'] == 'save_chatbot_menu') {
         check_admin_referer('save_chatbot_menu', 'chatbot_menu_nonce');
         
@@ -19,7 +20,7 @@ function wpiko_chatbot_menu_section() {
         update_option('wpiko_chatbot_menu_sound_on', sanitize_text_field(wp_unslash($_POST['menu_sound_on'] ?? 'Turn Sound On')));
         update_option('wpiko_chatbot_menu_download_transcript', sanitize_text_field(wp_unslash($_POST['menu_download_transcript'] ?? 'Download Transcript')));
         
-        echo '<div class="updated"><p>Chatbot Menu settings updated successfully.</p></div>';
+        $settings_saved = true;
     }
     
     $sound_enabled = get_option('wpiko_chatbot_sound_enabled', '1');
@@ -33,91 +34,80 @@ function wpiko_chatbot_menu_section() {
     
     ?>
     
-    <div class="chatbot-menu-section">
-        <h2> <span class="dashicons dashicons-menu"></span> Chatbot Menu</h2>
-        <p class="description">Configure the menu options for your chatbot.</p>
-        <form method="post" action="">
+    <div class="wpiko-chatbot-settings-page wpiko-chatbot-menu-page">
+        <header class="wpiko-chatbot-settings-header">
+            <h1>Chatbot Menu</h1>
+            <p class="wpiko-chatbot-settings-subtitle">Choose the menu options available to visitors and customize their labels.</p>
+        </header>
+        <?php if ($settings_saved): ?>
+            <div class="wpiko-chatbot-settings-notice is-success" role="status"><p>Chatbot Menu settings updated successfully.</p></div>
+        <?php endif; ?>
+        <form method="post" action="" class="wpiko-chatbot-settings-form">
             <?php wp_nonce_field('save_chatbot_menu', 'chatbot_menu_nonce'); ?>
-            <table class="form-table">
-            <?php do_action('wpiko_chatbot_menu_options_before_sound'); ?>
-            
-                <tr valign="top">
-                    <th scope="row"><label for="enable_sound">Enable Sound</label></th>
-                    <td>
-                        <label class="wpiko-switch">
-                            <input type="checkbox" name="enable_sound" id="enable_sound" <?php checked($sound_enabled, '1'); ?>>
-                            <span class="wpiko-slider round"></span>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="chatbot-menu-options-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="chatbot-menu-options-title">Menu options</h2>
+                <table class="form-table wpiko-chatbot-settings-extension-table"><?php do_action('wpiko_chatbot_menu_options_before_sound'); ?></table>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Sound notifications</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <label class="wpiko-chatbot-settings-switch" for="enable_sound">
+                            <input type="checkbox" role="switch" name="enable_sound" id="enable_sound" aria-describedby="enable_sound-description" <?php checked($sound_enabled, '1'); ?>>
+                            <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                            <span class="wpiko-chatbot-settings-switch__label">Enable sound</span>
                         </label>
-                        <p class="description">Enable sound notifications for new messages.</p>
-                    </td>
-                </tr>
-                
-                <tr valign="top">
-                    <th scope="row"><label for="enable_transcript_download">Enable Transcript Download</label></th>
-                    <td>
-                        <label class="wpiko-switch">
-                            <input type="checkbox" name="enable_transcript_download" id="enable_transcript_download" <?php checked($enable_transcript_download, '1'); ?>>
-                            <span class="wpiko-slider round"></span>
-                        </label>
-                        <p class="description">Allow users to download chat transcripts.</p>
-                    </td>
-                </tr>
-                
-            </table>
-
-            <div class="wpiko-accordion-item">
-                <h3 class="collapsible-header">
-                    <span><span class="dashicons dashicons-edit"></span> Menu Text Customization</span>
-                    <span class="dashicons dashicons-arrow-down-alt2"></span>
-                </h3>
-                <div class="collapsible-content">
-                    <p class="description" style="margin-bottom: 20px;">Customize the text displayed in the chatbot menu.</p>
-                    <table class="form-table">
-                        <tr valign="top">
-                            <th scope="row"><label for="menu_clear_chat">Clear Chat Text</label></th>
-                            <td>
-                                <input type="text" name="menu_clear_chat" id="menu_clear_chat" value="<?php echo esc_attr($menu_clear_chat); ?>" class="regular-text">
-                                <p class="description">Default: <em>Clear Chat</em></p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="menu_sound_off">Sound Off Text</label></th>
-                            <td>
-                                <input type="text" name="menu_sound_off" id="menu_sound_off" value="<?php echo esc_attr($menu_sound_off); ?>" class="regular-text">
-                                <p class="description">Default: <em>Turn Sound Off</em></p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="menu_sound_on">Sound On Text</label></th>
-                            <td>
-                                <input type="text" name="menu_sound_on" id="menu_sound_on" value="<?php echo esc_attr($menu_sound_on); ?>" class="regular-text">
-                                <p class="description">Default: <em>Turn Sound On</em></p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="menu_download_transcript">Download Transcript Text</label></th>
-                            <td>
-                                <input type="text" name="menu_download_transcript" id="menu_download_transcript" value="<?php echo esc_attr($menu_download_transcript); ?>" class="regular-text">
-                                <p class="description">Default: <em>Download Transcript</em></p>
-                            </td>
-                        </tr>
-                    </table>
+                        <p class="wpiko-chatbot-settings-field-description" id="enable_sound-description">Play a notification sound for new messages.</p>
+                    </div>
                 </div>
-            </div>
-
-            <script>
-                jQuery(document).ready(function ($) {
-                    // Accordion toggle
-                    $('.collapsible-header').click(function () {
-                        // Toggle active class on header for arrow rotation
-                        $(this).toggleClass('active');
-                        // Toggle active class on next sibling content
-                        $(this).next('.collapsible-content').toggleClass('active');
-                    });
-                });
-            </script>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Chat transcripts</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <label class="wpiko-chatbot-settings-switch" for="enable_transcript_download">
+                            <input type="checkbox" role="switch" name="enable_transcript_download" id="enable_transcript_download" aria-describedby="enable_transcript_download-description" <?php checked($enable_transcript_download, '1'); ?>>
+                            <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                            <span class="wpiko-chatbot-settings-switch__label">Allow transcript downloads</span>
+                        </label>
+                        <p class="wpiko-chatbot-settings-field-description" id="enable_transcript_download-description">Let visitors download a copy of their conversation.</p>
+                    </div>
+                </div>
+            </section>
+            <details class="wpiko-chatbot-settings-card wpiko-chatbot-settings-disclosure">
+                <summary class="wpiko-chatbot-settings-disclosure-title">Menu text customization</summary>
+                <div class="wpiko-chatbot-settings-disclosure-content">
+                    <p class="wpiko-chatbot-settings-field-description">Customize the text displayed in the chatbot menu.</p>
+                    <div class="wpiko-chatbot-settings-field-row">
+                        <label class="wpiko-chatbot-settings-field-label" for="menu_clear_chat">Clear chat text</label>
+                        <div class="wpiko-chatbot-settings-field-control">
+                            <input type="text" name="menu_clear_chat" id="menu_clear_chat" value="<?php echo esc_attr($menu_clear_chat); ?>" aria-describedby="menu_clear_chat-description">
+                            <p class="wpiko-chatbot-settings-field-description" id="menu_clear_chat-description">Default: Clear Chat</p>
+                        </div>
+                    </div>
+                    <div class="wpiko-chatbot-settings-field-row">
+                        <label class="wpiko-chatbot-settings-field-label" for="menu_sound_off">Sound off text</label>
+                        <div class="wpiko-chatbot-settings-field-control">
+                            <input type="text" name="menu_sound_off" id="menu_sound_off" value="<?php echo esc_attr($menu_sound_off); ?>" aria-describedby="menu_sound_off-description">
+                            <p class="wpiko-chatbot-settings-field-description" id="menu_sound_off-description">Default: Turn Sound Off</p>
+                        </div>
+                    </div>
+                    <div class="wpiko-chatbot-settings-field-row">
+                        <label class="wpiko-chatbot-settings-field-label" for="menu_sound_on">Sound on text</label>
+                        <div class="wpiko-chatbot-settings-field-control">
+                            <input type="text" name="menu_sound_on" id="menu_sound_on" value="<?php echo esc_attr($menu_sound_on); ?>" aria-describedby="menu_sound_on-description">
+                            <p class="wpiko-chatbot-settings-field-description" id="menu_sound_on-description">Default: Turn Sound On</p>
+                        </div>
+                    </div>
+                    <div class="wpiko-chatbot-settings-field-row">
+                        <label class="wpiko-chatbot-settings-field-label" for="menu_download_transcript">Download transcript text</label>
+                        <div class="wpiko-chatbot-settings-field-control">
+                            <input type="text" name="menu_download_transcript" id="menu_download_transcript" value="<?php echo esc_attr($menu_download_transcript); ?>" aria-describedby="menu_download_transcript-description">
+                            <p class="wpiko-chatbot-settings-field-description" id="menu_download_transcript-description">Default: Download Transcript</p>
+                        </div>
+                    </div>
+                </div>
+            </details>
             <input type="hidden" name="action" value="save_chatbot_menu">
-            <?php submit_button('Save Chatbot Menu Settings'); ?>
+            <div class="wpiko-chatbot-settings-actions">
+                <button type="submit" name="submit" id="submit" class="button wpiko-chatbot-settings-save">Save Chatbot Menu Settings</button>
+            </div>
         </form>
     </div>
     <?php

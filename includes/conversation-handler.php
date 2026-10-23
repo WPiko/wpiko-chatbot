@@ -42,26 +42,6 @@ function wpiko_chatbot_create_table()
     $wpdb->query("ALTER TABLE `{$wpdb->prefix}wpiko_chatbot_conversations` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 }
 
-/**
- * Ensure the openai_response_id column exists for existing installations
- * This handles upgrades from older versions of the plugin
- */
-function wpiko_chatbot_ensure_response_id_column()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'wpiko_chatbot_conversations';
-
-    // Check if column exists
-    $column_exists = $wpdb->get_results($wpdb->prepare(
-        "SHOW COLUMNS FROM `$table_name` LIKE %s",
-        'openai_response_id'
-    ));
-
-    if (empty($column_exists)) {
-        $wpdb->query("ALTER TABLE `$table_name` ADD COLUMN `openai_response_id` VARCHAR(255) DEFAULT NULL");
-        wpiko_chatbot_log('Added openai_response_id column to conversations table', 'info');
-    }
-}
 
 /**
  * Get the last OpenAI response ID for a session
@@ -151,28 +131,6 @@ function wpiko_chatbot_save_message($user_id, $thread_id, $role, $message, $user
     do_action('wpiko_chatbot_message_saved', $user_id, $thread_id, $role, $message, $user_email);
 }
 
-// Save Error messages to database
-function wpiko_chatbot_save_error_message($user_id, $session_id, $user_friendly_error, $user_email, $user_name = '')
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'wpiko_chatbot_conversations';
-    $location = wpiko_chatbot_get_user_location();
-    $device_type = wpiko_chatbot_get_device_type();
-
-    $wpdb->insert($table_name, array(
-        'user_id' => $user_id,
-        'session_id' => $session_id,
-        'role' => 'error',
-        'message' => $user_friendly_error,
-        'timestamp' => current_time('mysql'),
-        'user_email' => $user_email,
-        'user_name' => $user_name,
-        'country' => $location['country'],
-        'city' => $location['city'],
-        'region' => $location['region'],
-        'device_type' => $device_type
-    ));
-}
 
 // Get conversations
 function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $end_date = '')
@@ -376,7 +334,6 @@ function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $
 }
 
 
-
 function wpiko_chatbot_get_total_conversations($start_date = '', $end_date = '')
 {
     global $wpdb;
@@ -439,7 +396,8 @@ function wpiko_chatbot_render_conversation_item($conversation)
         <div class="conversation-info">
             <div class="user-name"><?php echo esc_html($user_display); ?></div>
             <div class="last-message <?php echo esc_attr($message_class); ?>"><?php echo esc_html($conversation->last_message); ?></div>
-            <div class="timestamp" data-timestamp="<?php echo esc_attr($conversation->timestamp); ?>">
+            <?php // ISO 8601 with the site's UTC offset, so the browser computes "x ago" correctly in any timezone. ?>
+            <div class="timestamp" data-timestamp="<?php echo esc_attr(mysql2date('c', $conversation->timestamp, false)); ?>" title="<?php echo esc_attr(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $conversation->timestamp)); ?>">
                 <?php echo esc_html($formatted_timestamp); ?>
             </div>
         </div>
@@ -708,49 +666,6 @@ function wpiko_chatbot_get_device_type()
     return 'desktop';
 }
 
-function wpiko_chatbot_generate_transcript($conversations)
-{
-    $transcript = '<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">';
-    // Add emoji support meta tag
-    $transcript .= '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />';
-
-    foreach ($conversations as $conversation) {
-        if ($conversation->role === 'user') {
-            $role = 'user';
-            $role_label = !empty($conversation->user_name) ? $conversation->user_name : 'User';
-        } elseif ($conversation->role === 'admin') {
-            $role = 'admin';
-            $role_label = !empty($conversation->user_name) ? $conversation->user_name : 'Admin';
-        } elseif ($conversation->role === 'error') {
-            $role = 'error';
-            $role_label = 'Error';
-        } else {
-            $role = 'bot';
-            $role_label = 'Bot';
-        }
-        $timestamp = gmdate('Y-m-d H:i:s', strtotime($conversation->timestamp));
-
-        $message = wpiko_chatbot_render_message($conversation->message, $conversation->role);
-
-        $transcript .= "<div class='message {$role}'><div class='message-content'><span class='role-label'>" .
-            esc_html($role_label) . "</span> <span class='timestamp'>[{$timestamp}]</span><div class='message-text'>{$message}</div></div></div>";
-    }
-    $transcript .= '</div></body></html>';
-    return $transcript;
-}
-
-function wpiko_chatbot_save_transcript($transcript, $session_id)
-{
-    $upload_dir = wp_upload_dir();
-    $transcript_dir = $upload_dir['basedir'] . '/chat-transcripts';
-    if (!file_exists($transcript_dir)) {
-        wp_mkdir_p($transcript_dir);
-    }
-    $file_name = 'chat-transcript-' . $session_id . '.html';
-    $file_path = $transcript_dir . '/' . $file_name;
-    file_put_contents($file_path, $transcript);
-    return $upload_dir['baseurl'] . '/chat-transcripts/' . $file_name;
-}
 
 // Function to download conversation
 function wpiko_chatbot_download_conversation()
@@ -791,7 +706,52 @@ function wpiko_chatbot_download_conversation()
 
 add_action('wp_ajax_wpiko_chatbot_download_conversation', 'wpiko_chatbot_download_conversation');
 
-// Function to download emails
+/**
+ * Summary of the email addresses collected in conversations.
+ *
+ * @return array{total: int, recent: int, last_seen: string} last_seen is a local MySQL datetime or ''.
+ */
+function wpiko_chatbot_get_email_stats()
+{
+    global $wpdb;
+    $since = wp_date('Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS);
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT COUNT(*) AS total, COALESCE(SUM(first_seen >= %s), 0) AS recent, MAX(last_seen) AS last_seen
+         FROM (
+             SELECT user_email, MIN(timestamp) AS first_seen, MAX(timestamp) AS last_seen
+             FROM `{$wpdb->prefix}wpiko_chatbot_conversations`
+             WHERE user_email IS NOT NULL AND user_email != ''
+             GROUP BY user_email
+         ) AS emails",
+        $since
+    ));
+
+    return array(
+        'total' => $row ? (int) $row->total : 0,
+        'recent' => $row ? (int) $row->recent : 0,
+        'last_seen' => ($row && !empty($row->last_seen)) ? (string) $row->last_seen : '',
+    );
+}
+
+/**
+ * One CSV cell, safe to open in spreadsheet apps.
+ *
+ * Values starting with =, +, -, @ or a control character are prefixed with an
+ * apostrophe so they are never run as formulas.
+ *
+ * @param mixed $value Cell value.
+ * @return string
+ */
+function wpiko_chatbot_csv_cell($value)
+{
+    $value = (string) $value;
+    if ($value !== '' && preg_match('/^[=+\-@\t\r]/', $value)) {
+        $value = "'" . $value;
+    }
+    return '"' . str_replace('"', '""', $value) . '"';
+}
+
+// AJAX: export the collected email addresses as CSV.
 function wpiko_chatbot_download_emails()
 {
     check_ajax_referer('wpiko_chatbot_nonce', 'security');
@@ -800,20 +760,60 @@ function wpiko_chatbot_download_emails()
     }
 
     global $wpdb;
-    $table_name = $wpdb->prefix . 'wpiko_chatbot_conversations';
 
-    $emails = $wpdb->get_col("SELECT DISTINCT user_email FROM `{$wpdb->prefix}wpiko_chatbot_conversations` WHERE user_email != ''");
-
-    if ($emails) {
-        $csv_content = "Email Address\n";
-        foreach ($emails as $email) {
-            $csv_content .= "$email\n";
-        }
-
-        wp_send_json_success($csv_content);
-    } else {
-        wp_send_json_error('No emails found');
+    // 0 = all time; otherwise only contacts active in the last N days.
+    $days = isset($_POST['range']) ? absint($_POST['range']) : 0;
+    if (!in_array($days, array(0, 7, 30, 90), true)) {
+        $days = 0;
     }
+
+    $having = '';
+    if ($days) {
+        $having = $wpdb->prepare('HAVING last_seen >= %s', wp_date('Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS));
+    }
+
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $having is prepared above.
+    $rows = $wpdb->get_results(
+        "SELECT user_email,
+                MAX(CASE WHEN role = 'user' THEN user_name END) AS user_name,
+                MAX(user_id) AS user_id,
+                COUNT(DISTINCT session_id) AS conversations,
+                MIN(timestamp) AS first_seen,
+                MAX(timestamp) AS last_seen
+         FROM `{$wpdb->prefix}wpiko_chatbot_conversations`
+         WHERE user_email IS NOT NULL AND user_email != ''
+         GROUP BY user_email
+         {$having}
+         ORDER BY last_seen DESC"
+    );
+
+    if (empty($rows)) {
+        wp_send_json_error($days ? 'No email addresses in the selected period.' : 'No email addresses collected yet.');
+    }
+
+    $lines = array(implode(',', array_map('wpiko_chatbot_csv_cell', array('Email', 'Name', 'Conversations', 'First contact', 'Last contact'))));
+    foreach ($rows as $row) {
+        $name = trim((string) $row->user_name);
+        // Signed-in visitors: their name comes from their WordPress account.
+        if ($name === '' && !empty($row->user_id)) {
+            $account = get_userdata((int) $row->user_id);
+            $name = $account ? $account->display_name : '';
+        }
+        $lines[] = implode(',', array_map('wpiko_chatbot_csv_cell', array(
+            $row->user_email,
+            $name,
+            (int) $row->conversations,
+            $row->first_seen,
+            $row->last_seen,
+        )));
+    }
+
+    wp_send_json_success(array(
+        // The byte order mark lets Excel read names in any language correctly.
+        'csv' => "\xEF\xBB\xBF" . implode("\r\n", $lines) . "\r\n",
+        'filename' => 'chatbot-emails-' . wp_date('Y-m-d') . '.csv',
+        'count' => count($rows),
+    ));
 }
 add_action('wp_ajax_wpiko_chatbot_download_emails', 'wpiko_chatbot_download_emails');
 

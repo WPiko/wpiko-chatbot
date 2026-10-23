@@ -108,7 +108,6 @@ foreach ($payloads as $index => $input) {
         $outputs = array(
             'admin' => $GLOBALS['review_response']['messages'],
             'export' => wpiko_chatbot_generate_html_transcript(array($row), 'Bot', 'security-regression'),
-            'legacy export' => wpiko_chatbot_generate_transcript(array($row)),
             'PWA' => $role === 'assistant' ? wpiko_chatbot_pro_rest_sanitize_transcript_message($stored, $role) : esc_html($stored),
         );
         foreach ($outputs as $surface => $html) check_safe($html, "$surface $role $index");

@@ -14,30 +14,32 @@ function wpiko_chatbot_style_color_row($field, $label, $description)
 {
     $value = wpiko_chatbot_get_style_color($field);
     ?>
-    <tr valign="top">
-        <th scope="row"><label for="<?php echo esc_attr($field); ?>"><?php echo esc_html($label); ?></label></th>
-        <td>
-            <div class="wpiko-color-field">
+    <div class="wpiko-chatbot-settings-field-row">
+        <label class="wpiko-chatbot-settings-field-label" for="<?php echo esc_attr($field); ?>"><?php echo esc_html($label); ?></label>
+        <div class="wpiko-chatbot-settings-field-control">
+            <div class="wpiko-color-field wpiko-chatbot-settings-color">
                 <input type="color" name="<?php echo esc_attr($field); ?>" id="<?php echo esc_attr($field); ?>"
-                    class="wpiko-color-input" value="<?php echo esc_attr($value); ?>">
+                    class="wpiko-color-input" value="<?php echo esc_attr($value); ?>"
+                    aria-describedby="<?php echo esc_attr($field . '-description'); ?>">
                 <input type="text" class="wpiko-color-hex" data-color-for="<?php echo esc_attr($field); ?>"
                     value="<?php echo esc_attr(strtoupper($value)); ?>" maxlength="7" spellcheck="false"
                     aria-label="<?php echo esc_attr($label . ' hex value'); ?>">
-                <button type="button" class="wpiko-color-reset" data-color-for="<?php echo esc_attr($field); ?>"
+                <button type="button" class="button wpiko-color-reset wpiko-chatbot-settings-color-reset" data-color-for="<?php echo esc_attr($field); ?>"
                     data-default="<?php echo esc_attr(wpiko_chatbot_get_style_color_default($field)); ?>"
                     title="Reset to default">
-                    <span class="dashicons dashicons-image-rotate"></span>
+                    <span class="dashicons dashicons-image-rotate" aria-hidden="true"></span>
                     <span class="screen-reader-text"><?php echo esc_html('Reset ' . $label . ' to default'); ?></span>
                 </button>
             </div>
-            <p class="description"><?php echo esc_html($description); ?></p>
-        </td>
-    </tr>
+            <p class="wpiko-chatbot-settings-field-description" id="<?php echo esc_attr($field . '-description'); ?>"><?php echo esc_html($description); ?></p>
+        </div>
+    </div>
     <?php
 }
 
 function wpiko_chatbot_style_section()
 {
+    $notice_message = '';
     $is_pro_active = defined('WPIKO_CHATBOT_PRO_VERSION');
     $color_fields = wpiko_chatbot_get_style_color_fields();
     $pro_color_fields = wpiko_chatbot_get_pro_style_color_fields();
@@ -68,13 +70,13 @@ function wpiko_chatbot_style_section()
         $posted_preset = isset($_POST['style_preset']) ? sanitize_key(wp_unslash($_POST['style_preset'])) : '';
         update_option('wpiko_chatbot_style_preset', $posted_preset ? $posted_preset : 'custom');
 
-        echo '<div class="updated"><p>Style settings updated successfully.</p></div>';
+        $notice_message = 'Style settings updated successfully.';
     } elseif (isset($_POST['action']) && $_POST['action'] == 'reset_advanced_options') {
         check_admin_referer('reset_advanced_options', 'reset_advanced_options_nonce');
 
         wpiko_chatbot_apply_style_preset(wpiko_chatbot_get_default_style_preset_id(), $is_pro_active);
 
-        echo '<div class="updated"><p>Style options have been reset to the default preset.</p></div>';
+        $notice_message = 'Style options have been reset to the default preset.';
     }
 
     $chatbot_name = get_option('wpiko_chatbot_name', 'My Chatbot');
@@ -88,22 +90,26 @@ function wpiko_chatbot_style_section()
     $active_preset = wpiko_chatbot_get_active_style_preset_id();
     ?>
 
-    <div class="style-settings-section">
-        <h2> <span class="dashicons dashicons-admin-customizer"></span> Chatbot Style</h2>
-        <p class="description">Customize the appearance of your chatbot to match your website's design and enhance user
-            experience.</p>
+    <div class="wpiko-chatbot-settings-page wpiko-style-page">
+        <header class="wpiko-chatbot-settings-header">
+            <h1>Chatbot Style</h1>
+            <p class="wpiko-chatbot-settings-subtitle">Customize your chatbot's identity, messages, and colors to match your website.</p>
+        </header>
+        <?php if ($notice_message): ?>
+            <div class="wpiko-chatbot-settings-notice is-success" role="status"><p><?php echo esc_html($notice_message); ?></p></div>
+        <?php endif; ?>
 
         <div class="wpiko-style-layout">
             <div class="wpiko-style-main">
-                <form method="post" action="" id="chatbot-style-form">
+                <form method="post" action="" id="chatbot-style-form" class="wpiko-chatbot-settings-form">
                     <?php wp_nonce_field('save_chatbot_style', 'chatbot_style_nonce'); ?>
                     <input type="hidden" name="style_preset" id="style_preset"
                         value="<?php echo esc_attr($active_preset); ?>">
 
-                    <div class="wpiko-style-presets">
+                    <div class="wpiko-style-presets wpiko-chatbot-settings-card">
                         <div class="wpiko-style-presets-head">
-                            <h3>Appearance Presets</h3>
-                            <p class="description">Pick a ready-made color scheme, then fine-tune anything below. Nothing
+                            <h2 class="wpiko-chatbot-settings-card-title">Appearance presets</h2>
+                            <p class="wpiko-chatbot-settings-field-description">Pick a ready-made color scheme, then fine-tune anything below. Nothing
                                 is saved until you press <em>Save Style Settings</em>.</p>
                         </div>
                         <div class="wpiko-preset-grid">
@@ -150,134 +156,133 @@ function wpiko_chatbot_style_section()
                         </p>
                     </div>
 
-                    <h3 class="wpiko-style-group-title">Identity &amp; Text</h3>
-                    <table class="form-table">
-                        <tr valign="top">
-                            <th scope="row"><label for="chatbot_name">Chatbot Display Name</label></th>
-                            <td>
+                    <section class="wpiko-chatbot-settings-card">
+                        <h2 class="wpiko-chatbot-settings-card-title">Identity &amp; text</h2>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <label class="wpiko-chatbot-settings-field-label" for="chatbot_name">Chatbot Display Name</label>
+                            <div class="wpiko-chatbot-settings-field-control">
                                 <input type="text" name="chatbot_name" id="chatbot_name"
-                                    value="<?php echo esc_attr($chatbot_name); ?>" class="regular-text">
-                                <p class="description">Enter the name you want to display for your chatbot.</p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="subtitle_text">Sub-header Text</label></th>
-                            <td>
+                                    value="<?php echo esc_attr($chatbot_name); ?>" class="regular-text" aria-describedby="chatbot_name-description">
+                                <p class="wpiko-chatbot-settings-field-description" id="chatbot_name-description">Enter the name you want to display for your chatbot.</p>
+                            </div>
+                        </div>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <label class="wpiko-chatbot-settings-field-label" for="subtitle_text">Sub-header Text</label>
+                            <div class="wpiko-chatbot-settings-field-control">
                                 <input type="text" name="subtitle_text" id="subtitle_text"
-                                    value="<?php echo esc_attr($subtitle_text); ?>" class="regular-text">
-                                <p class="description">Enter the text to display below the chatbot name.</p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="chatbot_image">Chatbot Image</label></th>
-                            <td>
+                                    value="<?php echo esc_attr($subtitle_text); ?>" class="regular-text" aria-describedby="subtitle_text-description">
+                                <p class="wpiko-chatbot-settings-field-description" id="subtitle_text-description">Enter the text to display below the chatbot name.</p>
+                            </div>
+                        </div>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <label class="wpiko-chatbot-settings-field-label" for="chatbot_image">Chatbot Image</label>
+                            <div class="wpiko-chatbot-settings-field-control">
                                 <input type="text" name="chatbot_image" id="chatbot_image"
-                                    value="<?php echo esc_url($chatbot_image); ?>" class="regular-text">
-                                <input type="button" name="upload-btn" id="upload-btn" class="button button-secondary"
-                                    value="Upload Image">
-                                <p class="description">Upload or enter the URL of the image for your chatbot.</p>
-                                <div id="chatbot-image-preview" style="margin-top: 10px;">
-                                    <img src="<?php echo esc_url($chatbot_image); ?>" style="max-width: 100px; height: auto;">
+                                    value="<?php echo esc_url($chatbot_image); ?>" class="regular-text" aria-describedby="chatbot_image-description">
+                                <button type="button" name="upload-btn" id="upload-btn" class="button">Upload Image</button>
+                                <p class="wpiko-chatbot-settings-field-description" id="chatbot_image-description">Upload or enter the URL of the image for your chatbot.</p>
+                                <div id="chatbot-image-preview" class="wpiko-chatbot-settings-media-preview">
+                                    <img src="<?php echo esc_url($chatbot_image); ?>" alt="Current chatbot image">
                                 </div>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="welcome_message">Welcome Message</label></th>
-                            <td>
+                            </div>
+                        </div>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <label class="wpiko-chatbot-settings-field-label" for="welcome_message">Welcome Message</label>
+                            <div class="wpiko-chatbot-settings-field-control">
                                 <input type="text" name="welcome_message" id="welcome_message"
-                                    value="<?php echo esc_attr($welcome_message); ?>" class="regular-text">
-                                <p class="description">Enter a brief welcome message for your chatbot. Leave empty to hide
+                                    value="<?php echo esc_attr($welcome_message); ?>" class="regular-text" aria-describedby="welcome_message-description">
+                                <p class="wpiko-chatbot-settings-field-description" id="welcome_message-description">Enter a brief welcome message for your chatbot. Leave empty to hide
                                     the welcome message.</p>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="input_placeholder">Input Placeholder</label></th>
-                            <td>
+                            </div>
+                        </div>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <label class="wpiko-chatbot-settings-field-label" for="input_placeholder">Input Placeholder</label>
+                            <div class="wpiko-chatbot-settings-field-control">
                                 <input type="text" name="input_placeholder" id="input_placeholder"
-                                    value="<?php echo esc_attr($input_placeholder); ?>" class="regular-text">
-                                <p class="description">Enter the placeholder text for the chat input field.</p>
-                            </td>
-                        </tr>
-                    </table>
+                                    value="<?php echo esc_attr($input_placeholder); ?>" class="regular-text" aria-describedby="input_placeholder-description">
+                                <p class="wpiko-chatbot-settings-field-description" id="input_placeholder-description">Enter the placeholder text for the chat input field.</p>
+                            </div>
+                        </div>
+                    </section>
 
-                    <h3 class="wpiko-style-group-title">Main Colors</h3>
-                    <table class="form-table">
+                    <section class="wpiko-chatbot-settings-card">
+                        <h2 class="wpiko-chatbot-settings-card-title">Main colors</h2>
                         <?php
                         wpiko_chatbot_style_color_row('primary_color', 'Primary Color', 'Used for the send button, links and highlights.');
                         wpiko_chatbot_style_color_row('primary_text_color', 'Primary Text Color', 'Text and icons drawn on top of the primary color.');
                         ?>
-                        <tr valign="top">
-                            <th scope="row">Advanced Style Options</th>
-                            <td>
-                                <button type="button" id="toggle-advanced-options" class="button button-secondary">Show
-                                    Advanced Options</button>
-                                <button type="button" id="reset-advanced-options" class="button button-secondary">Reset
-                                    Advanced Options</button>
-                                <p class="description">Advanced options control every remaining surface of the chatbot.</p>
-                            </td>
-                        </tr>
-                    </table>
+                        <div class="wpiko-chatbot-settings-field-row">
+                            <div class="wpiko-chatbot-settings-field-label">Advanced Style Options</div>
+                            <div class="wpiko-chatbot-settings-field-control">
+                                <div class="wpiko-style-advanced-actions">
+                                    <button type="button" id="toggle-advanced-options" class="button" aria-expanded="false" aria-controls="advanced-options">Show Advanced Options</button>
+                                    <button type="button" id="reset-advanced-options" class="button wpiko-chatbot-settings-danger">Reset Advanced Options</button>
+                                </div>
+                                <p class="wpiko-chatbot-settings-field-description">Advanced options control every remaining surface of the chatbot.</p>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div id="advanced-options" style="display: none;">
+                    <div id="advanced-options" class="wpiko-style-advanced" style="display: none;">
 
-                        <h3 class="wpiko-style-group-title">Chat Window</h3>
-                        <table class="form-table">
+                        <section class="wpiko-chatbot-settings-card">
+                            <h2 class="wpiko-chatbot-settings-card-title">Chat window</h2>
                             <?php
                             wpiko_chatbot_style_color_row('chatbot_background_color', 'Chatbot Background Color', 'The main background of the chat window.');
                             wpiko_chatbot_style_color_row('chatbot_header_color', 'Chatbot Header Color', 'Background of the header bar at the top.');
                             wpiko_chatbot_style_color_row('chatbot_border_color', 'Chatbot Border Color', 'Borders and dividers inside the chatbot.');
                             wpiko_chatbot_style_color_row('chatbot_name_color', 'Chatbot Name Color', 'The chatbot name, sub-header and floating text.');
                             ?>
-                        </table>
+                        </section>
 
-                        <h3 class="wpiko-style-group-title">Messages</h3>
-                        <table class="form-table">
+                        <section class="wpiko-chatbot-settings-card">
+                            <h2 class="wpiko-chatbot-settings-card-title">Messages</h2>
                             <?php wpiko_chatbot_style_color_row('user_background_color', 'User Background Color', 'Background of messages sent by the visitor.'); ?>
                             <?php wpiko_chatbot_style_color_row('user_text_color', 'User Text Color', 'Text color of messages sent by the visitor.'); ?>
-                            <tr valign="top">
-                                <th scope="row"><label for="show_user_border">User Message Border</label></th>
-                                <td>
-                                    <label class="wpiko-switch">
-                                        <input type="checkbox" name="show_user_border" id="show_user_border" value="1" <?php checked('1', $show_user_border); ?>>
-                                        <span class="wpiko-slider round"></span>
+                            <div class="wpiko-chatbot-settings-field-row">
+                                <div class="wpiko-chatbot-settings-field-label">User message border</div>
+                                <div class="wpiko-chatbot-settings-field-control">
+                                    <label class="wpiko-chatbot-settings-switch" for="show_user_border">
+                                        <input type="checkbox" role="switch" name="show_user_border" aria-describedby="show-user-border-description" id="show_user_border" value="1" <?php checked('1', $show_user_border); ?>>
+                                        <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                                        <span class="wpiko-chatbot-settings-switch__label">Show user message borders</span>
                                     </label>
-                                    <p class="description">Enable or disable border around user messages and user avatar.
+                                    <p class="wpiko-chatbot-settings-field-description" id="show-user-border-description">Enable or disable borders around user messages and the user avatar.
                                     </p>
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                             <?php
                             wpiko_chatbot_style_color_row('bot_background_color', 'Bot Background Color', 'Background of messages sent by the chatbot.');
                             wpiko_chatbot_style_color_row('bot_text_color', 'Bot Text Color', 'Text color of messages sent by the chatbot. Also used for the input field text.');
                             ?>
-                        </table>
+                        </section>
 
-                        <h3 class="wpiko-style-group-title">Input &amp; Icons</h3>
-                        <table class="form-table">
+                        <section class="wpiko-chatbot-settings-card">
+                            <h2 class="wpiko-chatbot-settings-card-title">Input &amp; icons</h2>
                             <?php
                             wpiko_chatbot_style_color_row('icon_color', 'Icon Color', 'The menu icon in the chatbot interface.');
                             wpiko_chatbot_style_color_row('input_background_color', 'Input Background Color', 'Background color of the chat input area.');
                             wpiko_chatbot_style_color_row('floating_text_bg_color', 'Floating Text Background Color', 'Background of the small text bubble next to the floating chatbot button.');
                             ?>
-                        </table>
+                        </section>
 
                         <?php if ($is_pro_active): ?>
-                            <h3 class="wpiko-style-group-title">Live Chat Takeover <span class="wpiko-style-pro-badge">Pro</span>
-                            </h3>
-                            <table class="form-table">
+                            <section class="wpiko-chatbot-settings-card">
+                                <h2 class="wpiko-chatbot-settings-card-title">Live chat takeover <span class="wpiko-style-pro-badge">Pro</span></h2>
                                 <?php
                                 wpiko_chatbot_style_color_row('admin_message_label_color', 'Admin Takeover Label Color', 'Label shown above messages sent by a human agent.');
                                 wpiko_chatbot_style_color_row('admin_message_background_color', 'Admin Takeover Message Background', 'Background of messages sent by a human agent.');
                                 wpiko_chatbot_style_color_row('admin_message_border_color', 'Admin Takeover Message Border', 'Border of messages sent by a human agent.');
                                 wpiko_chatbot_style_color_row('admin_message_text_color', 'Admin Takeover Message Text', 'Text color of messages sent by a human agent.');
                                 ?>
-                            </table>
+                            </section>
                         <?php endif; ?>
 
                     </div>
 
                     <input type="hidden" name="action" value="save_chatbot_style">
-                    <div class="wpiko-style-actions">
-                        <?php submit_button('Save Style Settings', 'primary', 'submit', false); ?>
+                    <div class="wpiko-style-actions wpiko-chatbot-settings-actions">
+                        <button type="submit" name="submit" id="submit" class="button wpiko-chatbot-settings-save">Save Style Settings</button>
                         <span class="wpiko-style-dirty" hidden>
                             <span class="dashicons dashicons-warning" aria-hidden="true"></span> Unsaved changes
                         </span>
@@ -286,9 +291,9 @@ function wpiko_chatbot_style_section()
             </div>
 
             <aside class="wpiko-style-side">
-                <div class="wpiko-style-preview-wrap">
+                <div class="wpiko-style-preview-wrap wpiko-chatbot-settings-card">
                     <div class="wpiko-style-preview-head">
-                        <h3>Live Preview</h3>
+                        <h2 class="wpiko-chatbot-settings-card-title">Live preview</h2>
                         <span class="wpiko-style-preview-hint">Updates as you edit</span>
                     </div>
 
@@ -370,7 +375,7 @@ function wpiko_chatbot_style_section()
                         </span>
                     </div>
 
-                    <p class="description wpiko-preview-note">The preview is an approximation — fonts and spacing follow
+                    <p class="wpiko-chatbot-settings-field-description wpiko-preview-note">The preview is an approximation — fonts and spacing follow
                         your theme on the front end.</p>
                 </div>
             </aside>

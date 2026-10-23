@@ -1087,8 +1087,9 @@ function wpiko_chatbot_dispatch_openai_stream_event(&$stream_state, $callbacks)
 /**
  * Whether the vector store contains at least one file.
  *
- * The answer is cached for 10 minutes so each chat message does not need an
- * extra OpenAI request. Uploads and deletions refresh the cache.
+ * The answer is cached (10 minutes when there are files, 5 when empty) so
+ * each chat message does not need an extra OpenAI request. Uploads and
+ * deletions refresh the cache.
  *
  * @param string $vector_store_id Vector store ID.
  * @return bool
@@ -1100,24 +1101,48 @@ function wpiko_chatbot_vector_store_has_files($vector_store_id)
     }
 
     $cache_key = 'wpiko_chatbot_vs_has_files_' . md5($vector_store_id);
-    if (get_transient($cache_key) === '1') {
+    $cached = get_transient($cache_key);
+    if ($cached === '1') {
         return true;
     }
-
-    $files_list = wpiko_chatbot_list_responses_files();
-    $has_files = !empty($files_list['success']) && !empty($files_list['files']);
-
-    // Only remember a positive answer: a store that just received its first
-    // file must be used right away.
-    if ($has_files) {
-        set_transient($cache_key, '1', 10 * MINUTE_IN_SECONDS);
+    if ($cached === '0') {
+        return false;
     }
+
+    // One file is enough to answer, so ask for a single item instead of the
+    // whole list with file details.
+    $has_files = null;
+    $api_key = wpiko_chatbot_decrypt_api_key(get_option('wpiko_chatbot_api_key', ''));
+    if (!empty($api_key)) {
+        $resp = wp_remote_get(
+            "https://api.openai.com/v1/vector_stores/{$vector_store_id}/files?limit=1",
+            array('headers' => array('Authorization' => 'Bearer ' . $api_key), 'timeout' => 10)
+        );
+        if (!is_wp_error($resp) && wp_remote_retrieve_response_code($resp) === 200) {
+            $body = json_decode(wp_remote_retrieve_body($resp), true);
+            if (is_array($body) && isset($body['data']) && is_array($body['data'])) {
+                $has_files = !empty($body['data']);
+            }
+        }
+    }
+
+    // On any error, fall back to the full list: it handles a deleted vector
+    // store and uses the local file cache when OpenAI cannot be reached.
+    if ($has_files === null) {
+        $files_list = wpiko_chatbot_list_responses_files();
+        $has_files = !empty($files_list['success']) && !empty($files_list['files']);
+    }
+
+    // Uploads and deletions clear this, so a store that just received its
+    // first file is used right away. An empty answer is kept for a shorter time.
+    set_transient($cache_key, $has_files ? '1' : '0', $has_files ? 10 * MINUTE_IN_SECONDS : 5 * MINUTE_IN_SECONDS);
 
     return $has_files;
 }
 
 /**
- * Forget the cached "vector store has files" answer.
+ * Forget the cached "vector store has files" answer and the dashboard's
+ * knowledge base summary.
  *
  * @return void
  */
@@ -1126,6 +1151,22 @@ function wpiko_chatbot_clear_vector_store_files_cache()
     $vector_store_id = get_option('wpiko_chatbot_responses_vector_store_id', '');
     if (!empty($vector_store_id)) {
         delete_transient('wpiko_chatbot_vs_has_files_' . md5($vector_store_id));
+    }
+    // The dashboard's knowledge base summary.
+    delete_transient('wpiko_chatbot_dashboard_knowledge');
+
+    // Tell the admin page that the knowledge files changed, so it can refresh
+    // the Vector Store information without a reload. Covers every tool that
+    // adds or removes files (File Management, Quick learn, Scan Website, Q&A,
+    // WooCommerce) without each one having to report it.
+    if (wp_doing_ajax() && !headers_sent()) {
+        header('X-Wpiko-Knowledge-Changed: 1');
+    }
+
+    // Clear once more when the request ends: a dashboard check that ran while
+    // a slow upload or deletion was in progress must not keep the old answer.
+    if (!doing_action('shutdown')) {
+        add_action('shutdown', __FUNCTION__);
     }
 }
 
@@ -1225,15 +1266,6 @@ function wpiko_chatbot_responses_model_uses_fixed_sampling($model)
     return (bool) preg_match('/^gpt-(5|6)(\.\d+)?($|[-_])/', $model);
 }
 
-/**
- * Backward-compatible alias retained for integrations using the old helper name.
- */
-function wpiko_chatbot_responses_model_is_gpt5($model)
-{
-    return wpiko_chatbot_responses_model_uses_fixed_sampling($model);
-}
-
-// (Removed) AJAX: wpiko_chatbot_check_gpt5_access endpoint
 
 /**
  * Responses API - Vector store management and file operations
@@ -1894,6 +1926,10 @@ function wpiko_chatbot_get_responses_vector_store_details_ajax()
     }
 
     $result = wpiko_chatbot_get_responses_vector_store_details();
+
+    // Ready-made markup for the AI Configuration page, so the box can be
+    // swapped in place (empty when there is no vector store yet).
+    $result['html'] = function_exists('wpiko_chatbot_render_vector_store_info') ? wpiko_chatbot_render_vector_store_info($result) : '';
 
     if ($result['success']) {
         wp_send_json_success($result);

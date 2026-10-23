@@ -211,27 +211,27 @@ function wpiko_chatbot_setup_wizard_section()
         'enthusiastic' => __('Enthusiastic', 'wpiko-chatbot'),
     );
     ?>
-    <div class="wpiko-wizard" data-connected="<?php echo $connected ? '1' : '0'; ?>">
-        <div class="wpiko-wizard-intro">
-            <h2><?php esc_html_e('Set up your chatbot', 'wpiko-chatbot'); ?></h2>
-            <p><?php esc_html_e('Three short steps and your chatbot will be answering visitors on your site.', 'wpiko-chatbot'); ?></p>
-            <ol class="wpiko-wizard-progress" aria-label="<?php esc_attr_e('Setup progress', 'wpiko-chatbot'); ?>">
-                <li data-step="1" class="is-current"><span>1</span> <?php esc_html_e('Connect OpenAI', 'wpiko-chatbot'); ?></li>
-                <li data-step="2"><span>2</span> <?php esc_html_e('Teach it your business', 'wpiko-chatbot'); ?></li>
-                <li data-step="3"><span>3</span> <?php esc_html_e('Test and go live', 'wpiko-chatbot'); ?></li>
-            </ol>
-        </div>
+    <div class="wpiko-chatbot-settings-page wpiko-wizard" data-connected="<?php echo $connected ? '1' : '0'; ?>">
+        <header class="wpiko-chatbot-settings-header wpiko-wizard-intro">
+            <h1><?php esc_html_e('Set up your chatbot', 'wpiko-chatbot'); ?></h1>
+            <p class="wpiko-chatbot-settings-subtitle"><?php esc_html_e('Three short steps and your chatbot will be answering visitors on your site.', 'wpiko-chatbot'); ?></p>
+        </header>
+        <ol class="wpiko-chatbot-settings-card wpiko-wizard-progress" aria-label="<?php esc_attr_e('Setup progress', 'wpiko-chatbot'); ?>">
+            <li data-step="1" class="is-current" aria-current="step"><span>1</span> <?php esc_html_e('Connect OpenAI', 'wpiko-chatbot'); ?></li>
+            <li data-step="2"><span>2</span> <?php esc_html_e('Teach it your business', 'wpiko-chatbot'); ?></li>
+            <li data-step="3"><span>3</span> <?php esc_html_e('Test and go live', 'wpiko-chatbot'); ?></li>
+        </ol>
 
         <!-- Step 1 -->
-        <section class="wpiko-wizard-step is-active" data-step="1">
-            <h3><?php esc_html_e('Connect your OpenAI account', 'wpiko-chatbot'); ?></h3>
+        <section class="wpiko-chatbot-settings-card wpiko-wizard-step is-active" data-step="1">
+            <h2 class="wpiko-chatbot-settings-card-title"><?php esc_html_e('Connect your OpenAI account', 'wpiko-chatbot'); ?></h2>
 
             <div class="wpiko-wizard-connected" <?php echo $connected ? '' : 'hidden'; ?>>
                 <p class="wpiko-wizard-success"><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span> <?php esc_html_e('Connected. OpenAI accepted your key and your account can answer messages.', 'wpiko-chatbot'); ?></p>
             </div>
 
             <div class="wpiko-wizard-connect" <?php echo $connected ? 'hidden' : ''; ?>>
-                <p class="description"><?php esc_html_e('The chatbot runs on your own OpenAI account, so you pay OpenAI directly for what you use (usually a few dollars a month for a small site).', 'wpiko-chatbot'); ?></p>
+                <p class="wpiko-chatbot-settings-field-description"><?php esc_html_e('The chatbot runs on your own OpenAI account, so you pay OpenAI directly for what you use (usually a few dollars a month for a small site).', 'wpiko-chatbot'); ?></p>
                 <ol class="wpiko-api-key-steps">
                     <li>
                         <strong><?php esc_html_e('Sign in to the OpenAI Platform', 'wpiko-chatbot'); ?></strong>
@@ -253,11 +253,11 @@ function wpiko_chatbot_setup_wizard_section()
                 <div class="wpiko-wizard-key-row" <?php echo $api_key !== '' ? 'hidden' : ''; ?>>
                     <label for="wpiko-wizard-api-key" class="screen-reader-text"><?php esc_html_e('OpenAI API key', 'wpiko-chatbot'); ?></label>
                     <input type="password" id="wpiko-wizard-api-key" class="regular-text" placeholder="sk-..." autocomplete="off" spellcheck="false">
-                    <button type="button" class="button button-primary" id="wpiko-wizard-save-key"><?php esc_html_e('Save and test', 'wpiko-chatbot'); ?></button>
+                    <button type="button" class="button wpiko-chatbot-settings-save" id="wpiko-wizard-save-key"><?php esc_html_e('Save and test', 'wpiko-chatbot'); ?></button>
                 </div>
                 <div class="wpiko-wizard-retest-row" <?php echo $api_key !== '' ? '' : 'hidden'; ?>>
-                    <button type="button" class="button button-primary" id="wpiko-wizard-retest"><?php esc_html_e('Test my connection again', 'wpiko-chatbot'); ?></button>
-                    <button type="button" class="button-link" id="wpiko-wizard-change-key"><?php esc_html_e('Use a different key', 'wpiko-chatbot'); ?></button>
+                    <button type="button" class="button wpiko-chatbot-settings-save" id="wpiko-wizard-retest"><?php esc_html_e('Test my connection again', 'wpiko-chatbot'); ?></button>
+                    <button type="button" class="button" id="wpiko-wizard-change-key"><?php esc_html_e('Use a different key', 'wpiko-chatbot'); ?></button>
                 </div>
                 <div class="wpiko-wizard-message" aria-live="polite">
                     <?php if ($api_key !== '' && !$connected) : ?>
@@ -278,52 +278,58 @@ function wpiko_chatbot_setup_wizard_section()
 
             <div class="wpiko-wizard-nav">
                 <span></span>
-                <button type="button" class="button button-primary button-hero wpiko-wizard-next" data-next="2" <?php echo $connected ? '' : 'disabled'; ?>><?php esc_html_e('Continue', 'wpiko-chatbot'); ?></button>
+                <button type="button" class="button wpiko-chatbot-settings-save wpiko-wizard-next" data-next="2" <?php echo $connected ? '' : 'disabled'; ?>><?php esc_html_e('Continue', 'wpiko-chatbot'); ?></button>
             </div>
         </section>
 
         <!-- Step 2 -->
-        <section class="wpiko-wizard-step" data-step="2" hidden>
-            <h3><?php esc_html_e('Teach it about your business', 'wpiko-chatbot'); ?></h3>
+        <section class="wpiko-chatbot-settings-card wpiko-wizard-step" data-step="2" hidden>
+            <h2 class="wpiko-chatbot-settings-card-title"><?php esc_html_e('Teach it about your business', 'wpiko-chatbot'); ?></h2>
 
             <div class="wpiko-wizard-basics">
-                <div class="wpiko-wizard-field">
-                    <label for="wpiko-wizard-name"><?php esc_html_e('Chatbot name', 'wpiko-chatbot'); ?></label>
-                    <input type="text" id="wpiko-wizard-name" class="regular-text" value="<?php echo esc_attr($chatbot_name); ?>">
+                <div class="wpiko-chatbot-settings-field-row wpiko-wizard-field">
+                    <label class="wpiko-chatbot-settings-field-label" for="wpiko-wizard-name"><?php esc_html_e('Chatbot name', 'wpiko-chatbot'); ?></label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="text" id="wpiko-wizard-name" class="regular-text" value="<?php echo esc_attr($chatbot_name); ?>">
+                    </div>
                 </div>
-                <div class="wpiko-wizard-field">
-                    <label for="wpiko-wizard-business"><?php esc_html_e('What does your business do?', 'wpiko-chatbot'); ?></label>
-                    <input type="text" id="wpiko-wizard-business" class="large-text" value="<?php echo esc_attr($business); ?>" placeholder="<?php esc_attr_e('e.g. handmade leather bags shipped across Europe', 'wpiko-chatbot'); ?>">
+                <div class="wpiko-chatbot-settings-field-row wpiko-wizard-field">
+                    <label class="wpiko-chatbot-settings-field-label" for="wpiko-wizard-business"><?php esc_html_e('What does your business do?', 'wpiko-chatbot'); ?></label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="text" id="wpiko-wizard-business" class="large-text" value="<?php echo esc_attr($business); ?>" placeholder="<?php esc_attr_e('e.g. handmade leather bags shipped across Europe', 'wpiko-chatbot'); ?>">
+                    </div>
                 </div>
-                <div class="wpiko-wizard-field">
-                    <label for="wpiko-wizard-tone"><?php esc_html_e('Tone', 'wpiko-chatbot'); ?></label>
-                    <select id="wpiko-wizard-tone">
-                        <?php foreach ($tones as $value => $label) : ?>
-                            <option value="<?php echo esc_attr($value); ?>" <?php selected($tone, $value); ?>><?php echo esc_html($label); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="wpiko-chatbot-settings-field-row wpiko-wizard-field">
+                    <label class="wpiko-chatbot-settings-field-label" for="wpiko-wizard-tone"><?php esc_html_e('Tone', 'wpiko-chatbot'); ?></label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <select id="wpiko-wizard-tone">
+                            <?php foreach ($tones as $value => $label) : ?>
+                                <option value="<?php echo esc_attr($value); ?>" <?php selected($tone, $value); ?>><?php echo esc_html($label); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <?php wpiko_chatbot_render_site_knowledge_panel('wizard'); ?>
 
-            <p class="description wpiko-wizard-files-hint">
+            <p class="wpiko-chatbot-settings-field-description wpiko-wizard-files-hint">
                 <?php esc_html_e('You can also upload PDFs or documents (price lists, FAQs, manuals) later in AI Configuration → File Management.', 'wpiko-chatbot'); ?>
             </p>
 
             <div class="wpiko-wizard-nav">
                 <button type="button" class="button wpiko-wizard-back" data-back="1"><?php esc_html_e('Back', 'wpiko-chatbot'); ?></button>
-                <button type="button" class="button button-primary button-hero wpiko-wizard-next" data-next="3"><?php esc_html_e('Save and continue', 'wpiko-chatbot'); ?></button>
+                <button type="button" class="button wpiko-chatbot-settings-save wpiko-wizard-next" data-next="3"><?php esc_html_e('Save and continue', 'wpiko-chatbot'); ?></button>
             </div>
         </section>
 
         <!-- Step 3 -->
-        <section class="wpiko-wizard-step" data-step="3" hidden>
-            <h3><?php esc_html_e('Test it, then go live', 'wpiko-chatbot'); ?></h3>
-            <p class="description"><?php esc_html_e('Ask a question like a visitor would. Test messages also appear in Conversations.', 'wpiko-chatbot'); ?></p>
+        <section class="wpiko-chatbot-settings-card wpiko-wizard-step" data-step="3" hidden>
+            <h2 class="wpiko-chatbot-settings-card-title"><?php esc_html_e('Test it, then go live', 'wpiko-chatbot'); ?></h2>
+            <p class="wpiko-chatbot-settings-field-description"><?php esc_html_e('Ask a question like a visitor would. Test messages also appear in Conversations.', 'wpiko-chatbot'); ?></p>
 
             <div class="wpiko-wizard-chat">
-                <div class="wpiko-wizard-chat-messages" aria-live="polite"></div>
+                <div class="wpiko-wizard-chat-messages" role="log" aria-live="polite" aria-label="<?php esc_attr_e('Test conversation', 'wpiko-chatbot'); ?>" data-empty-message="<?php esc_attr_e('Your test conversation will appear here.', 'wpiko-chatbot'); ?>"></div>
                 <div class="wpiko-wizard-chat-suggestions">
                     <button type="button" class="button button-small"><?php esc_html_e('What do you offer?', 'wpiko-chatbot'); ?></button>
                     <button type="button" class="button button-small"><?php esc_html_e('How can I contact you?', 'wpiko-chatbot'); ?></button>
@@ -332,26 +338,30 @@ function wpiko_chatbot_setup_wizard_section()
                 <div class="wpiko-wizard-chat-input">
                     <label for="wpiko-wizard-chat-text" class="screen-reader-text"><?php esc_html_e('Test message', 'wpiko-chatbot'); ?></label>
                     <input type="text" id="wpiko-wizard-chat-text" placeholder="<?php esc_attr_e('Type a question…', 'wpiko-chatbot'); ?>" autocomplete="off">
-                    <button type="button" class="button button-primary" id="wpiko-wizard-chat-send"><?php esc_html_e('Send', 'wpiko-chatbot'); ?></button>
+                    <button type="button" class="button wpiko-chatbot-settings-save" id="wpiko-wizard-chat-send"><?php esc_html_e('Send', 'wpiko-chatbot'); ?></button>
                 </div>
             </div>
 
-            <label class="wpiko-wizard-toggle">
-                <input type="checkbox" id="wpiko-wizard-show-floating" <?php checked($show_floating_default); ?>>
-                <span>
-                    <strong><?php esc_html_e('Show the chatbot on every page', 'wpiko-chatbot'); ?></strong>
-                    <?php esc_html_e('Adds a chat button to the corner of your site. You can exclude pages or use the [wpiko_chatbot] shortcode instead later.', 'wpiko-chatbot'); ?>
-                </span>
-            </label>
+            <div class="wpiko-chatbot-settings-field-row wpiko-wizard-visibility">
+                <div class="wpiko-chatbot-settings-field-label"><?php esc_html_e('Floating chatbot', 'wpiko-chatbot'); ?></div>
+                <div class="wpiko-chatbot-settings-field-control">
+                    <label class="wpiko-chatbot-settings-switch" for="wpiko-wizard-show-floating">
+                        <input type="checkbox" role="switch" id="wpiko-wizard-show-floating" aria-describedby="wpiko-wizard-floating-description" <?php checked($show_floating_default); ?>>
+                        <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                        <span class="wpiko-chatbot-settings-switch__label"><?php esc_html_e('Show the chatbot on every page', 'wpiko-chatbot'); ?></span>
+                    </label>
+                    <p class="wpiko-chatbot-settings-field-description" id="wpiko-wizard-floating-description"><?php esc_html_e('Adds a chat button to the corner of your site. You can exclude pages or use the [wpiko_chatbot] shortcode instead later.', 'wpiko-chatbot'); ?></p>
+                </div>
+            </div>
 
             <div class="wpiko-wizard-nav">
                 <button type="button" class="button wpiko-wizard-back" data-back="2"><?php esc_html_e('Back', 'wpiko-chatbot'); ?></button>
-                <button type="button" class="button button-primary button-hero" id="wpiko-wizard-finish"><?php esc_html_e('Finish and view my site', 'wpiko-chatbot'); ?></button>
+                <button type="button" class="button wpiko-chatbot-settings-save" id="wpiko-wizard-finish"><?php esc_html_e('Finish and view my site', 'wpiko-chatbot'); ?></button>
             </div>
             <div class="wpiko-wizard-done" hidden>
                 <p class="wpiko-wizard-success"><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span> <?php esc_html_e('All set! Your chatbot is live. Your site opened in a new tab.', 'wpiko-chatbot'); ?></p>
                 <p>
-                    <a class="button button-primary" href="<?php echo esc_url(add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'dashboard'), admin_url('admin.php'))); ?>"><?php esc_html_e('Go to the dashboard', 'wpiko-chatbot'); ?></a>
+                    <a class="button wpiko-chatbot-settings-save" href="<?php echo esc_url(add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'dashboard'), admin_url('admin.php'))); ?>"><?php esc_html_e('Go to the dashboard', 'wpiko-chatbot'); ?></a>
                     <a class="button" href="<?php echo esc_url(add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'chatbot_style', '_wpnonce' => wp_create_nonce('wpiko_chatbot_tab_nonce')), admin_url('admin.php'))); ?>"><?php esc_html_e('Match it to my brand colors', 'wpiko-chatbot'); ?></a>
                 </p>
             </div>

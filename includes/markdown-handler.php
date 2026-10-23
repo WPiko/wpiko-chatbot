@@ -110,9 +110,6 @@ function wpiko_chatbot_process_emoji($text) {
 }
 
 
-
-
-
 // Make links clickable
 function wpiko_chatbot_process_links($text, $use_wp_functions = true) {
     // Ensure $text is a string before processing
@@ -209,16 +206,6 @@ function wpiko_chatbot_process_links($text, $use_wp_functions = true) {
     return wpiko_chatbot_sanitize_message_html($text);
 }
 
-// Alias for backward compatibility
-function wpiko_chatbot_make_links_clickable($text) {
-    return wpiko_chatbot_process_links($text, true);
-}
-
-// Alias for backward compatibility
-function wpiko_chatbot_clean_and_format_links($text) {
-    $text = wpiko_chatbot_process_links($text, false);
-    return $text;
-}
 
 // Main link processing function
 function wpiko_chatbot_process_message($text) {

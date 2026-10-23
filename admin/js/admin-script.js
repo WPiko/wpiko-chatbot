@@ -1,146 +1,5 @@
 jQuery(document).ready(function($) {
-    console.log('Admin script loaded');
 
-    // Grouped sidebar navigation.
-    var navGroupStorageKey = 'wpikoChatbotOpenNavGroups';
-    var $navGroups = $('.wpiko-nav-group');
-    var $toggleAllNavGroups = $('#wpiko-nav-toggle-all');
-    var storedNavGroups = null;
-
-    try {
-        var storedValue = window.localStorage.getItem(navGroupStorageKey);
-        if (storedValue !== null) {
-            var parsedGroups = JSON.parse(storedValue);
-            if (Array.isArray(parsedGroups)) {
-                storedNavGroups = parsedGroups;
-            }
-        } else {
-            // Carry over the open group saved by older plugin versions.
-            var legacyGroup = window.localStorage.getItem('wpikoChatbotOpenNavGroup');
-            if (legacyGroup) {
-                storedNavGroups = [legacyGroup];
-            }
-        }
-    } catch (error) {
-        storedNavGroups = null;
-    }
-
-    function setNavGroupState($group, isOpen) {
-        $group.toggleClass('is-open', isOpen);
-        $group.children('.wpiko-nav-group-toggle').attr('aria-expanded', isOpen ? 'true' : 'false');
-    }
-
-    function updateToggleAllLabel() {
-        var allOpen = $navGroups.length > 0 && $navGroups.filter('.is-open').length === $navGroups.length;
-        $toggleAllNavGroups.text($toggleAllNavGroups.attr(allOpen ? 'data-collapse-label' : 'data-expand-label'));
-    }
-
-    function saveOpenNavGroups() {
-        var openGroups = [];
-        $navGroups.each(function() {
-            if ($(this).hasClass('is-open')) {
-                openGroups.push($(this).attr('data-nav-group'));
-            }
-        });
-
-        try {
-            window.localStorage.setItem(navGroupStorageKey, JSON.stringify(openGroups));
-        } catch (error) {
-            // Navigation remains functional when browser storage is unavailable.
-        }
-    }
-
-    if (storedNavGroups !== null) {
-        $navGroups.each(function() {
-            var $group = $(this);
-            var isStoredOpen = $.inArray($group.attr('data-nav-group'), storedNavGroups) !== -1;
-            setNavGroupState($group, isStoredOpen || $group.hasClass('has-active-tab'));
-        });
-    }
-    updateToggleAllLabel();
-
-    $('.wpiko-nav-group-toggle').on('click', function() {
-        var $group = $(this).closest('.wpiko-nav-group');
-        setNavGroupState($group, !$group.hasClass('is-open'));
-        saveOpenNavGroups();
-        updateToggleAllLabel();
-    });
-
-    $toggleAllNavGroups.on('click', function() {
-        var shouldExpand = $navGroups.filter('.is-open').length !== $navGroups.length;
-        $navGroups.each(function() {
-            var $group = $(this);
-            setNavGroupState($group, shouldExpand || $group.hasClass('has-active-tab'));
-        });
-        saveOpenNavGroups();
-        updateToggleAllLabel();
-    });
-    
-    // Mobile Navigation Toggle
-    $('#wpiko-mobile-nav-toggle').on('click', function(e) {
-        e.preventDefault();
-        toggleMobileNav();
-    });
-    
-    // Handle keyboard navigation for mobile toggle
-    $('#wpiko-mobile-nav-toggle').on('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleMobileNav();
-        }
-        if (e.key === 'Escape') {
-            closeMobileNav();
-        }
-    });
-    
-    // Function to toggle mobile navigation
-    function toggleMobileNav() {
-        var $nav = $('.wpiko-chatbot-nav');
-        var $button = $('#wpiko-mobile-nav-toggle');
-        
-        $nav.toggleClass('nav-open');
-        $button.toggleClass('active');
-        
-        // Update button attributes for accessibility
-        var isOpen = $nav.hasClass('nav-open');
-        $button.attr('aria-expanded', isOpen ? 'true' : 'false');
-        
-        if (isOpen) {
-            // Focus first nav item when opened
-            setTimeout(function() {
-                $('#wpiko-nav-menu a:first').focus();
-            }, 100);
-        }
-    }
-    
-    // Function to close mobile navigation
-    function closeMobileNav() {
-        $('.wpiko-chatbot-nav').removeClass('nav-open');
-        $('#wpiko-mobile-nav-toggle').removeClass('active').attr('aria-expanded', 'false');
-    }
-    
-    // Close mobile nav when clicking on a nav item
-    $('.wpiko-chatbot-nav a').on('click', function() {
-        if ($(window).width() <= 782) {
-            closeMobileNav();
-        }
-    });
-    
-    // Handle window resize
-    $(window).on('resize', function() {
-        if ($(window).width() > 782) {
-            closeMobileNav();
-        }
-    });
-    
-    // Handle escape key to close mobile nav
-    $(document).on('keydown', function(e) {
-        if (e.key === 'Escape' && $('.wpiko-chatbot-nav').hasClass('nav-open')) {
-            closeMobileNav();
-            $('#wpiko-mobile-nav-toggle').focus();
-        }
-    });
-    
     // API Key validation
     $('form[name="api_key_form"]').on('submit', function(e) {
         e.preventDefault();
@@ -156,14 +15,13 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('API key is valid and has been saved.');
                     location.reload();
                 } else {
-                    alert('Invalid API key. Please check and try again.');
+                    window.wpikoChatbotNotices.show('Invalid API key. Please check and try again.', 'error', { before: $('form[name="api_key_form"]') });
                 }
             },
             error: function() {
-                alert('An error occurred while validating the API key.');
+                window.wpikoChatbotNotices.show('An error occurred while validating the API key.', 'error', { before: $('form[name="api_key_form"]') });
             }
         });
     });
@@ -196,6 +54,7 @@ jQuery(document).ready(function($) {
     var isAdvancedOpen = localStorage.getItem('wpiko_chatbot_advanced_open') === 'true';
 
     function updateAdvancedOptionsState(isOpen) {
+        $toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         if (isOpen) {
             $advancedOptions.style.display = 'block';
             $toggleButton.textContent = 'Hide Advanced Options';
@@ -233,12 +92,33 @@ jQuery(document).ready(function($) {
     var $questionsContainer = $('#questions-container');
 
     if ($addQuestionButton.length && $questionsContainer.length) {
+        function updateQuestionRows() {
+            var $rows = $questionsContainer.children('.question-row');
+            $rows.each(function(index) {
+                $(this).find('input[name="questions[]"]').attr('aria-label', 'Question ' + (index + 1));
+                $(this).find('.remove-question').attr('aria-label', 'Remove question ' + (index + 1));
+            });
+            $('#questions-empty').prop('hidden', $rows.length > 0);
+            $questionsContainer.prop('hidden', $rows.length === 0);
+        }
+
+        updateQuestionRows();
+
         $addQuestionButton.click(function() {
-            $questionsContainer.append('<div class="question-row"><input type="text" name="questions[]" value="" class="regular-text"><button type="button" class="button remove-question">Remove</button></div>');
+            $questionsContainer.append('<div class="question-row wpiko-chatbot-settings-repeater-row"><input type="text" name="questions[]" value="" aria-describedby="chatbot-questions-description"><button type="button" class="button remove-question wpiko-chatbot-settings-danger">Remove</button></div>');
+            updateQuestionRows();
+            $questionsContainer.find('.question-row:last input').trigger('focus');
         });
 
-        $(document).on('click', '.remove-question', function() {
-            $(this).parent().remove();
+        $questionsContainer.on('click', '.remove-question', function() {
+            var $row = $(this).closest('.question-row');
+            var $nextInput = $row.next('.question-row').find('input').first();
+            if (!$nextInput.length) {
+                $nextInput = $row.prev('.question-row').find('input').first();
+            }
+            $row.remove();
+            updateQuestionRows();
+            ($nextInput.length ? $nextInput : $addQuestionButton).trigger('focus');
         });
     }
 });

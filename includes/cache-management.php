@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Cache Management for WPiko Chatbot
+ * Cache Management for WPiko AI Chatbot
  * 
  * This file handles automatic cache invalidation when chatbot settings are changed
  * to prevent caching issues with popular WordPress caching plugins.
@@ -16,6 +16,22 @@ class WPiko_Chatbot_Cache_Manager
     private static $instance = null;
     private $cache_key_version = '';
     private $monitored_options = array();
+
+    /**
+     * Whether this request already cleared the cache. One save can update
+     * many monitored options (a style preset changes ~20), but the cache only
+     * needs clearing, and the notice showing, once per request.
+     *
+     * @var bool
+     */
+    private $cleared_this_request = false;
+
+    /**
+     * Whether this request already bumped the proactive settings version.
+     *
+     * @var bool
+     */
+    private $proactive_version_updated = false;
 
     public static function get_instance()
     {
@@ -155,9 +171,17 @@ class WPiko_Chatbot_Cache_Manager
         // Treat updated proactive settings as a new greeting configuration.
         // The frontend uses this version to reset only proactive frequency
         // markers, without affecting them when unrelated chatbot settings change.
-        if (strpos($option, 'wpiko_chatbot_proactive_') === 0) {
+        if (strpos($option, 'wpiko_chatbot_proactive_') === 0 && !$this->proactive_version_updated) {
             $this->update_proactive_settings_version();
+            $this->proactive_version_updated = true;
         }
+
+        // Clear caches and show the notice only once per request, however
+        // many settings the save changed.
+        if ($this->cleared_this_request) {
+            return;
+        }
+        $this->cleared_this_request = true;
 
         // Update cache key version
         $this->update_cache_key_version();
@@ -497,7 +521,7 @@ class WPiko_Chatbot_Cache_Manager
             ?>
             <div class="notice notice-success is-dismissible">
                 <p>
-                    <strong>WPiko Chatbot:</strong>
+                    <strong>WPiko AI Chatbot:</strong>
                     <?php echo wp_kses_post($message); ?>
                 </p>
             </div>
@@ -515,7 +539,7 @@ class WPiko_Chatbot_Cache_Manager
 
         // Show immediate success notice
         echo '<div class="notice notice-success is-dismissible">';
-        echo '<p><strong>WPiko Chatbot:</strong> ' . wp_kses_post($message) . '</p>';
+        echo '<p><strong>WPiko AI Chatbot:</strong> ' . wp_kses_post($message) . '</p>';
         echo '</div>';
     }
 
@@ -560,11 +584,6 @@ function wpiko_chatbot_get_cache_version()
     return $cache_manager->get_cache_version();
 }
 
-function wpiko_chatbot_get_detected_cache_plugins()
-{
-    $cache_manager = WPiko_Chatbot_Cache_Manager::get_instance();
-    return $cache_manager->get_detected_cache_plugins();
-}
 
 function wpiko_chatbot_clear_file_cache()
 {

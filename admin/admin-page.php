@@ -3,6 +3,50 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
+require_once __DIR__ . '/includes/modal-shell.php';
+
+/**
+ * Oldest WPiko AI Chatbot Pro release that works with this admin design.
+ */
+if (!defined('WPIKO_CHATBOT_MIN_PRO_VERSION')) {
+    define('WPIKO_CHATBOT_MIN_PRO_VERSION', '2.1.2');
+}
+
+/**
+ * Ask admins to update WPiko AI Chatbot Pro when an older release is active.
+ * Pro updates arrive separately (from GitHub), so for a while a site can run
+ * this version with an older Pro.
+ */
+function wpiko_chatbot_outdated_pro_notice()
+{
+    if (!defined('WPIKO_CHATBOT_PRO_VERSION') || version_compare(WPIKO_CHATBOT_PRO_VERSION, WPIKO_CHATBOT_MIN_PRO_VERSION, '>=')) {
+        return;
+    }
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if ($screen && !in_array($screen->id, array('toplevel_page_ai-chatbot', 'plugins', 'dashboard', 'update-core'), true)) {
+        return;
+    }
+    ?>
+    <div class="notice notice-warning">
+        <p>
+            <?php
+            echo esc_html(sprintf(
+                /* translators: 1: installed Pro version, 2: required Pro version. */
+                __('WPiko AI Chatbot Pro %1$s is older than this version of WPiko AI Chatbot. Please update WPiko AI Chatbot Pro to %2$s or newer so its settings and training tools match the new admin.', 'wpiko-chatbot'),
+                WPIKO_CHATBOT_PRO_VERSION,
+                WPIKO_CHATBOT_MIN_PRO_VERSION
+            ));
+            ?>
+            <a href="<?php echo esc_url(admin_url('plugins.php')); ?>"><?php esc_html_e('Go to Plugins', 'wpiko-chatbot'); ?></a>
+        </p>
+    </div>
+    <?php
+}
+add_action('admin_notices', 'wpiko_chatbot_outdated_pro_notice');
+
 /**
  * Get the navigation groups used by the plugin admin.
  *
@@ -14,20 +58,28 @@ if (!defined('ABSPATH')) {
 function wpiko_chatbot_get_admin_tab_groups()
 {
     $groups = array(
-        'setup_ai' => array(
-            'label' => 'Setup & AI',
+        'monitor' => array(
+            'label' => __('Monitor', 'wpiko-chatbot'),
             'order' => 10,
         ),
-        'chat_experience' => array(
-            'label' => 'Chat Experience',
+        'ai' => array(
+            'label' => __('AI & Training', 'wpiko-chatbot'),
             'order' => 20,
         ),
-        'manage_troubleshoot' => array(
-            'label' => 'Manage & Tools',
+        'chat_widget' => array(
+            'label' => __('Chat Widget', 'wpiko-chatbot'),
             'order' => 30,
         ),
+        'leads_sales' => array(
+            'label' => __('Leads & Sales', 'wpiko-chatbot'),
+            'order' => 40,
+        ),
+        'advanced' => array(
+            'label' => __('Advanced', 'wpiko-chatbot'),
+            'order' => 50,
+        ),
         'more' => array(
-            'label' => 'More',
+            'label' => __('More', 'wpiko-chatbot'),
             'order' => 90,
         ),
     );
@@ -42,11 +94,55 @@ function wpiko_chatbot_get_admin_tab_groups()
 }
 
 /**
+ * Get the sidebar entries that combine several screens behind sub-tabs.
+ *
+ * A tab joins one of these by setting `section` (and optionally
+ * `section_label` for its sub-tab). The sidebar shows the section once and
+ * links it to its first screen; the screens show a sub-tab row.
+ * Add-ons can register more with the `wpiko_chatbot_admin_nav_sections` filter.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function wpiko_chatbot_get_admin_nav_sections()
+{
+    $sections = array(
+        'ai_settings' => array(
+            'label' => __('AI Settings', 'wpiko-chatbot'),
+            'icon' => 'dashicons-admin-generic',
+            'group' => 'ai',
+            'order' => 10,
+        ),
+        'placement' => array(
+            'label' => __('Placement', 'wpiko-chatbot'),
+            'icon' => 'wpiko-placement',
+            'group' => 'chat_widget',
+            'order' => 10,
+        ),
+        'appearance' => array(
+            'label' => __('Appearance', 'wpiko-chatbot'),
+            'icon' => 'dashicons-admin-customizer',
+            'group' => 'chat_widget',
+            'order' => 20,
+        ),
+        'messages' => array(
+            'label' => __('Messages', 'wpiko-chatbot'),
+            'icon' => 'dashicons-format-status',
+            'group' => 'chat_widget',
+            'order' => 30,
+        ),
+    );
+
+    return apply_filters('wpiko_chatbot_admin_nav_sections', $sections);
+}
+
+/**
  * Get all core and add-on admin tabs from one normalized registry.
  *
  * The existing `wpiko_chatbot_admin_tabs` filter remains available for
  * backward compatibility. Add-ons may optionally provide `group`, `order`,
- * `capability`, and `separator_before` values in addition to label and icon.
+ * `capability`, `section`, `section_label`, `pro` and `nav` values in
+ * addition to label and icon. `nav` may be `false` (reachable by URL only)
+ * or `'footer'` (small link at the bottom of the sidebar).
  *
  * @return array<string, array<string, mixed>>
  */
@@ -65,77 +161,95 @@ function wpiko_chatbot_get_admin_tabs()
             'group' => '',
             'order' => 1,
         ),
-        'api_key' => array(
-            'label' => 'API Key',
-            'icon' => 'dashicons-admin-network',
-            'group' => 'setup_ai',
+        'conversations' => array(
+            'label' => 'Conversations',
+            'icon' => 'dashicons-format-chat',
+            'group' => 'monitor',
             'order' => 10,
         ),
         'ai_configuration' => array(
             'label' => 'AI Configuration',
             'icon' => 'dashicons-admin-generic',
-            'group' => 'setup_ai',
+            'group' => 'ai',
+            'section' => 'ai_settings',
+            'section_label' => __('Model & Knowledge', 'wpiko-chatbot'),
+            'order' => 10,
+        ),
+        'api_key' => array(
+            'label' => 'API Key',
+            'icon' => 'dashicons-admin-network',
+            'group' => 'ai',
+            'section' => 'ai_settings',
+            'section_label' => __('API Connection', 'wpiko-chatbot'),
             'order' => 20,
         ),
         'floating_chatbot' => array(
             'label' => 'Floating Chatbot',
             'icon' => 'dashicons-admin-settings',
-            'group' => 'chat_experience',
+            'group' => 'chat_widget',
+            'section' => 'placement',
+            'section_label' => __('Floating Chatbot', 'wpiko-chatbot'),
             'order' => 10,
-        ),
-        'proactive_greeting' => array(
-            'label' => 'Proactive Greeting',
-            'icon' => 'dashicons-format-status',
-            'group' => 'chat_experience',
-            'order' => 20,
         ),
         'shortcode_chatbot' => array(
             'label' => 'Shortcode Chatbot',
             'icon' => 'dashicons-shortcode',
-            'group' => 'chat_experience',
-            'order' => 30,
+            'group' => 'chat_widget',
+            'section' => 'placement',
+            'section_label' => __('Shortcode', 'wpiko-chatbot'),
+            'order' => 20,
         ),
         'chatbot_style' => array(
             'label' => 'Chatbot Style',
             'icon' => 'dashicons-admin-customizer',
-            'group' => 'chat_experience',
-            'order' => 40,
+            'group' => 'chat_widget',
+            'section' => 'appearance',
+            'section_label' => __('Style', 'wpiko-chatbot'),
+            'order' => 10,
         ),
         'chatbot_menu' => array(
             'label' => 'Chatbot Menu',
             'icon' => 'dashicons-menu',
-            'group' => 'chat_experience',
-            'order' => 50,
+            'group' => 'chat_widget',
+            'section' => 'appearance',
+            'section_label' => __('Menu Options', 'wpiko-chatbot'),
+            'order' => 20,
+        ),
+        'proactive_greeting' => array(
+            'label' => 'Proactive Greeting',
+            'icon' => 'dashicons-format-status',
+            'group' => 'chat_widget',
+            'section' => 'messages',
+            'section_label' => __('Greeting', 'wpiko-chatbot'),
+            'order' => 10,
         ),
         'questions' => array(
             'label' => 'Pre-made Questions',
             'icon' => 'dashicons-editor-help',
-            'group' => 'chat_experience',
-            'order' => 60,
+            'group' => 'chat_widget',
+            'section' => 'messages',
+            'section_label' => __('Pre-made Questions', 'wpiko-chatbot'),
+            'order' => 20,
         ),
         'error_messages' => array(
             'label' => 'Error Messages',
             'icon' => 'dashicons-warning',
-            'group' => 'chat_experience',
-            'order' => 70,
-        ),
-        'conversations' => array(
-            'label' => 'Conversations',
-            'icon' => 'dashicons-format-chat',
-            'group' => 'manage_troubleshoot',
-            'order' => 10,
+            'group' => 'chat_widget',
+            'section' => 'messages',
+            'section_label' => __('Error Messages', 'wpiko-chatbot'),
+            'order' => 30,
         ),
         'user_limits' => array(
             'label' => 'User Limits',
             'icon' => 'dashicons-shield',
-            'group' => 'manage_troubleshoot',
-            'order' => 20,
+            'group' => 'advanced',
+            'order' => 10,
         ),
         'debug_log' => array(
             'label' => 'Debug Log',
             'icon' => 'dashicons-admin-tools',
-            'group' => 'manage_troubleshoot',
-            'order' => 30,
+            'group' => 'advanced',
+            'order' => 20,
         ),
     );
 
@@ -148,12 +262,30 @@ function wpiko_chatbot_get_admin_tabs()
     $additional_tabs = apply_filters('wpiko_chatbot_admin_tabs', array());
     $additional_order = 100;
 
+    // Groups used before the navigation was reorganized.
+    $legacy_groups = array(
+        'setup_ai' => 'ai',
+        'chat_experience' => 'chat_widget',
+        'manage_troubleshoot' => 'advanced',
+    );
+
+    // Older Pro versions put every Pro screen in one "Pro Features" group.
+    // Place those screens with the features they belong to instead.
+    $legacy_pro_tabs = array(
+        'analytics' => array('group' => 'monitor', 'order' => 20),
+        'pwa_settings' => array('group' => 'monitor', 'order' => 30),
+        'email_capture' => array('group' => 'leads_sales', 'order' => 10),
+        'contact_form' => array('group' => 'leads_sales', 'order' => 20),
+        'product_card' => array('group' => 'leads_sales', 'order' => 30),
+        'license_activation' => array('group' => 'more', 'order' => 90, 'nav' => 'footer'),
+    );
+
     foreach ($additional_tabs as $tab_id => $tab) {
         if (!is_array($tab)) {
             continue;
         }
 
-        $tabs[$tab_id] = wp_parse_args(
+        $tab = wp_parse_args(
             $tab,
             array(
                 'label' => ucfirst(str_replace('_', ' ', $tab_id)),
@@ -162,6 +294,20 @@ function wpiko_chatbot_get_admin_tabs()
                 'order' => $additional_order,
             )
         );
+
+        if (isset($legacy_groups[$tab['group']])) {
+            $tab['group'] = $legacy_groups[$tab['group']];
+        }
+
+        if ($tab['group'] === 'pro_features') {
+            $tab['pro'] = true;
+            if (isset($legacy_pro_tabs[$tab_id])) {
+                $tab = array_merge($tab, $legacy_pro_tabs[$tab_id]);
+            }
+            unset($tab['separator_before']);
+        }
+
+        $tabs[$tab_id] = $tab;
         $additional_order += 10;
     }
 
@@ -182,6 +328,20 @@ function wpiko_chatbot_get_admin_tabs()
     });
 
     return $tabs;
+}
+
+/**
+ * Build a nonce-protected URL for one admin screen.
+ *
+ * @param string $tab_id Tab ID.
+ * @return string
+ */
+function wpiko_chatbot_get_admin_tab_url($tab_id)
+{
+    return wp_nonce_url(
+        add_query_arg(array('page' => 'ai-chatbot', 'tab' => $tab_id), admin_url('admin.php')),
+        'wpiko_chatbot_tab_nonce'
+    );
 }
 
 /**
@@ -207,8 +367,8 @@ function wpiko_chatbot_get_admin_menu_shortcuts()
 function wpiko_chatbot_admin_menu()
 {
     add_menu_page(
-        'WPiko Chatbot',
-        'WPiko Chatbot',
+        'WPiko AI Chatbot',
+        'WPiko AI Chatbot',
         'manage_options',
         'ai-chatbot',
         'wpiko_chatbot_admin_page',
@@ -245,6 +405,21 @@ function wpiko_chatbot_admin_menu()
 }
 add_action('admin_menu', 'wpiko_chatbot_admin_menu');
 
+/**
+ * Place the shared header above page content and admin notices, as in wpiko SEO.
+ */
+function wpiko_chatbot_admin_header()
+{
+    $screen = get_current_screen();
+    if (!$screen || $screen->id !== 'toplevel_page_ai-chatbot' || !current_user_can('manage_options')) {
+        return;
+    }
+
+    require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/plugin-header.php';
+    wpiko_chatbot_render_plugin_header();
+}
+add_action('in_admin_header', 'wpiko_chatbot_admin_header');
+
 // Enqueue admin scripts and styles
 function wpiko_chatbot_admin_enqueue_scripts($hook)
 {
@@ -258,24 +433,46 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
     $version = apply_filters('wpiko_chatbot_asset_version', $version);
     $admin_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/admin-style.css') ?: $version;
     $admin_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/admin-script.js') ?: $version;
+    $header_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/plugin-header.css') ?: $version;
+    $header_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/plugin-header.js') ?: $version;
+    $design_tokens_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/design-tokens.css') ?: $version;
+    $dashboard_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/dashboard-style.css') ?: $version;
+    $dashboard_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/dashboard.js') ?: $version;
+    $settings_controls_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/settings-controls.css') ?: $version;
+    $debug_log_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/debug-log-style.css') ?: $version;
+    $api_key_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/api-key.css') ?: $version;
+    $ai_configuration_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/ai-configuration.css') ?: $version;
+    $chatbot_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/chatbot-style.css') ?: $version;
+    $conversations_admin_style_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/conversations-admin.css') ?: $version;
+    $conversations_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/conversations.js') ?: $version;
+    $responses_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/responses-api.js') ?: $version;
 
     wp_enqueue_media();
     wp_enqueue_style('dashicons');
-    wp_enqueue_style('wpiko-chatbot-admin-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/admin-style.css', array(), $admin_style_version);
-    wp_enqueue_style('wpiko-chatbot-dashboard-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/dashboard-style.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-plugin-header-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/plugin-header.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-ai-configuration-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/ai-configuration.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-conversation-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/conversation-style.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-conversation-mobile-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/conversation-mobile-style.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-modal-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/modal-style.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-file-management-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/file-management.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-debug-log-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/debug-log-style.css', array(), $version);
-    wp_enqueue_style('wpiko-chatbot-style-tab-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/chatbot-style.css', array('wpiko-chatbot-admin-css'), $version);
 
-    wp_enqueue_script('wpiko-chatbot-modal-handlers', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/modal-handlers.js', array('jquery'), $version, true);
-    wp_enqueue_script('wpiko-chatbot-dashboard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/dashboard.js', array('jquery'), $version, true);
+    // In-page success/error messages (replaces alert() popups). Pro scripts use it too.
+    $notices_script_version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/admin-notices.js') ?: $version;
+    wp_enqueue_script('wpiko-chatbot-admin-notices', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/admin-notices.js', array(), $notices_script_version, true);
+    wp_enqueue_style('wpiko-chatbot-design-tokens', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/design-tokens.css', array(), $design_tokens_version);
+    wp_enqueue_style('wpiko-chatbot-admin-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/admin-style.css', array('wpiko-chatbot-design-tokens'), $admin_style_version);
+    wp_enqueue_style('wpiko-chatbot-settings-controls', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/settings-controls.css', array('wpiko-chatbot-admin-css'), $settings_controls_version);
+    wp_enqueue_style('wpiko-chatbot-api-key-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/api-key.css', array('wpiko-chatbot-settings-controls'), $api_key_style_version);
+    wp_enqueue_style('wpiko-chatbot-dashboard-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/dashboard-style.css', array('wpiko-chatbot-admin-css'), $dashboard_style_version);
+    wp_enqueue_style('wpiko-chatbot-plugin-header-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/plugin-header.css', array('wpiko-chatbot-admin-css'), $header_style_version);
+    wp_enqueue_script('wpiko-chatbot-plugin-header-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/plugin-header.js', array(), $header_script_version, true);
+    wp_enqueue_style('wpiko-chatbot-ai-configuration-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/ai-configuration.css', array('wpiko-chatbot-settings-controls', 'wpiko-chatbot-setup-wizard-css'), $ai_configuration_style_version);
+    wp_enqueue_style('wpiko-chatbot-conversation-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/conversation-style.css', array('wpiko-chatbot-settings-controls'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/conversation-style.css') ?: $version);
+    wp_enqueue_style('wpiko-chatbot-conversation-mobile-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/conversation-mobile-style.css', array('wpiko-chatbot-settings-controls'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/conversation-mobile-style.css') ?: $version);
+    wp_enqueue_style('wpiko-chatbot-conversations-admin-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/conversations-admin.css', array('wpiko-chatbot-settings-controls', 'wpiko-chatbot-conversation-css', 'wpiko-chatbot-conversation-mobile-css'), $conversations_admin_style_version);
+    wp_enqueue_style('wpiko-chatbot-modal-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/modal-style.css', array('wpiko-chatbot-settings-controls'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/modal-style.css') ?: $version);
+    wp_enqueue_style('wpiko-chatbot-file-management-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/file-management.css', array('wpiko-chatbot-settings-controls'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/file-management.css') ?: $version);
+    wp_enqueue_style('wpiko-chatbot-debug-log-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/debug-log-style.css', array('wpiko-chatbot-settings-controls'), $debug_log_style_version);
+    wp_enqueue_style('wpiko-chatbot-style-tab-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/chatbot-style.css', array('wpiko-chatbot-settings-controls'), $chatbot_style_version);
 
-    wp_enqueue_script('wpiko-chatbot-responses-api-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/responses-api.js', array('jquery'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-modal-handlers', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/modal-handlers.js', array('jquery'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/modal-handlers.js') ?: $version, true);
+    wp_enqueue_script('wpiko-chatbot-dashboard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/dashboard.js', array('jquery'), $dashboard_script_version, true);
+
+    wp_enqueue_script('wpiko-chatbot-responses-api-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/responses-api.js', array('jquery', 'wpiko-chatbot-admin-notices'), $responses_script_version, true);
     wp_enqueue_script('wpiko-chatbot-models-info-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/models-info.js', array('jquery'), $version, true);
 
     wp_localize_script('wpiko-chatbot-responses-api-js', 'wpikoChatbotAdmin', array(
@@ -283,19 +480,19 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
         'nonce' => wp_create_nonce('wpiko_chatbot_nonce'),
         'apiType' => 'responses'
     ));
-    wp_enqueue_script('wpiko-chatbot-conversations-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/conversations.js', array('jquery'), $version, true);
-    wp_enqueue_script('wpiko-chatbot-file-management-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/file-management.js', array('jquery'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-conversations-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/conversations.js', array('jquery', 'wpiko-chatbot-admin-notices'), $conversations_script_version, true);
+    wp_enqueue_script('wpiko-chatbot-file-management-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/file-management.js', array('jquery', 'wpiko-chatbot-admin-notices', 'wpiko-chatbot-modal-handlers'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/file-management.js') ?: $version, true);
 
-    wp_enqueue_script('wpiko-chatbot-files-list-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/files-list.js', array('jquery'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-files-list-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/files-list.js', array('jquery', 'wpiko-chatbot-admin-notices', 'wpiko-chatbot-modal-handlers'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/files-list.js') ?: $version, true);
 
-    wp_enqueue_script('wpiko-chatbot-admin-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/admin-script.js', array('jquery'), $admin_script_version, true);
+    wp_enqueue_script('wpiko-chatbot-admin-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/admin-script.js', array('jquery', 'wpiko-chatbot-admin-notices'), $admin_script_version, true);
     wp_localize_script('wpiko-chatbot-admin-js', 'wpikoChatbotAdmin', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('wpiko_chatbot_nonce'),
         'apiType' => 'responses'
     ));
 
-    wp_enqueue_style('wpiko-chatbot-setup-wizard-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/setup-wizard.css', array('wpiko-chatbot-admin-css'), $version);
+    wp_enqueue_style('wpiko-chatbot-setup-wizard-css', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/setup-wizard.css', array('wpiko-chatbot-settings-controls'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/setup-wizard.css') ?: $version);
 
     wp_enqueue_script('wpiko-chatbot-site-knowledge-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/site-knowledge.js', array('jquery'), $version, true);
     wp_localize_script('wpiko-chatbot-site-knowledge-js', 'wpikoSiteKnowledge', array(
@@ -329,7 +526,7 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
         ),
     ));
 
-    wp_enqueue_script('wpiko-chatbot-setup-wizard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/setup-wizard.js', array('jquery', 'wpiko-chatbot-site-knowledge-js'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-setup-wizard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/setup-wizard.js', array('jquery', 'wpiko-chatbot-site-knowledge-js', 'wpiko-chatbot-admin-notices'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/setup-wizard.js') ?: $version, true);
     wp_localize_script('wpiko-chatbot-setup-wizard-js', 'wpikoSetupWizard', array(
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('wpiko_chatbot_nonce'),
@@ -349,6 +546,24 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
 }
 add_action('admin_enqueue_scripts', 'wpiko_chatbot_admin_enqueue_scripts');
 
+/**
+ * Load the shared message styles after every other admin stylesheet,
+ * including the Pro add-on's, so success and error messages look the same
+ * on every screen (matching wpiko SEO).
+ *
+ * @param string $hook Current admin page hook.
+ */
+function wpiko_chatbot_admin_enqueue_notice_styles($hook)
+{
+    if ($hook !== 'toplevel_page_ai-chatbot') {
+        return;
+    }
+
+    $version = filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/notices.css') ?: WPIKO_CHATBOT_VERSION;
+    wp_enqueue_style('wpiko-chatbot-notices', WPIKO_CHATBOT_PLUGIN_URL . 'admin/css/notices.css', array('wpiko-chatbot-design-tokens'), $version);
+}
+add_action('admin_enqueue_scripts', 'wpiko_chatbot_admin_enqueue_notice_styles', 100);
+
 // Functions to load File Management callback
 function wpiko_chatbot_load_file_management_callback()
 {
@@ -363,33 +578,6 @@ function wpiko_chatbot_load_file_management_callback()
 }
 add_action('wp_ajax_wpiko_chatbot_load_file_management', 'wpiko_chatbot_load_file_management_callback');
 
-// Functions to load Scan Website callback
-function wpiko_chatbot_load_scan_website_callback()
-{
-    check_ajax_referer('wpiko_chatbot_nonce', 'security');
-    wpiko_chatbot_require_admin_ajax();
-
-    // Allow Pro plugin to handle this earlier with priority 20
-    if (!did_action('wp_ajax_wpiko_chatbot_load_scan_website')) {
-        // Return empty content, Pro plugin will handle this
-        wp_send_json_success('');
-    }
-}
-add_action('wp_ajax_wpiko_chatbot_load_scan_website', 'wpiko_chatbot_load_scan_website_callback', 30);
-
-// Functions to load QA Management callback
-function wpiko_chatbot_load_qa_management_callback()
-{
-    check_ajax_referer('wpiko_chatbot_nonce', 'security');
-    wpiko_chatbot_require_admin_ajax();
-
-    // Allow Pro plugin to handle this earlier with priority 20
-    if (!did_action('wp_ajax_wpiko_chatbot_load_qa_management')) {
-        // Return empty content, Pro plugin will handle this
-        wp_send_json_success('');
-    }
-}
-add_action('wp_ajax_wpiko_chatbot_load_qa_management', 'wpiko_chatbot_load_qa_management_callback', 30);
 
 // Functions to load Woocommerce Integration callback
 function wpiko_chatbot_load_woocommerce_integration_callback()

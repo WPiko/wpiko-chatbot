@@ -1,5 +1,5 @@
 /**
- * In-page success, error, warning and info messages for wpiko Chatbot screens.
+ * In-page success, error, warning and info messages for WPiko AI Chatbot screens.
  *
  * Replaces browser alert() popups with the same tinted notice panel wpiko SEO
  * uses (styles in admin/css/notices.css). Also moves the notices WordPress

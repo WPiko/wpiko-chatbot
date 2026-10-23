@@ -2,9 +2,9 @@
 
 **AI conversations, customer support, and lead capture for WordPress.**
 
-WPiko Chatbot brings OpenAI-powered conversations to your website. Answer visitor questions around the clock, share knowledge about your business, and create a chat experience that fits your brand and language.
+WPiko AI Chatbot brings OpenAI-powered conversations to your website. Answer visitor questions around the clock, share knowledge about your business, and create a chat experience that fits your brand and language.
 
-[Download on WordPress.org](https://wordpress.org/plugins/wpiko-chatbot/) · [Visit WPiko](https://wpiko.com/chatbot) · [Watch the video](https://www.youtube.com/watch?v=yRSKh06YWRc)
+[Download on WordPress.org](https://wordpress.org/plugins/wpiko-chatbot/) · [Visit WPiko](https://wpiko.com/chatbot) · [Watch the video](https://www.youtube.com/watch?v=68E5sxxMli0)
 
 ## Features
 
@@ -17,11 +17,11 @@ WPiko Chatbot brings OpenAI-powered conversations to your website. Answer visito
 - **Visitor engagement:** Add proactive greetings, quick questions, and conversation starters.
 - **Usage controls:** Set hourly and daily limits per IP address.
 
-## WPiko Chatbot Pro
+## WPiko AI Chatbot Pro
 
-The separate **WPiko Chatbot Pro** add-on extends the free plugin with live agent takeover, a mobile app (PWA), push notifications, advanced analytics, lead and contact forms, WooCommerce features, and additional knowledge tools.
+The separate **WPiko AI Chatbot Pro** add-on extends the free plugin with live agent takeover, a mobile app (PWA), push notifications, advanced analytics, lead and contact forms, WooCommerce features, and additional knowledge tools.
 
-[Explore WPiko Chatbot Pro](https://wpiko.com/chatbot)
+[Explore WPiko AI Chatbot Pro](https://wpiko.com/chatbot)
 
 ## Requirements
 
@@ -39,4 +39,4 @@ The separate **WPiko Chatbot Pro** add-on extends the free plugin with live agen
 
 ## License
 
-WPiko Chatbot is licensed under [GPL-2.0 or later](https://www.gnu.org/licenses/gpl-2.0.html).
+WPiko AI Chatbot is licensed under [GPL-2.0 or later](https://www.gnu.org/licenses/gpl-2.0.html).

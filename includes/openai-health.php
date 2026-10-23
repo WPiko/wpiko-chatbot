@@ -108,7 +108,7 @@ function wpiko_chatbot_classify_openai_error($status_code, $body = null, $transp
         $result['error_key'] = 'OpenAI account problem';
         $result['key_valid'] = false;
         $result['account_problem'] = true;
-        $result['admin_message'] = __('OpenAI rejected the API key. It may have been mistyped, deleted, or revoked, or it belongs to a project that was archived. Create a new secret key in your OpenAI dashboard and save it in WPiko Chatbot → API Key.', 'wpiko-chatbot');
+        $result['admin_message'] = __('OpenAI rejected the API key. It may have been mistyped, deleted, or revoked, or it belongs to a project that was archived. Create a new secret key in your OpenAI dashboard and save it in WPiko AI Chatbot → API Key.', 'wpiko-chatbot');
         $result['admin_link'] = wpiko_chatbot_openai_url('keys');
         $result['admin_link_label'] = __('Open OpenAI API keys', 'wpiko-chatbot');
         return $result;
@@ -490,7 +490,7 @@ function wpiko_chatbot_openai_health_admin_notice()
     ?>
     <div class="notice notice-error">
         <p>
-            <strong><?php esc_html_e('WPiko Chatbot cannot answer visitors right now.', 'wpiko-chatbot'); ?></strong>
+            <strong><?php esc_html_e('WPiko AI Chatbot cannot answer visitors right now.', 'wpiko-chatbot'); ?></strong>
             <?php echo esc_html($health['message']); ?>
         </p>
         <p>

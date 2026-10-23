@@ -1,7 +1,8 @@
 /* ==========================================================================
-   WPiko Chatbot — Chatbot Style tab
+   WPiko AI Chatbot — Chatbot Style tab
    Appearance presets, color fields and the live preview panel.
-   Design tokens come from admin-style.css.
+   Admin colors and spacing come from the shared root UI tokens.
+   Preset thumbnails and the live chatbot use the visitor-facing color settings.
    ========================================================================== */
 
 /* ==========================================================================
@@ -10,15 +11,16 @@
 
 .wpiko-style-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 28px;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--wpiko-ui-gap);
     align-items: start;
-    margin-top: 20px;
 }
 
 .wpiko-style-main {
     min-width: 0;
 }
+
+.wpiko-style-advanced { border-radius: var(--wpiko-ui-radius-sm); }
 
 /* Must fill the grid row, not shrink to its content, or the sticky preview
    inside it has no room to travel and simply scrolls out of view. */
@@ -27,32 +29,16 @@
     align-self: stretch;
 }
 
-.wpiko-style-group-title {
-    margin: 28px 0 8px !important;
-    padding-bottom: 8px;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--wpiko-text-muted) !important;
-    border-bottom: 1px solid var(--wpiko-border-light);
-}
-
-.wpiko-style-group-title:first-of-type {
-    margin-top: 8px !important;
-}
-
 .wpiko-style-pro-badge {
     display: inline-block;
     margin-left: 6px;
-    padding: 1px 7px;
-    border-radius: var(--wpiko-radius-full);
-    background: var(--wpiko-gradient-primary);
-    color: var(--wpiko-text-inverse);
+    padding: 1px 6px;
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: 4px;
+    background: var(--wpiko-ui-active);
+    color: var(--wpiko-ui-text-secondary);
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: none;
+    font-weight: 600;
     vertical-align: middle;
 }
 
@@ -60,58 +46,45 @@
    PRESETS
    ========================================================================== */
 
-.wpiko-style-presets {
-    padding: 20px;
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
-    background: var(--wpiko-surface-alt);
-}
-
-.wpiko-style-presets-head h3 {
-    margin: 0 0 4px !important;
-    font-size: 15px !important;
-    color: var(--wpiko-text-strong) !important;
-}
-
-.wpiko-style-presets-head .description {
+.wpiko-style-presets-head .wpiko-chatbot-settings-field-description {
     margin: 0 0 16px;
 }
 
 .wpiko-preset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
 }
 
 .wpiko-preset-card {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+    min-width: 0;
+    gap: 10px;
+    margin: 0;
+    padding: 10px;
     text-align: left;
-    background: var(--wpiko-surface);
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
-    box-shadow: var(--wpiko-shadow-xs);
+    font-family: inherit;
+    background: var(--wpiko-ui-surface);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-sm);
+    box-shadow: none;
     cursor: pointer;
-    transition: border-color var(--wpiko-transition), box-shadow var(--wpiko-transition), transform var(--wpiko-transition);
 }
 
 .wpiko-preset-card:hover {
-    border-color: var(--wpiko-primary-light);
-    box-shadow: var(--wpiko-shadow-md);
-    transform: translateY(-2px);
+    border-color: var(--wpiko-ui-line-strong);
+    background: var(--wpiko-ui-hover);
 }
 
 .wpiko-preset-card:focus-visible {
-    outline: none;
-    border-color: var(--wpiko-primary);
-    box-shadow: var(--wpiko-focus-ring);
+    outline: 2px solid var(--wpiko-ui-accent);
+    outline-offset: 2px;
 }
 
 .wpiko-preset-card.is-active {
-    border-color: var(--wpiko-primary);
-    box-shadow: 0 0 0 1px var(--wpiko-primary), var(--wpiko-shadow-sm);
+    border-color: var(--wpiko-ui-accent);
+    box-shadow: 0 0 0 1px var(--wpiko-ui-accent);
 }
 
 /* Miniature chatbot window used as the card thumbnail */
@@ -122,7 +95,7 @@
     padding: 0;
     overflow: hidden;
     border: 1px solid;
-    border-radius: var(--wpiko-radius);
+    border-radius: var(--wpiko-ui-radius);
 }
 
 .wpiko-preset-thumb-bar {
@@ -146,7 +119,7 @@
 .wpiko-preset-thumb-line {
     width: 42px;
     height: 4px;
-    border-radius: var(--wpiko-radius-full);
+    border-radius: 999px;
     opacity: 0.75;
 }
 
@@ -180,7 +153,7 @@
     justify-content: flex-end;
     height: 22px;
     padding: 0 4px;
-    border-radius: var(--wpiko-radius-full);
+    border-radius: 999px;
 }
 
 .wpiko-preset-thumb-send {
@@ -201,16 +174,16 @@
     gap: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--wpiko-text-strong);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-preset-check {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: var(--wpiko-primary);
+    color: var(--wpiko-ui-accent);
     opacity: 0;
-    transition: opacity var(--wpiko-transition);
+    transition: opacity 0.15s ease-in-out;
 }
 
 .wpiko-preset-card.is-active .wpiko-preset-check {
@@ -220,7 +193,7 @@
 .wpiko-preset-desc {
     font-size: 12px;
     line-height: 1.45;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
 }
 
 .wpiko-preset-custom-note {
@@ -229,11 +202,11 @@
     gap: 8px;
     margin: 16px 0 0;
     padding: 10px 12px;
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius);
-    background: var(--wpiko-surface);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius);
+    background: var(--wpiko-ui-surface);
     font-size: 12.5px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
 }
 
 /* The rules above set a display value, which would otherwise beat [hidden]. */
@@ -242,80 +215,10 @@
 }
 
 .wpiko-preset-custom-note .dashicons {
-    color: var(--wpiko-primary);
+    color: var(--wpiko-ui-accent);
     font-size: 17px;
     width: 17px;
     height: 17px;
-}
-
-/* ==========================================================================
-   COLOR FIELDS
-   ========================================================================== */
-
-.wpiko-color-field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.style-settings-section .form-table input[type="text"].wpiko-color-hex {
-    width: 96px;
-    margin-bottom: 0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.wpiko-color-hex.is-invalid {
-    border-color: var(--wpiko-danger);
-    box-shadow: 0 0 0 3px var(--wpiko-danger-tint);
-}
-
-.wpiko-color-reset {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: 1px solid transparent;
-    border-radius: var(--wpiko-radius-sm);
-    background: transparent;
-    color: var(--wpiko-text-faint);
-    cursor: pointer;
-    transition: all var(--wpiko-transition);
-}
-
-.wpiko-color-reset .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-}
-
-.wpiko-color-reset:hover {
-    border-color: var(--wpiko-border);
-    background: var(--wpiko-surface-alt);
-    color: var(--wpiko-text);
-}
-
-.wpiko-color-reset:focus-visible {
-    outline: none;
-    border-color: var(--wpiko-primary);
-    box-shadow: var(--wpiko-focus-ring);
-}
-
-/* ==========================================================================
-   SAVE BAR
-   ========================================================================== */
-
-.wpiko-style-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--wpiko-border-light);
 }
 
 .wpiko-style-dirty {
@@ -324,7 +227,7 @@
     gap: 5px;
     font-size: 12.5px;
     font-weight: 500;
-    color: var(--wpiko-warning-text);
+    color: var(--wpiko-ui-warn);
 }
 
 .wpiko-style-dirty[hidden] {
@@ -335,14 +238,14 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: var(--wpiko-warning);
+    color: var(--wpiko-ui-warn-accent);
 }
 
 /* ==========================================================================
    LIVE PREVIEW
    ========================================================================== */
 
-.wpiko-style-preview-wrap {
+.wpiko-style-page .wpiko-style-preview-wrap {
     /* Defaults for the whole preview column; JavaScript overwrites these from
        the form fields. Declared here so the floating-button strip below the
        chat window inherits the same values. */
@@ -373,10 +276,7 @@
     box-sizing: border-box;
     max-height: calc(100vh - 72px);
     overflow-y: auto;
-    padding: 18px;
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
-    background: var(--wpiko-surface-alt);
+
 }
 
 .wpiko-style-preview-head {
@@ -387,15 +287,14 @@
     margin-bottom: 14px;
 }
 
-.wpiko-style-preview-head h3 {
-    margin: 0 !important;
-    font-size: 14px !important;
-    color: var(--wpiko-text-strong) !important;
+.wpiko-style-page .wpiko-style-preview-head .wpiko-chatbot-settings-card-title {
+    margin: 0;
+    white-space: nowrap;
 }
 
 .wpiko-style-preview-hint {
     font-size: 11px;
-    color: var(--wpiko-text-faint);
+    color: var(--wpiko-ui-muted);
 }
 
 .wpiko-style-preview {
@@ -405,10 +304,10 @@
     border: 1px solid var(--p-border);
     border-radius: 16px;
     background: var(--p-bg);
-    box-shadow: var(--wpiko-shadow-md);
+    box-shadow: var(--wpiko-ui-shadow-lg);
     font-size: 12.5px;
     line-height: 1.45;
-    transition: background-color var(--wpiko-transition), border-color var(--wpiko-transition);
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
 /* Header */
@@ -651,7 +550,7 @@
     background: var(--p-floating-bg);
     color: var(--p-name);
     font-size: 11.5px;
-    box-shadow: var(--wpiko-shadow-sm);
+    box-shadow: var(--wpiko-ui-shadow);
 }
 
 .wpiko-preview-floating-icon {
@@ -663,7 +562,7 @@
     border-radius: 50%;
     background: var(--p-primary);
     color: var(--p-primary-text);
-    box-shadow: var(--wpiko-shadow-md);
+    box-shadow: var(--wpiko-ui-shadow-lg);
 }
 
 /* Icon-to-button ratio matches the front end (24px icon in a 60px button). */
@@ -673,44 +572,28 @@
 }
 
 .wpiko-preview-note {
-    margin: 14px 0 0 !important;
-    font-size: 11.5px !important;
-    line-height: 1.5;
+    margin: 14px 0 0;
 }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
-
-@media screen and (max-width: 1400px) {
-    .wpiko-style-layout {
-        grid-template-columns: minmax(0, 1fr) 320px;
-        gap: 22px;
-    }
+/* Settings-specific layout; common control sizing stays in settings-controls.css. */
+.wpiko-style-advanced > .wpiko-chatbot-settings-card + .wpiko-chatbot-settings-card {
+    margin-top: var(--wpiko-ui-gap);
 }
-
+.wpiko-style-advanced-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.wpiko-style-page .wpiko-chatbot-settings-media-preview img { width: 60px; height: auto; }
+@media screen and (min-width: 1600px) {
+    .wpiko-style-layout { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+@media screen and (min-width: 1101px) and (max-width: 1400px) {
+    .wpiko-style-page .wpiko-chatbot-settings-field-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
 @media screen and (max-width: 1100px) {
-    .wpiko-style-layout {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .wpiko-style-preview-wrap {
-        position: static;
-        max-width: 420px;
-    }
+    .wpiko-style-layout { grid-template-columns: minmax(0, 1fr); }
+    .wpiko-style-page .wpiko-style-preview-wrap { position: static; max-width: 420px; max-height: none; overflow: visible; }
 }
-
-@media screen and (max-width: 782px) {
-    .wpiko-preset-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 10px;
-    }
-
-    .wpiko-color-field {
-        flex-wrap: wrap;
-    }
-
-    .wpiko-style-actions {
-        flex-wrap: wrap;
-    }
+@media screen and (max-width: 480px) {
+    .wpiko-preset-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wpiko-style-page *, .wpiko-style-page *::after { transition: none; }
 }

@@ -6,13 +6,26 @@ jQuery(document).ready(function ($) {
 
         var tabId = $(this).data('tab');
 
-        // Remove active class from all tabs and add to clicked tab
-        $('.instructions-tabs .nav-tab').removeClass('nav-tab-active');
-        $(this).addClass('nav-tab-active');
+        var $tabs = $(this).closest('.instructions-tabs');
+        $tabs.find('.nav-tab').removeClass('nav-tab-active').attr({'aria-selected': 'false', tabindex: '-1'});
+        $(this).addClass('nav-tab-active').attr({'aria-selected': 'true', tabindex: '0'});
 
         // Hide all tab content and show the selected one
-        $('.tab-content').hide();
-        $('#' + tabId + '-tab').show();
+        $tabs.find('.tab-content').hide();
+        $tabs.find('#' + tabId + '-tab').show();
+    });
+
+    $('.instructions-tabs [role="tab"]').on('keydown', function (event) {
+        var keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+        if (keys.indexOf(event.key) === -1) {
+            return;
+        }
+        event.preventDefault();
+        var $tabs = $(this).closest('[role="tablist"]').find('[role="tab"]');
+        var index = $tabs.index(this);
+        var next = event.key === 'Home' ? 0 : event.key === 'End' ? $tabs.length - 1 :
+            (index + (event.key === 'ArrowRight' ? 1 : -1) + $tabs.length) % $tabs.length;
+        $tabs.eq(next).trigger('click').trigger('focus');
     });
 
     // Function to update main instructions dynamically for Responses API
@@ -44,17 +57,50 @@ jQuery(document).ready(function ($) {
     // Initialize instructions on page load
     updateResponsesMainInstructions();
 
-    // Handle Vector Store refresh
-    $(document).on('click', '.vector-store-refresh-btn', function (e) {
-        e.preventDefault();
+    // Vector Store information box. Refreshed with the refresh button and
+    // automatically whenever files are added or removed on this page.
+    var $vectorStoreSlot = $('#wpiko-vector-store-info-slot');
+    var vectorStore = {
+        busy: false,
+        queued: false,
+        timer: null,
+        lastTotal: null,
+        pollsLeft: 0
+    };
 
-        var $button = $(this);
-        var $vectorStoreInfo = $button.closest('.vector-store-info');
+    function vectorStoreTotal(data) {
+        return data && data.file_counts ? (parseInt(data.file_counts.total, 10) || 0) : null;
+    }
 
-        // Disable button and show loading state
-        $button.prop('disabled', true);
+    function vectorStoreIndexing(data) {
+        var counts = (data && data.file_counts) || {};
+        return (parseInt(counts.in_progress, 10) || 0) > 0 || (data && data.status === 'in_progress');
+    }
+
+    /**
+     * Load the Vector Store details and swap the box in place.
+     *
+     * @param {Object} options manual: show the button spinner and errors.
+     *                         afterChange: files just changed on this page.
+     */
+    function refreshVectorStoreInfo(options) {
+        options = options || {};
+        if (!$vectorStoreSlot.length || typeof wpikoChatbotAdmin === 'undefined') {
+            return;
+        }
+        if (vectorStore.busy) {
+            vectorStore.queued = true;
+            return;
+        }
+        vectorStore.busy = true;
+        clearTimeout(vectorStore.timer);
+
+        var $button = $vectorStoreSlot.find('.vector-store-refresh-btn');
         var $icon = $button.find('.dashicons');
+        $button.prop('disabled', true);
         $icon.css('animation', 'rotation 1s infinite linear');
+
+        var totalBefore = vectorStore.lastTotal;
 
         $.ajax({
             url: wpikoChatbotAdmin.ajax_url,
@@ -62,96 +108,93 @@ jQuery(document).ready(function ($) {
             data: {
                 action: 'wpiko_chatbot_get_responses_vector_store_details',
                 security: wpikoChatbotAdmin.nonce
-            },
-            success: function (response) {
-                if (response.success && response.data) {
-                    var data = response.data;
-                    var createdDate = new Date(data.created_at * 1000).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    var fileCounts = data.file_counts || {};
-                    var totalFiles = fileCounts.total || 0;
-                    var completedFiles = fileCounts.completed || 0;
-                    var status = data.status || 'unknown';
-                    var statusClass = status === 'completed' ? 'status-active' : 'status-processing';
-                    var statusText = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+        }).done(function (response) {
+            var data = (response && response.data) || {};
+            var hasMarkup = typeof data.html === 'string';
 
-                    // Update the Vector Store information
-                    var html = '<div class="vector-store-header">' +
-                        '<span class="dashicons dashicons-database"></span>' +
-                        '<h4>Vector Store Information' +
-                        '<span class="vector-store-info-icon" title="A Vector Store is a specialized database in OpenAI that stores and indexes your uploaded files (PDFs, documents, etc.) for semantic search. It enables your AI chatbot to search through your knowledge base and provide accurate answers based on your content.">' +
-                        '<span class="dashicons dashicons-info"></span>' +
-                        '</span>' +
-                        '</h4>' +
-                        '<span class="vector-store-status ' + statusClass + '">' + statusText + '</span>' +
-                        '<button type="button" class="button button-link-refresh vector-store-refresh-btn" title="Refresh Vector Store Information">' +
-                        '<span class="dashicons dashicons-update"></span>' +
-                        '</button>' +
-                        '<button type="button" class="button button-link-delete vector-store-delete-btn" title="Delete Vector Store and All Files">' +
-                        '<span class="dashicons dashicons-trash"></span>' +
-                        '</button>' +
-                        '</div>' +
-                        '<div class="vector-store-details">' +
-                        '<div class="vector-store-item">' +
-                        '<strong>Name:</strong>' +
-                        '<span>' + data.name + '</span>' +
-                        '</div>' +
-                        '<div class="vector-store-item">' +
-                        '<strong>ID:</strong>' +
-                        '<code class="vector-store-id">' + data.id + '</code>' +
-                        '</div>' +
-                        '<div class="vector-store-item">' +
-                        '<strong>Created:</strong>' +
-                        '<span>' + createdDate + '</span>' +
-                        '</div>' +
-                        '<div class="vector-store-item">' +
-                        '<strong>Files:</strong>' +
-                        '<span>' + completedFiles + ' completed / ' + totalFiles + ' total</span>' +
-                        '</div>' +
-                        '</div>';
+            // Errors other than "not found" (for example OpenAI not responding)
+            // keep the current box instead of hiding it.
+            if (response && (response.success || data.not_found || $vectorStoreSlot.is(':empty'))) {
+                $vectorStoreSlot.html(hasMarkup ? data.html : '');
+            }
 
-                    $vectorStoreInfo.removeClass('vector-store-error').html(html);
-                } else if (response.data && response.data.not_found) {
-                    // Vector Store was deleted from OpenAI dashboard
-                    var html = '<div class="vector-store-header">' +
-                        '<span class="dashicons dashicons-warning"></span>' +
-                        '<h4>Vector Store Not Found' +
-                        '<span class="vector-store-info-icon" title="A Vector Store is a specialized database in OpenAI that stores and indexes your uploaded files (PDFs, documents, etc.) for semantic search. It enables your AI chatbot to search through your knowledge base and provide accurate answers based on your content.">' +
-                        '<span class="dashicons dashicons-info"></span>' +
-                        '</span>' +
-                        '</h4>' +
-                        '<span class="vector-store-status status-error">Error</span>' +
-                        '<button type="button" class="button button-link-refresh vector-store-refresh-btn" title="Refresh Vector Store Information">' +
-                        '<span class="dashicons dashicons-update"></span>' +
-                        '</button>' +
-                        '</div>' +
-                        '<div class="vector-store-error-message">' +
-                        '<p><strong>The Vector Store was deleted or is no longer accessible.</strong></p>' +
-                        '<p>This may have happened if you deleted it from the OpenAI dashboard. To fix this issue:</p>' +
-                        '<ol>' +
-                        '<li>Upload a new file using the "File Management" button below, or</li>' +
-                        '<li>Use any of the training tools (Scan Website, Q&A Builder, etc.)</li>' +
-                        '</ol>' +
-                        '<p>A new Vector Store will be automatically created when you upload your first file.</p>' +
-                        '</div>';
+            if (response && response.success) {
+                var total = vectorStoreTotal(data);
+                vectorStore.lastTotal = total;
 
-                    $vectorStoreInfo.addClass('vector-store-error').html(html);
-                } else {
-                    alert('Error refreshing Vector Store information: ' + (response.data.message || 'Unknown error'));
+                if (options.afterChange) {
+                    // OpenAI can take a moment to update its counts. Check a
+                    // few more times while files are indexing, and once more
+                    // if the total has not moved yet.
+                    vectorStore.pollsLeft = vectorStoreIndexing(data) ? 10 : (total === totalBefore ? 1 : 0);
+                } else if (!vectorStoreIndexing(data)) {
+                    // Follow-up check: stop once nothing is indexing.
+                    vectorStore.pollsLeft = 0;
                 }
-            },
-            error: function () {
-                alert('Connection error occurred while trying to refresh Vector Store information.');
-            },
-            complete: function () {
-                // Re-enable button and stop animation
-                $button.prop('disabled', false);
-                $icon.css('animation', '');
+
+                if (vectorStore.pollsLeft > 0) {
+                    vectorStore.pollsLeft--;
+                    vectorStore.timer = setTimeout(refreshVectorStoreInfo, 4000);
+                }
+            } else if (options.manual && !data.not_found) {
+                window.wpikoChatbotNotices.show('Error refreshing Vector Store information: ' + (data.message || 'Unknown error'), 'error', { before: $vectorStoreSlot });
+            }
+        }).fail(function () {
+            if (options.manual) {
+                window.wpikoChatbotNotices.show('Connection error occurred while trying to refresh Vector Store information.', 'error', { before: $vectorStoreSlot });
+            }
+        }).always(function () {
+            vectorStore.busy = false;
+            // The box may have been replaced; reset whichever button is there.
+            $vectorStoreSlot.find('.vector-store-refresh-btn').prop('disabled', false).find('.dashicons').css('animation', '');
+            if (vectorStore.queued) {
+                vectorStore.queued = false;
+                refreshVectorStoreInfo({ afterChange: true });
             }
         });
+    }
+
+    // Remember the starting count so the first automatic refresh can tell
+    // whether OpenAI has caught up.
+    (function () {
+        var match = $vectorStoreSlot.find('.vector-store-item').last().text().match(/\/\s*(\d+)\s*total/);
+        vectorStore.lastTotal = match ? parseInt(match[1], 10) : ($vectorStoreSlot.is(':empty') ? 0 : null);
+    })();
+
+    function scheduleVectorStoreRefresh() {
+        if (!$vectorStoreSlot.length) {
+            return;
+        }
+        // Many changes in a row (for example a Scan Website batch) refresh once.
+        clearTimeout(vectorStore.timer);
+        vectorStore.pollsLeft = 0;
+        vectorStore.timer = setTimeout(function () {
+            refreshVectorStoreInfo({ afterChange: true });
+        }, 1200);
+    }
+
+    // The server marks every response that added or removed knowledge files
+    // (see wpiko_chatbot_clear_vector_store_files_cache()).
+    $(document).ajaxComplete(function (event, xhr, settings) {
+        if (!xhr || !xhr.getResponseHeader || xhr.getResponseHeader('X-Wpiko-Knowledge-Changed') !== '1') {
+            return;
+        }
+        var data = settings && typeof settings.data === 'string' ? settings.data : '';
+        // Deleting the whole Vector Store reloads the page itself.
+        if (data.indexOf('action=wpiko_chatbot_delete_responses_vector_store') !== -1) {
+            return;
+        }
+        scheduleVectorStoreRefresh();
+    });
+
+    // Tools whose changes finish outside an AJAX request (for example a
+    // WooCommerce background sync) trigger this event when they are done.
+    $(document).on('wpiko:knowledgeChanged', scheduleVectorStoreRefresh);
+
+    $(document).on('click', '.vector-store-refresh-btn', function (e) {
+        e.preventDefault();
+        refreshVectorStoreInfo({ manual: true });
     });
 
     // Handle Vector Store deletion
@@ -189,25 +232,22 @@ jQuery(document).ready(function ($) {
             success: function (response) {
                 if (response.success) {
                     var message = response.data.message || 'Vector Store has been deleted.';
-                    // Show success message
-                    $vectorStoreInfo.html(
-                        '<div class="notice notice-success" style="margin: 0; padding: 15px;">' +
-                        '<p><strong>Success!</strong> ' + message + ' The page will reload in 2 seconds...</p>' +
-                        '</div>'
-                    );
+                    // Show success message in place of the Vector Store details.
+                    window.wpikoChatbotNotices.show(message + ' The page will reload in 2 seconds...', 'success', { before: $vectorStoreInfo, dismissible: false });
+                    $vectorStoreInfo.remove();
 
                     // Reload page after 2 seconds
                     setTimeout(function () {
                         location.reload();
                     }, 2000);
                 } else {
-                    alert('Error: ' + (response.data.message || 'Failed to delete Vector Store'));
+                    window.wpikoChatbotNotices.show('Error: ' + ((response.data && response.data.message) || 'Failed to delete Vector Store'), 'error', { before: $vectorStoreInfo });
                     $button.prop('disabled', false);
                     $button.find('.dashicons').removeClass('dashicons-update').addClass('dashicons-trash').css('animation', '');
                 }
             },
             error: function () {
-                alert('Connection error occurred while trying to delete the Vector Store.');
+                window.wpikoChatbotNotices.show('Connection error occurred while trying to delete the Vector Store.', 'error', { before: $vectorStoreInfo });
                 $button.prop('disabled', false);
                 $button.find('.dashicons').removeClass('dashicons-update').addClass('dashicons-trash').css('animation', '');
             }
@@ -217,10 +257,9 @@ jQuery(document).ready(function ($) {
     // Handle Responses API configuration save
     $('#save_responses_config').on('click', function () {
         var $button = $(this);
-        var $status = $('#responses_save_status');
+        var $actions = $button.closest('.save-config-actions');
 
         $button.prop('disabled', true).text('Saving...');
-        $status.removeClass('success error').addClass('info').text('Saving configuration...');
 
         var data = {
             action: 'wpiko_chatbot_update_responses_config',
@@ -238,15 +277,12 @@ jQuery(document).ready(function ($) {
 
         $.post(wpikoChatbotAdmin.ajax_url, data, function (response) {
             if (response.success) {
-                $status.removeClass('error info').addClass('success').text('Configuration saved successfully!');
-                setTimeout(function () {
-                    $status.removeClass('success error info').text('');
-                }, 3000);
+                window.wpikoChatbotNotices.show('Configuration saved successfully.', 'success', { before: $actions });
             } else {
-                $status.removeClass('success info').addClass('error').text('Error: ' + response.data.message);
+                window.wpikoChatbotNotices.show('Error: ' + ((response.data && response.data.message) || 'The configuration could not be saved.'), 'error', { before: $actions });
             }
         }).fail(function () {
-            $status.removeClass('success info').addClass('error').text('Connection error occurred.');
+            window.wpikoChatbotNotices.show('Connection error occurred. Please try again.', 'error', { before: $actions });
         }).always(function () {
             $button.prop('disabled', false).text('Save Configuration');
         });

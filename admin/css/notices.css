@@ -1,5 +1,5 @@
 /**
- * Success, error, warning and info messages on every wpiko Chatbot screen.
+ * Success, error, warning and info messages on every WPiko AI Chatbot screen.
  *
  * Same look as wpiko SEO (and wpiko MCP): a soft tinted panel with an icon
  * and no coloured left edge. Covers WordPress notices, the plugin's own
@@ -59,8 +59,7 @@ body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-m
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message {
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message {
     --wpiko-notice-bg: var(--wpiko-ui-info-soft);
     --wpiko-notice-line: var(--wpiko-ui-notice-info-line);
     --wpiko-notice-icon: var(--wpiko-ui-info);
@@ -138,8 +137,7 @@ body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-m
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-warning::before,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading::before,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message::before,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message::before {
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before {
     content: "";
     position: absolute;
     top: 13px;
@@ -219,7 +217,6 @@ body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-m
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #qa-status .processing,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #url-processing-status .processing,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #wpiko-test-push-status.info,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-info,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #sync_status.status-loading,
@@ -307,8 +304,7 @@ body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-m
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #download_status.status-warning,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message {
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message {
     display: inline-block;
     margin: 0 0 0 10px;
     padding: 6px 12px 6px 34px;
@@ -348,8 +344,7 @@ body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-m
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) #orders_download_status.status-warning::before,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) span.status-loading::before,
 body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-success-message::before,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before,
-body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-info-message::before {
+body.toplevel_page_ai-chatbot :is(#wpbody, .wpiko-conversations-dialog, .wpiko-modal) .license-error-message::before {
     top: 50%;
     left: 12px;
     width: 16px;

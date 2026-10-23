@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 /**
  * Get the CSS used by the standalone HTML transcript.
  *
- * Combines the shared admin design tokens (the :root block in admin-style.css)
+ * Combines the shared admin design tokens (the :root block in design-tokens.css)
  * with the transcript stylesheet, so the exported file renders correctly on its
  * own without any of the plugin's admin stylesheets being loaded.
  *
@@ -15,11 +15,11 @@ if (!defined('ABSPATH')) {
 function wpiko_chatbot_get_transcript_css() {
     $css = '';
 
-    // Design tokens: extract only the :root block from the admin stylesheet.
-    $tokens_path = WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/admin-style.css';
+    // Design tokens: extract only the :root block from the shared palette.
+    $tokens_path = WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/design-tokens.css';
     if (file_exists($tokens_path)) {
-        $admin_css = file_get_contents($tokens_path);
-        if ($admin_css !== false && preg_match('/:root\s*\{[^}]*\}/', $admin_css, $matches)) {
+        $tokens_css = file_get_contents($tokens_path);
+        if ($tokens_css !== false && preg_match('/:root\s*\{[^}]*\}/', $tokens_css, $matches)) {
             $css .= $matches[0] . "\n\n";
         }
     }
@@ -50,7 +50,7 @@ function wpiko_chatbot_generate_html_transcript($conversations, $chatbot_name, $
     $date_generated = current_time('F j, Y');
 
     // Inline the CSS for transcript styling.
-    // The transcript stylesheet relies on the shared --wpiko-* design tokens, so the
+    // The transcript stylesheet relies on the shared --wpiko-ui-* design tokens, so the
     // :root token block must be inlined too, otherwise the standalone HTML file has
     // no variable definitions and every colour/border/radius declaration is dropped.
     $css_content = wpiko_chatbot_get_transcript_css();

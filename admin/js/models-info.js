@@ -1,11 +1,10 @@
 /**
- * Wpiko Chatbot - Models Information Handler
+ * WPiko AI Chatbot - Models Information Handler
  * Displays detailed model information when users select models in the Responses API section
  * GPT-6 family details checked against OpenAI Models documentation on September 30, 2026
  */
 
 jQuery(document).ready(function ($) {
-    console.log('Models Info script loaded');
 
     // Model information data based on provided table
     const modelsData = {
@@ -277,32 +276,6 @@ jQuery(document).ready(function ($) {
     }
 
     /**
-     * Get model recommendations based on use case
-     */
-    function getModelRecommendations() {
-        return {
-            'cost-effective': ['gpt-6-luna', 'gpt-5.6-luna'],
-            'balanced': ['gpt-6.1-sol', 'gpt-5.6-terra'],
-            'advanced': ['gpt-6-astra', 'gpt-6.1-sol'],
-            'speed': ['gpt-6-luna'],
-            'multimodal': ['gpt-4.1', 'gpt-4.1-mini']
-        };
-    }
-
-    /**
-     * Add model comparison feature
-     */
-    function addModelComparison() {
-        // This could be expanded to show a comparison table of all models
-        // For now, we'll just expose the function for potential future use
-        window.wpikoModelsComparison = function () {
-            const models = Object.keys(modelsData);
-            console.log('Available models for comparison:', models);
-            return modelsData;
-        };
-    }
-
-    /**
      * Initialize everything when the Responses API section is visible
      */
     function initializeWhenResponsesVisible() {
@@ -311,45 +284,8 @@ jQuery(document).ready(function ($) {
         if ($responsesSection.is(':visible')) {
             initializeModelInfo();
         }
-
-        // Watch for API type changes
-        $('input[name="api_type"]').on('change', function () {
-            if ($(this).val() === 'responses' && $(this).is(':checked')) {
-                setTimeout(function () {
-                    initializeModelInfo();
-                }, 100);
-            }
-        });
-
-        // Watch for save button that shows/hides sections
-        $('#save_api_type').on('click', function () {
-            setTimeout(function () {
-                const $responsesSection = $('#responses-api-settings');
-                if ($responsesSection.is(':visible')) {
-                    initializeModelInfo();
-                }
-            }, 500);
-        });
     }
 
     // Initialize when document is ready
     initializeWhenResponsesVisible();
-    addModelComparison();
-
-    // Expose modelsData globally for debugging/development
-    window.wpikoModelsData = modelsData;
-
-    // Add debug function for console testing
-    window.wpikoDebugModels = function () {
-        console.log('=== Wpiko Chatbot Models Debug Info ===');
-        console.log('Available models:', Object.keys(modelsData));
-        console.log('Current selection:', $('#responses_model').val());
-        console.log('Responses section visible:', $('#responses-api-settings').is(':visible'));
-        console.log('Model info container exists:', $('#wpiko-responses-model-info').length > 0);
-        console.log('Full models data:', modelsData);
-    };
-
-    // Log successful initialization
-    console.log('Wpiko Chatbot Models Info initialized with', Object.keys(modelsData).length, 'models');
-    console.log('Available debug commands: wpikoDebugModels(), wpikoModelsComparison()');
 });

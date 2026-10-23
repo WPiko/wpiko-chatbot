@@ -1,326 +1,92 @@
-/* ==========================================================================
-   SETUP WIZARD + "LEARN FROM YOUR WEBSITE"
-   Uses the design tokens defined in admin-style.css.
-   ========================================================================== */
-
-.wpiko-wizard [hidden],
-.wpiko-site-knowledge [hidden] {
-    display: none !important;
-}
-
+/* Setup wizard and reusable knowledge panel share the admin UI tokens. */
 .wpiko-wizard {
     width: 100%;
+    container: chatbot-wizard / inline-size;
 }
-
-.wpiko-wizard-intro,
-.wpiko-wizard-step {
-    background: var(--wpiko-surface);
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
-    box-shadow: var(--wpiko-shadow-xs);
-    padding: 24px;
-}
-
-.wpiko-wizard-intro {
-    margin-bottom: 16px;
-}
-
-.wpiko-wizard-intro h2 {
-    margin: 0 0 6px;
-    font-size: 22px;
-    color: var(--wpiko-text-strong);
-}
-
-.wpiko-wizard-intro > p {
-    margin: 0;
-    color: var(--wpiko-text-muted);
-    font-size: 14px;
-}
-
-.wpiko-wizard-progress {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    list-style: none;
-    margin: 18px 0 0;
-    padding: 0;
-}
-
-.wpiko-wizard-progress li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    color: var(--wpiko-text-muted);
-    font-weight: 500;
-}
-
-.wpiko-wizard-progress li span {
-    width: 26px;
-    height: 26px;
-    border-radius: var(--wpiko-radius-full);
-    border: 2px solid var(--wpiko-border-strong);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    background: var(--wpiko-surface);
-}
-
-.wpiko-wizard-progress li.is-current {
-    color: var(--wpiko-primary);
-}
-
-.wpiko-wizard-progress li.is-current span {
-    border-color: var(--wpiko-primary);
-    background: var(--wpiko-primary);
-    color: var(--wpiko-text-inverse);
-}
-
-.wpiko-wizard-progress li.is-done {
-    color: var(--wpiko-success-hover);
-}
-
-.wpiko-wizard-progress li.is-done span {
-    border-color: var(--wpiko-success);
-    background: var(--wpiko-success);
-    color: var(--wpiko-text-inverse);
-}
-
-.wpiko-wizard-step h3 {
-    margin: 0 0 12px;
-    font-size: 18px;
-    color: var(--wpiko-text-strong);
-}
-
-.wpiko-wizard-key-row,
-.wpiko-wizard-retest-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-.wpiko-wizard-key-row input {
-    flex: 1 1 280px;
-    max-width: 420px;
-}
-
-.wpiko-wizard-message {
-    margin-top: 12px;
-}
-
-.wpiko-wizard-notice {
-    padding: 12px 14px;
-    border-radius: var(--wpiko-radius);
-    border: 1px solid var(--wpiko-border);
-}
-
-.wpiko-wizard-notice p {
-    margin: 0 0 8px;
-}
-
-.wpiko-wizard-notice p:last-child {
-    margin-bottom: 0;
-}
-
-.wpiko-wizard-notice.is-error {
-    background: var(--wpiko-danger-tint);
-    border-color: var(--wpiko-danger-soft);
-}
-
-.wpiko-wizard-working {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--wpiko-text-muted);
-}
-
-.wpiko-wizard-working .spinner,
-.wpiko-site-knowledge .spinner {
-    float: none;
-    margin: 0;
-}
-
-.wpiko-wizard-success {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    padding: 12px 14px;
-    background: var(--wpiko-success-tint);
-    border: 1px solid var(--wpiko-success-light);
-    border-radius: var(--wpiko-radius);
-    color: var(--wpiko-text-strong);
-    font-weight: 500;
-}
-
-.wpiko-wizard-success .dashicons {
-    color: var(--wpiko-success);
-}
-
-.wpiko-wizard-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--wpiko-border-light);
-}
-
-.wpiko-wizard-basics {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px 20px;
-    margin-bottom: 20px;
-}
-
-.wpiko-wizard-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.wpiko-wizard-field label {
-    font-weight: 600;
-    color: var(--wpiko-text-strong);
-}
-
-.wpiko-wizard-field input,
-.wpiko-wizard-field select {
-    width: 100%;
-    max-width: none;
-}
-
-.wpiko-wizard-files-hint {
-    margin-top: 12px;
-}
-
-/* Test chat */
-.wpiko-wizard-chat {
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
-    overflow: hidden;
-    margin: 12px 0 20px;
-}
-
-.wpiko-wizard-chat-messages {
-    height: 280px;
-    overflow-y: auto;
-    padding: 16px;
-    background: var(--wpiko-surface-alt);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.wpiko-wizard-chat-msg {
-    display: flex;
-}
-
-.wpiko-wizard-chat-msg > div {
-    max-width: 80%;
-    padding: 10px 14px;
-    border-radius: 14px;
-    line-height: 1.5;
-    word-wrap: break-word;
-}
-
-.wpiko-wizard-chat-msg > div p {
-    margin: 0 0 8px;
-}
-
-.wpiko-wizard-chat-msg > div p:last-child {
-    margin-bottom: 0;
-}
-
-.wpiko-wizard-chat-msg.is-user {
-    justify-content: flex-end;
-}
-
-.wpiko-wizard-chat-msg.is-user > div {
-    background: var(--wpiko-primary);
-    color: var(--wpiko-text-inverse);
-    border-bottom-right-radius: 4px;
-}
-
-.wpiko-wizard-chat-msg.is-bot > div {
-    background: var(--wpiko-surface);
-    border: 1px solid var(--wpiko-border-light);
-    color: var(--wpiko-text);
-    border-bottom-left-radius: 4px;
-}
-
-.wpiko-wizard-chat-msg.is-typing > div {
-    color: var(--wpiko-text-muted);
-    font-style: italic;
-}
-
-.wpiko-wizard-chat-msg.is-error > div {
-    background: var(--wpiko-danger-tint);
-    border: 1px solid var(--wpiko-danger-soft);
-    color: var(--wpiko-danger-hover);
-    max-width: 100%;
-}
-
-.wpiko-wizard-chat-suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px 12px 0;
-    background: var(--wpiko-surface);
-}
-
-.wpiko-wizard-chat-input {
-    display: flex;
-    gap: 8px;
-    padding: 12px;
-    background: var(--wpiko-surface);
-}
-
-.wpiko-wizard-chat-input input {
-    flex: 1;
-    min-width: 0;
-}
-
-.wpiko-wizard-toggle {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 14px 16px;
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius);
-    background: var(--wpiko-surface-alt);
-    cursor: pointer;
-}
-
-.wpiko-wizard-toggle input {
-    margin-top: 2px;
-}
-
-.wpiko-wizard-toggle strong {
-    display: block;
-    color: var(--wpiko-text-strong);
-    margin-bottom: 2px;
-}
-
-.wpiko-wizard-done {
-    margin-top: 20px;
-}
-
-.wpiko-wizard-done p + p {
-    margin-top: 14px;
+.wpiko-wizard input[type="checkbox"] { border-color: var(--wpiko-ui-line-strong); }
+.wpiko-wizard [hidden], .wpiko-site-knowledge [hidden] { display: none !important; }
+.wpiko-wizard .wpiko-wizard-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; padding: 14px 16px; list-style: none; }
+.wpiko-wizard .wpiko-wizard-progress li { display: flex; align-items: center; gap: 10px; min-width: 0; margin: 0; padding-right: 12px; border-right: 1px solid var(--wpiko-ui-line); color: var(--wpiko-ui-muted); font-size: 13px; font-weight: 500; line-height: 1.5; }
+.wpiko-wizard .wpiko-wizard-progress li:last-child { border-right: 0; padding-right: 0; }
+.wpiko-wizard .wpiko-wizard-progress li > span { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius-sm); color: var(--wpiko-ui-muted); background: var(--wpiko-ui-sunken); font-size: 12px; font-weight: 600; }
+.wpiko-wizard .wpiko-wizard-progress li.is-current { color: var(--wpiko-ui-text); }
+.wpiko-wizard .wpiko-wizard-progress li.is-current > span { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent); border-color: var(--wpiko-ui-accent); }
+.wpiko-wizard .wpiko-wizard-progress li.is-done { color: var(--wpiko-ui-ok); }
+.wpiko-wizard .wpiko-wizard-progress li.is-done > span { color: var(--wpiko-ui-ok); background: var(--wpiko-ui-ok-soft); border-color: var(--wpiko-ui-line); }
+.wpiko-wizard .wpiko-wizard-key-row,
+.wpiko-wizard .wpiko-wizard-retest-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.wpiko-wizard .wpiko-wizard-key-row input { flex: 1 1 240px; max-width: 420px; }
+.wpiko-wizard .wpiko-wizard-message:not(:empty) { margin-top: 12px; }
+.wpiko-wizard .wpiko-wizard-working { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--wpiko-ui-muted); font-size: 13px; }
+.wpiko-wizard .spinner, .wpiko-site-knowledge .spinner { float: none; margin: 0; }
+.wpiko-wizard .wpiko-wizard-success { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius-sm); color: var(--wpiko-ui-ok); background: var(--wpiko-ui-ok-soft); font-size: 13px; line-height: 1.5; }
+.wpiko-wizard .wpiko-wizard-success .dashicons { flex: none; width: 18px; height: 18px; font-size: 18px; }
+.wpiko-wizard .wpiko-wizard-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--wpiko-ui-line); }
+.wpiko-wizard .wpiko-wizard-basics { margin: 0 0 16px; }
+.wpiko-wizard .wpiko-wizard-files-hint { margin-top: 12px; }
+.wpiko-wizard .wpiko-wizard-done { margin-top: 16px; }
+.wpiko-wizard .wpiko-wizard-done > p:last-child { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+/* Match the API Key page's numbered connection instructions. */
+.wpiko-wizard .wpiko-api-key-steps { counter-reset: wpiko-step; display: grid; gap: 0; margin: 12px 0 0; padding: 0; list-style: none; }
+.wpiko-wizard .wpiko-api-key-steps li { counter-increment: wpiko-step; position: relative; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 12px 0 12px 40px; border: 0; border-bottom: 1px solid var(--wpiko-ui-line); border-radius: 0; background: transparent; font-size: 13px; line-height: 1.5; }
+.wpiko-wizard .wpiko-api-key-steps li:last-child { border-bottom: 0; }
+.wpiko-wizard .wpiko-api-key-steps li::before { content: counter(wpiko-step); position: absolute; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; font-weight: 600; top: 12px; left: 0; color: var(--wpiko-ui-text); background: var(--wpiko-ui-sunken); border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius-sm); font-size: 12px; }
+.wpiko-wizard .wpiko-api-key-steps span { color: var(--wpiko-ui-muted); font-size: 12px; }
+.wpiko-wizard .wpiko-api-key-steps a { align-self: flex-start; color: var(--wpiko-ui-accent); font-weight: 400; }
+.wpiko-wizard .wpiko-api-key-steps strong { color: var(--wpiko-ui-text); }
+/* The training panel is also used in AI Configuration; scope adjustments here. */
+.wpiko-wizard .wpiko-site-knowledge {
+    --wpiko-knowledge-pill-radius: var(--wpiko-ui-radius-sm);
+    --wpiko-knowledge-label-color: var(--wpiko-ui-warn);
+    --wpiko-knowledge-label-background: var(--wpiko-ui-warn-soft);
+    --wpiko-knowledge-selection-ring: var(--wpiko-ui-line-strong);
+    --wpiko-knowledge-warning-background: var(--wpiko-ui-warn-soft);
+    --wpiko-knowledge-warning-color: var(--wpiko-ui-warn);
+    margin: 16px 0 0; padding: 16px; box-shadow: none; }
+.wpiko-wizard .wpiko-site-knowledge-header h3 { color: var(--wpiko-ui-text); font-size: 15px; font-weight: 600; }
+.wpiko-wizard .wpiko-site-knowledge-header h3 > .dashicons { display: none; }
+.wpiko-wizard .wpiko-site-knowledge .description { margin: 0; color: var(--wpiko-ui-muted); font-size: 13px; font-style: normal; line-height: 1.5; }
+.wpiko-wizard .wpiko-knowledge-compare-card strong { font-size: 13px; font-weight: 600; }
+.wpiko-wizard .wpiko-knowledge-compare-card li { font-size: 12px; }
+.wpiko-wizard .wpiko-site-knowledge .button-primary { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent); border: 0; }
+.wpiko-wizard .wpiko-site-knowledge .button-primary:hover,
+.wpiko-wizard .wpiko-site-knowledge .button-primary:focus { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent-dark); }
+.wpiko-wizard .wpiko-site-knowledge .button-primary.is-remove { color: var(--wpiko-ui-danger); background: var(--wpiko-ui-surface); border-color: var(--wpiko-ui-danger); }
+.wpiko-wizard .wpiko-site-knowledge .button-primary.is-remove:hover { color: var(--wpiko-ui-danger-dark); background: var(--wpiko-ui-error-soft); }
+.wpiko-wizard .wpiko-site-knowledge-list input { accent-color: var(--wpiko-ui-accent); }
+/* Test-chat styling stays separate from the public chatbot's appearance. */
+.wpiko-wizard .wpiko-wizard-chat { margin: 12px 0 16px; overflow: hidden; border: 1px solid var(--wpiko-ui-line); border-radius: var(--wpiko-ui-radius); }
+.wpiko-wizard .wpiko-wizard-chat-messages { display: flex; flex-direction: column; gap: 10px; height: 240px; padding: 16px; overflow-y: auto; background: var(--wpiko-ui-sunken); }
+.wpiko-wizard .wpiko-wizard-chat-messages:empty::before { content: attr(data-empty-message); margin: auto; color: var(--wpiko-ui-muted); font-size: 13px; line-height: 1.5; text-align: center; }
+.wpiko-wizard .wpiko-wizard-chat-msg { display: flex; }
+.wpiko-wizard .wpiko-wizard-chat-msg > div { max-width: 80%; padding: 10px 12px; border-radius: var(--wpiko-ui-radius); color: var(--wpiko-ui-text); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.wpiko-wizard .wpiko-wizard-chat-msg > div p { margin: 0 0 8px; }
+.wpiko-wizard .wpiko-wizard-chat-msg > div p:last-child { margin-bottom: 0; }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-user { justify-content: flex-end; }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-user > div { color: var(--wpiko-ui-on-dark); background: var(--wpiko-ui-accent); }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-user a { color: inherit; }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-bot > div { background: var(--wpiko-ui-surface); border: 1px solid var(--wpiko-ui-line); }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-bot a { color: var(--wpiko-ui-info); }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-typing > div { color: var(--wpiko-ui-muted); }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-error > div { max-width: 100%; color: var(--wpiko-ui-error); background: var(--wpiko-ui-error-soft); border: 1px solid var(--wpiko-ui-danger-line); }
+.wpiko-wizard .wpiko-wizard-chat-msg.is-error a { color: inherit; }
+.wpiko-wizard .wpiko-wizard-chat-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; background: var(--wpiko-ui-surface); }
+.wpiko-wizard .wpiko-wizard-chat-input { display: flex; gap: 8px; padding: 12px; background: var(--wpiko-ui-surface); }
+.wpiko-wizard .wpiko-wizard-chat-input input { flex: 1; min-width: 0; max-width: none; }
+.wpiko-wizard .wpiko-wizard-visibility { padding: 0; border-bottom: 0; }
+@container chatbot-wizard (max-width: 620px) {
+    .wpiko-wizard .wpiko-wizard-progress { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .wpiko-wizard .wpiko-wizard-progress li { border-right: 0; padding-right: 0; }
+    .wpiko-wizard .wpiko-knowledge-compare { grid-template-columns: minmax(0, 1fr); }
+    .wpiko-wizard .wpiko-wizard-chat-msg > div { max-width: 92%; }
 }
 
 /* "Learn from your website" panel */
 .wpiko-site-knowledge {
-    border: 1px solid var(--wpiko-border);
-    border-radius: var(--wpiko-radius-lg);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius);
     padding: 18px 20px;
-    background: var(--wpiko-surface);
+    background: var(--wpiko-ui-surface);
     margin: 16px 0;
 }
 
@@ -341,47 +107,48 @@
 
 .wpiko-site-knowledge-header .description {
     margin: 0;
+    font-size: 13px;
 }
 
 .wpiko-site-knowledge-count {
     flex-shrink: 0;
     padding: 3px 10px;
-    border-radius: var(--wpiko-radius-full);
-    background: var(--wpiko-primary-tint);
-    color: var(--wpiko-primary);
+    border-radius: var(--wpiko-knowledge-pill-radius, var(--wpiko-ui-radius-pill));
+    background: var(--wpiko-ui-accent-soft);
+    color: var(--wpiko-ui-accent);
     font-weight: 600;
     font-size: 12px;
     white-space: nowrap;
 }
 
 .wpiko-site-knowledge-count.is-full {
-    background: var(--wpiko-warning-tint);
-    color: var(--wpiko-warning-text);
+    background: var(--wpiko-knowledge-warning-background, var(--wpiko-ui-amber-soft));
+    color: var(--wpiko-knowledge-warning-color, var(--wpiko-ui-amber-text));
 }
 
 .wpiko-site-knowledge-note {
     margin-top: 12px;
     padding: 8px 12px;
-    border-radius: var(--wpiko-radius-sm);
+    border-radius: var(--wpiko-ui-radius-sm);
     font-size: 13px;
 }
 
 .wpiko-site-knowledge-note.is-ok {
-    background: var(--wpiko-success-tint);
-    color: var(--wpiko-text-strong);
+    background: var(--wpiko-ui-ok-soft);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-site-knowledge-note.is-warning {
-    background: var(--wpiko-warning-tint);
-    color: var(--wpiko-warning-text);
+    background: var(--wpiko-knowledge-warning-background, var(--wpiko-ui-amber-soft));
+    color: var(--wpiko-knowledge-warning-color, var(--wpiko-ui-amber-text));
 }
 
 .wpiko-site-knowledge-list {
     margin-top: 12px;
     max-height: 300px;
     overflow-y: auto;
-    border: 1px solid var(--wpiko-border-light);
-    border-radius: var(--wpiko-radius);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius);
 }
 
 .wpiko-site-knowledge-list ul {
@@ -392,7 +159,7 @@
 
 .wpiko-site-knowledge-list li {
     margin: 0;
-    border-bottom: 1px solid var(--wpiko-border-light);
+    border-bottom: 1px solid var(--wpiko-ui-line);
 }
 
 .wpiko-site-knowledge-list li:last-child {
@@ -409,7 +176,7 @@
 }
 
 .wpiko-site-knowledge-list label:hover {
-    background: var(--wpiko-surface-alt);
+    background: var(--wpiko-ui-sunken);
 }
 
 .wpiko-site-knowledge-list input {
@@ -424,12 +191,12 @@
 
 .wpiko-site-knowledge-title {
     font-weight: 500;
-    color: var(--wpiko-text-strong);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-site-knowledge-meta {
     font-size: 12px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -439,9 +206,9 @@
     display: inline-block;
     margin-left: 4px;
     padding: 0 6px;
-    border-radius: var(--wpiko-radius-full);
-    background: var(--wpiko-primary-tint);
-    color: var(--wpiko-primary);
+    border-radius: var(--wpiko-knowledge-pill-radius, var(--wpiko-ui-radius-pill));
+    background: var(--wpiko-ui-accent-soft);
+    color: var(--wpiko-ui-accent);
     font-size: 11px;
     font-weight: 600;
 }
@@ -453,7 +220,7 @@
     gap: 6px;
     margin: 0;
     padding: 14px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
 }
 
 .wpiko-site-knowledge-actions {
@@ -468,36 +235,17 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
 }
 
 .wpiko-site-knowledge-result.is-ok {
-    color: var(--wpiko-success-hover);
+    color: var(--wpiko-ui-ok);
     font-weight: 500;
 }
 
 .wpiko-site-knowledge-result.is-error {
-    color: var(--wpiko-danger);
+    color: var(--wpiko-ui-danger);
     font-weight: 500;
-}
-
-.wpiko-site-knowledge-pro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin: 14px 0 0;
-    padding-top: 12px;
-    border-top: 1px dashed var(--wpiko-border);
-    color: var(--wpiko-text-muted);
-    font-size: 13px;
-}
-
-.wpiko-site-knowledge-pro .dashicons {
-    color: var(--wpiko-gold);
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
 }
 
 /* Locked Pro training tools (shown when Pro is not installed) */
@@ -505,15 +253,15 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
     border-style: dashed;
 }
 
 .wpiko-pro-locked-button .wpiko-pro-pill {
     padding: 0 6px;
-    border-radius: var(--wpiko-radius-full);
-    background: var(--wpiko-gold-light);
-    color: var(--wpiko-text-strong);
+    border-radius: var(--wpiko-knowledge-pill-radius, var(--wpiko-ui-radius-pill));
+    background: var(--wpiko-knowledge-label-background, var(--wpiko-ui-knowledge-highlight-soft));
+    color: var(--wpiko-ui-text);
     font-size: 10px;
     font-weight: 700;
     line-height: 18px;
@@ -523,9 +271,9 @@
 .wpiko-pro-locked-info {
     margin-top: 12px;
     padding: 12px 14px;
-    border-radius: var(--wpiko-radius);
-    background: var(--wpiko-surface-alt);
-    border: 1px solid var(--wpiko-border-light);
+    border-radius: var(--wpiko-ui-radius);
+    background: var(--wpiko-ui-sunken);
+    border: 1px solid var(--wpiko-ui-line);
 }
 
 .wpiko-pro-locked-info p {
@@ -540,11 +288,6 @@
 
     .wpiko-wizard-basics {
         grid-template-columns: 1fr;
-    }
-
-    .wpiko-wizard-nav .button-hero {
-        width: 100%;
-        text-align: center;
     }
 
     .wpiko-wizard-chat-msg > div {
@@ -563,19 +306,23 @@
 }
 
 .wpiko-site-knowledge-badge.is-covered {
-    background: var(--wpiko-success-tint);
-    color: var(--wpiko-success-hover);
+    background: var(--wpiko-ui-ok-soft);
+    color: var(--wpiko-ui-ok);
 }
 
+/* Training actions retain their motion without global button rules. */
+.wpiko-site-knowledge-build.button-primary { border: 0; transition: background var(--wpiko-ui-transition), box-shadow var(--wpiko-ui-transition), transform var(--wpiko-ui-transition); }
+.wpiko-site-knowledge-build.button-primary:hover { transform: translateY(-1px); }
+
 .wpiko-site-knowledge-build.is-remove.button-primary {
-    background: var(--wpiko-danger);
-    border-color: var(--wpiko-danger);
+    background: var(--wpiko-ui-danger);
+    border-color: var(--wpiko-ui-danger);
 }
 
 .wpiko-site-knowledge-build.is-remove.button-primary:hover,
 .wpiko-site-knowledge-build.is-remove.button-primary:focus {
-    background: var(--wpiko-danger-hover);
-    border-color: var(--wpiko-danger-hover);
+    background: var(--wpiko-ui-danger-dark);
+    border-color: var(--wpiko-ui-danger-dark);
 }
 
 /* Quick learn vs Scan Website comparison */
@@ -591,35 +338,35 @@
     flex-direction: column;
     gap: 6px;
     padding: 12px 14px;
-    border: 1px solid var(--wpiko-border-light);
-    border-radius: var(--wpiko-radius);
-    background: var(--wpiko-surface-alt);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius);
+    background: var(--wpiko-ui-sunken);
 }
 
 .wpiko-knowledge-compare-card.is-pro {
-    background: var(--wpiko-primary-tint);
-    border-color: var(--wpiko-primary-soft);
+    background: var(--wpiko-ui-accent-soft);
+    border-color: var(--wpiko-ui-line);
 }
 
 .wpiko-knowledge-compare-card strong {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--wpiko-text-strong);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-knowledge-compare-card strong .dashicons {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    color: var(--wpiko-primary);
+    color: var(--wpiko-ui-accent);
 }
 
 .wpiko-knowledge-compare-card .wpiko-pro-pill {
     padding: 0 6px;
-    border-radius: var(--wpiko-radius-full);
-    background: var(--wpiko-gold-light);
-    color: var(--wpiko-text-strong);
+    border-radius: var(--wpiko-knowledge-pill-radius, var(--wpiko-ui-radius-pill));
+    background: var(--wpiko-knowledge-label-background, var(--wpiko-ui-knowledge-highlight-soft));
+    color: var(--wpiko-ui-text);
     font-size: 10px;
     font-weight: 700;
     line-height: 18px;
@@ -636,14 +383,14 @@
     margin: 0 0 2px;
     padding-left: 16px;
     font-size: 12.5px;
-    color: var(--wpiko-text);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-knowledge-compare-card li::before {
     content: "✓";
     position: absolute;
     left: 0;
-    color: var(--wpiko-success);
+    color: var(--wpiko-ui-ok);
     font-weight: 700;
 }
 
@@ -656,7 +403,7 @@
     grid-column: 1 / -1;
     margin: 0;
     font-size: 12px;
-    color: var(--wpiko-text-muted);
+    color: var(--wpiko-ui-muted);
 }
 
 /* Brief highlight when the list refreshes after a change elsewhere */
@@ -665,7 +412,7 @@
 }
 
 .wpiko-site-knowledge.is-updated {
-    box-shadow: 0 0 0 3px var(--wpiko-primary-glow-strong);
+    box-shadow: 0 0 0 3px var(--wpiko-knowledge-selection-ring, var(--wpiko-ui-knowledge-focus));
 }
 
 @media screen and (max-width: 782px) {
@@ -676,18 +423,18 @@
 
 /* Quick learn: labels that say what each tick means */
 .wpiko-site-knowledge-badge.is-learned {
-    background: var(--wpiko-success-tint);
-    color: var(--wpiko-success-hover);
+    background: var(--wpiko-ui-ok-soft);
+    color: var(--wpiko-ui-ok);
 }
 
 .wpiko-site-knowledge-note.is-empty {
-    background: var(--wpiko-surface-alt);
-    border: 1px dashed var(--wpiko-border);
-    color: var(--wpiko-text);
+    background: var(--wpiko-ui-sunken);
+    border: 1px dashed var(--wpiko-ui-line);
+    color: var(--wpiko-ui-text);
 }
 
 .wpiko-site-knowledge-pending {
-    color: var(--wpiko-warning-text);
+    color: var(--wpiko-knowledge-warning-color, var(--wpiko-ui-amber-text));
     font-weight: 600;
     font-size: 13px;
 }

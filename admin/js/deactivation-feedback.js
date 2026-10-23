@@ -1,5 +1,5 @@
 /**
- * Optional feedback form shown when WPiko Chatbot is deactivated.
+ * Optional feedback form shown when WPiko AI Chatbot is deactivated.
  */
 (function () {
     'use strict';

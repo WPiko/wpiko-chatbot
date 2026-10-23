@@ -257,15 +257,12 @@
         });
     };
 
-    // Requests that add or remove knowledge files. When one succeeds anywhere on
-    // the page (for example Pro's Scan Website or File Management), the list is
-    // refreshed so it never shows outdated ticks.
-    var KNOWLEDGE_ACTIONS = [
-        'wpiko_chatbot_upload_qa_to_assistant',
-        'wpiko_chatbot_delete_file',
-        'wpiko_chatbot_delete_responses_vector_store',
-        'wpiko_chatbot_upload_file_responses'
-    ];
+    // When a request anywhere on the page adds or removes knowledge files (for
+    // example Pro's Scan Website, Q&A Builder or File Management), the server
+    // marks the response with this header (see
+    // wpiko_chatbot_clear_vector_store_files_cache()) and the list is refreshed
+    // so it never shows outdated ticks.
+    var KNOWLEDGE_CHANGED_HEADER = 'X-Wpiko-Knowledge-Changed';
 
     function requestAction(settings) {
         var data = settings && settings.data;
@@ -288,8 +285,12 @@
         });
 
         var refreshTimer = null;
-        $(document).ajaxSuccess(function (event, xhr, settings) {
-            if (KNOWLEDGE_ACTIONS.indexOf(requestAction(settings)) === -1) {
+        $(document).ajaxComplete(function (event, xhr, settings) {
+            if (!xhr || !xhr.getResponseHeader || xhr.getResponseHeader(KNOWLEDGE_CHANGED_HEADER) !== '1') {
+                return;
+            }
+            // Quick learn's own build already redraws the list from its response.
+            if (requestAction(settings) === 'wpiko_chatbot_site_knowledge_build') {
                 return;
             }
             clearTimeout(refreshTimer);

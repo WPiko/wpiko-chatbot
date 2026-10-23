@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: WPiko Chatbot
+ * Plugin Name: WPiko AI Chatbot – ChatGPT Assistant & Customer Support
  * Plugin URI: https://wpiko.com/chatbot
- * Description: AI chatbot for WordPress powered by your own OpenAI account. Learns your pages and answers visitors 24/7.
- * Version: 2.1.1
+ * Description: AI chatbot powered by your own OpenAI account. Learns your pages in minutes and answers visitors 24/7. No monthly subscription.
+ * Version: 2.1.2
  * Requires at least: 6.0
  * Tested up to: 7.1
  * Requires PHP: 7.0
@@ -22,7 +22,8 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_PLUGIN_FILE', __FILE__);
 define('WPIKO_CHATBOT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPIKO_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPIKO_CHATBOT_VERSION', '2.1.1');
+define('WPIKO_CHATBOT_VERSION', '2.1.2');
+define('WPIKO_CHATBOT_PRICING_URL', 'https://wpiko.com/chatbot-pricing/');
 
 // Ensures that the default options is set
 function wpiko_chatbot_set_default_options()
@@ -92,7 +93,7 @@ function wpiko_chatbot_should_load_frontend_assets()
     $load = wpiko_chatbot_floating_should_display() || wpiko_chatbot_current_page_has_shortcode();
 
     /**
-     * Filter whether WPiko Chatbot loads its front-end assets on this page.
+     * Filter whether WPiko AI Chatbot loads its front-end assets on this page.
      *
      * Return true for pages that render the chatbot in a way the plugin
      * cannot detect in advance (for example a page builder template).
@@ -136,7 +137,7 @@ function wpiko_chatbot_enqueue_scripts()
 
     wp_enqueue_script('wpiko-chatbot-dompurify', WPIKO_CHATBOT_PLUGIN_URL . 'js/vendor/dompurify/purify.min.js', array(), '3.4.16', true);
     wp_enqueue_script('wpiko-chatbot-message-safety', WPIKO_CHATBOT_PLUGIN_URL . 'js/message-safety.js', array('wpiko-chatbot-dompurify'), $version, true);
-    wp_enqueue_script('wpiko-chatbot-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot.js', array('jquery', 'wpiko-chatbot-message-safety'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot.js', array('jquery', 'wpiko-chatbot-message-safety'), $version . '.' . filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'js/wpiko-chatbot.js'), true);
     wp_enqueue_style('wpiko-chatbot-css', WPIKO_CHATBOT_PLUGIN_URL . 'css/wpiko-chatbot.css', array(), $version);
 
     // Proactive greeting behavior (only when enabled alongside the floating chatbot)
@@ -144,12 +145,8 @@ function wpiko_chatbot_enqueue_scripts()
         wp_enqueue_script('wpiko-chatbot-proactive-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot-proactive.js', array('wpiko-chatbot-js'), $version, true);
     }
 
-    // Read CSS content for inlining in transcript downloads
-    $css_path = WPIKO_CHATBOT_PLUGIN_DIR . 'admin/css/transcript-styles.css';
-    $css_content = '';
-    if (file_exists($css_path)) {
-        $css_content = file_get_contents($css_path);
-    }
+    // Both download paths need a self-contained stylesheet, including root tokens.
+    $css_content = wpiko_chatbot_get_transcript_css();
 
     // Localize script for frontend transcript CSS
     wp_localize_script('wpiko-chatbot-js', 'wpikoAjax', array(
@@ -493,7 +490,7 @@ function wpiko_chatbot_localize_script()
     // Site admins testing the chat get setup hints instead of the generic visitor error.
     if (current_user_can('manage_options')) {
         $script_data['adminNotice'] = array(
-            'missingKey' => __('Admin notice: the chatbot has no OpenAI API key yet, so it cannot answer. Add your key in WPiko Chatbot → API Key. (Visitors see a generic error message.)', 'wpiko-chatbot'),
+            'missingKey' => __('Admin notice: the chatbot has no OpenAI API key yet, so it cannot answer. Add your key in WPiko AI Chatbot → API Key. (Visitors see a generic error message.)', 'wpiko-chatbot'),
             'apiKeyUrl' => add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'api_key', '_wpnonce' => wp_create_nonce('wpiko_chatbot_tab_nonce')), admin_url('admin.php')),
             'apiKeyLabel' => __('Add your API key', 'wpiko-chatbot'),
         );
@@ -548,7 +545,7 @@ function wpiko_chatbot_require_admin_ajax($capability = 'manage_options')
 }
 
 /**
- * Check if WPiko Chatbot Pro is active
+ * Check if WPiko AI Chatbot Pro is active
  * 
  * @return bool Whether the pro plugin is active
  */

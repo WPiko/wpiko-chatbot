@@ -349,10 +349,10 @@ jQuery(document).ready(function($) {
 
     function showContactForm() {
         const modalHtml = `
-            <div id="contact-modal" class="modal" style="display: block;">
+            <div id="contact-modal" class="modal wpiko-conversations-dialog wpiko-chatbot-settings-page" role="dialog" aria-modal="true" aria-labelledby="wpiko-contact-title" style="display: flex;">
                 <div class="modal-content">
-                    <h2>Contact User</h2>
-                    <p class="description">Send an email message directly to the user.</p>
+                    <h2 id="wpiko-contact-title">Contact user</h2>
+                    <p class="wpiko-chatbot-settings-field-description">Send an email message directly to the user.</p>
                     <form id="contact-form" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="subject">Subject:</label>
@@ -384,9 +384,11 @@ jQuery(document).ready(function($) {
                                         </select>
                                     </div>
                             </div>
-                            <div class="loading-spinner"></div>
-                            <button type="submit" class="button button-primary">Send</button>
-                            <button type="button" class="button cancel-contact">Cancel</button>
+                            <div class="wpiko-contact-form-buttons">
+                                <div class="loading-spinner"></div>
+                                <button type="submit" class="button wpiko-chatbot-settings-save">Send</button>
+                                <button type="button" class="button cancel-contact">Cancel</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -414,14 +416,14 @@ jQuery(document).ready(function($) {
             if (file) {
                 // Check file type
                 if (!file.type.startsWith('image/')) {
-                    alert('Please select an image file');
+                    window.wpikoChatbotNotices.show('Please select an image file.', 'error', { prepend: $('#contact-form') });
                     this.value = '';
                     return;
                 }
 
                 // Check file size (5MB)
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('File size too large. Maximum size is 5MB.');
+                    window.wpikoChatbotNotices.show('File size too large. Maximum size is 5MB.', 'error', { prepend: $('#contact-form') });
                     this.value = '';
                     return;
                 }
@@ -508,7 +510,7 @@ jQuery(document).ready(function($) {
             const currentText = messageTextarea.val();
             
             if (!currentText.trim()) {
-                alert('Please enter some text to enhance');
+                window.wpikoChatbotNotices.show('Please enter some text to enhance.', 'error', { prepend: $('#contact-form') });
                 return;
             }
 
@@ -521,9 +523,9 @@ jQuery(document).ready(function($) {
             
             // Create and show review modal
             const reviewModal = $(`
-                <div id="ai-review-modal" class="ai-review-modal">
+                <div id="ai-review-modal" class="ai-review-modal wpiko-conversations-dialog wpiko-chatbot-settings-page" role="dialog" aria-modal="true" aria-labelledby="wpiko-review-title">
                     <div class="ai-review-content">
-                        <h2>Review Enhanced Text</h2>
+                        <h2 id="wpiko-review-title">Review enhanced text</h2>
                         <div class="text-comparison">
                             <div class="text-column">
                                 <h4>Original Text</h4>
@@ -536,7 +538,7 @@ jQuery(document).ready(function($) {
                         </div>
                         <div class="review-actions">
                             <button type="button" class="button cancel-enhancement">Cancel</button>
-                            <button type="button" class="button button-primary accept-enhancement">Use Enhanced Text</button>
+                            <button type="button" class="button wpiko-chatbot-settings-save accept-enhancement">Use Enhanced Text</button>
                         </div>
                     </div>
                 </div>
@@ -567,12 +569,12 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         reviewModal.find('.enhanced-text').text(response.data);
                     } else {
-                        alert('Failed to enhance text: ' + response.data);
+                        window.wpikoChatbotNotices.show('Failed to enhance text: ' + response.data, 'error', { prepend: $('#contact-form') });
                         reviewModal.remove();
                     }
                 },
                 error: function(xhr, status, error) {
-                    alert('Error enhancing text: ' + error);
+                    window.wpikoChatbotNotices.show('Error enhancing text: ' + error, 'error', { prepend: $('#contact-form') });
                     reviewModal.remove();
                 },
                 complete: function() {
@@ -636,10 +638,10 @@ jQuery(document).ready(function($) {
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        alert('Email sent successfully');
                         closeContactModal();
+                        window.wpikoChatbotNotices.show('Email sent successfully.', 'success');
                     } else {
-                        alert('Failed to send email: ' + response.data);
+                        window.wpikoChatbotNotices.show('Failed to send email: ' + response.data, 'error', { prepend: $('#contact-form') });
                         // Re-enable buttons and hide spinner
                         $submitButton.prop('disabled', false);
                         $cancelButton.prop('disabled', false);
@@ -647,7 +649,7 @@ jQuery(document).ready(function($) {
                     }
                 },
                 error: function(xhr, status, error) {
-                    alert('Error sending email: ' + (xhr.responseJSON ? xhr.responseJSON.data : error));
+                    window.wpikoChatbotNotices.show('Error sending email: ' + (xhr.responseJSON ? xhr.responseJSON.data : error), 'error', { prepend: $('#contact-form') });
                     // Re-enable buttons and hide spinner
                     $submitButton.prop('disabled', false);
                     $cancelButton.prop('disabled', false);
@@ -721,7 +723,7 @@ jQuery(document).ready(function($) {
                     link.download = filename + '.html';
                     link.click();
                 } else {
-                    alert('Failed to download conversation: ' + (response.data || 'Unknown error'));
+                    window.wpikoChatbotNotices.show('Failed to download conversation: ' + (response.data || 'Unknown error'), 'error');
                 }
             },
             error: function(xhr, status, error) {
@@ -732,7 +734,7 @@ jQuery(document).ready(function($) {
                 if (isTranslating) {
                     errorMessage = 'Error translating conversation. Please try again or download without translation.';
                 }
-                alert(errorMessage);
+                window.wpikoChatbotNotices.show(errorMessage, 'error');
                 console.error('Download error:', error);
             }
         });
@@ -756,39 +758,78 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         location.reload();
                     } else {
-                        alert('Failed to delete conversation');
+                        window.wpikoChatbotNotices.show('Failed to delete conversation.', 'error');
                     }
                 },
                 error: function() {
-                    alert('Error deleting conversation');
+                    window.wpikoChatbotNotices.show('Error deleting conversation.', 'error');
                 }
             });
         }
     });
 
+    // Opened from the Dashboard's Recent activity: show that conversation.
+    (function openLinkedConversation() {
+        var params = new URLSearchParams(window.location.search);
+        var sessionId = params.get('conversation');
+        if (!sessionId) {
+            return;
+        }
+        var $item = $('.conversation-item').filter(function() {
+            return String($(this).data('session-id')) === sessionId;
+        }).first();
+        if ($item.length) {
+            $item.trigger('click');
+            if ($item[0].scrollIntoView) {
+                $item[0].scrollIntoView({ block: 'nearest' });
+            }
+        }
+    })();
+
+    // Inbox pager: jump to the chosen page.
+    $(document).on('change', '.conversations-page-select', function() {
+        var url = String($(this).data('url') || '');
+        if (url.indexOf('%#%') !== -1) {
+            window.location.href = url.replace('%#%', encodeURIComponent(this.value));
+        }
+    });
+
     // Emails Download Functionality
-    $('#download_emails').click(function(e) {
+    $('#download_emails').on('click', function(e) {
         e.preventDefault();
+        var $button = $(this);
+        if ($button.prop('disabled')) {
+            return;
+        }
+        $button.prop('disabled', true).attr('aria-busy', 'true');
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'wpiko_chatbot_download_emails',
-                security: wpikoChatbotAdmin.nonce
+                security: wpikoChatbotAdmin.nonce,
+                range: $('#download_emails_range').val() || 0
             },
             success: function(response) {
-                if (response.success) {
-                    const blob = new Blob([response.data], { type: 'text/csv' });
+                if (response && response.success && response.data && response.data.csv) {
+                    const blob = new Blob([response.data.csv], { type: 'text/csv;charset=utf-8' });
                     const link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = 'chatbot_user_emails.csv';
+                    link.download = response.data.filename || 'chatbot-emails.csv';
+                    document.body.appendChild(link);
                     link.click();
+                    link.remove();
+                    setTimeout(function() { window.URL.revokeObjectURL(link.href); }, 1000);
+                    window.wpikoChatbotNotices.show(response.data.count === 1 ? 'Downloaded 1 email address.' : 'Downloaded ' + response.data.count + ' email addresses.', 'success');
                 } else {
-                    alert('Failed to download emails: ' + response.data);
+                    window.wpikoChatbotNotices.show(response && response.data ? response.data : 'Could not download the email addresses.', 'error');
                 }
             },
             error: function() {
-                alert('An error occurred while downloading emails.');
+                window.wpikoChatbotNotices.show('An error occurred while downloading emails.', 'error');
+            },
+            complete: function() {
+                $button.prop('disabled', false).removeAttr('aria-busy');
             }
         });
     });

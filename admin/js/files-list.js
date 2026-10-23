@@ -1,9 +1,108 @@
 jQuery(document).ready(function($) {
 
+// ---------------------------------------------------------------------
+// Shared row rendering for the Train AI file lists.
+// ---------------------------------------------------------------------
+function formatFileSize(bytes) {
+    bytes = Number(bytes) || 0;
+    if (bytes < 1024) {
+        return bytes + ' B';
+    }
+    if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(1) + ' KB';
+    }
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function formatFileDate(timestamp) {
+    var date = new Date((Number(timestamp) || 0) * 1000);
+    var seconds = (Date.now() - date.getTime()) / 1000;
+    if (seconds < 60) {
+        return 'just now';
+    }
+    if (seconds < 3600) {
+        return Math.floor(seconds / 60) + ' min ago';
+    }
+    if (seconds < 86400) {
+        var hours = Math.floor(seconds / 3600);
+        return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+    }
+    if (seconds < 86400 * 7) {
+        var days = Math.floor(seconds / 86400);
+        return days + (days === 1 ? ' day ago' : ' days ago');
+    }
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function fileTypeIcon(filename) {
+    var ext = String(filename || '').split('.').pop().toLowerCase();
+    switch (ext) {
+        case 'pdf': return 'dashicons-pdf';
+        case 'doc':
+        case 'docx': return 'dashicons-media-document';
+        case 'json':
+        case 'html': return 'dashicons-media-code';
+        default: return 'dashicons-media-text';
+    }
+}
+
+function fileRow(options) {
+    var $row = $('<li class="wpiko-file-row"></li>');
+    $row.append(
+        $('<span class="wpiko-file-type" aria-hidden="true"></span>')
+            .append($('<span class="dashicons"></span>').addClass(options.icon || 'dashicons-media-default'))
+    );
+    $row.append(
+        $('<div class="file-info"></div>')
+            .append($('<span class="file-name"></span>').text(options.name).attr('title', options.title || options.name))
+            .append($('<span class="file-meta"></span>').text(options.meta || ''))
+    );
+    if (options.deleteClass) {
+        $row.append(
+            $('<button type="button" class="wpiko-icon-button is-danger"></button>')
+                .addClass(options.deleteClass)
+                .attr('data-file-id', options.fileId)
+                .attr('aria-label', 'Delete ' + options.name)
+                .attr('title', 'Delete')
+                .append('<span class="dashicons dashicons-trash" aria-hidden="true"></span>')
+        );
+    }
+    return $row;
+}
+
+function emptyRow(icon, title, text) {
+    var $row = $('<li class="wpiko-list-empty"></li>');
+    $row.append($('<span class="dashicons" aria-hidden="true"></span>').addClass(icon));
+    $row.append($('<strong></strong>').text(title));
+    if (text) {
+        $row.append($('<span></span>').text(text));
+    }
+    return $row;
+}
+
+function setListCount(id, count) {
+    var $count = $('#' + id);
+    if ($count.length) {
+        $count.text(count).prop('hidden', !count);
+    }
+}
+
+function confirmDelete(title, message) {
+    if (window.wpikoModal && typeof window.wpikoModal.confirm === 'function') {
+        return window.wpikoModal.confirm({
+            title: title,
+            message: message,
+            confirmLabel: 'Delete',
+            danger: true
+        });
+    }
+    return $.Deferred().resolve(window.confirm(title)).promise();
+}
+
 // Uploaded Files list
 function refreshFileList(retryCount = 0) {
     var $assistantFilesList = jQuery('#assistant-files-list');
-    $assistantFilesList.html('<li class="loading">Loading...</li>');
+    $assistantFilesList.html('<li class="loading">Loading files…</li>');
 
     jQuery.ajax({
         url: ajaxurl,
@@ -20,27 +119,24 @@ function refreshFileList(retryCount = 0) {
                 
                 $assistantFilesList.empty();
                 var hasFiles = false;
+                var uploadedCount = 0;
                 files.forEach(function(file) {
                     // Skip files that start with "page_", "qa_data_" or "woocommerce_"
                     if (!file.filename.startsWith('page_') && !file.filename.startsWith('qa_data_') && !file.filename.startsWith('woocommerce_')) {
                         hasFiles = true;
-                        var fileSize = (file.bytes / 1024).toFixed(2) + ' KB';
-                        var fileDate = new Date(file.created_at * 1000).toLocaleString();
-                        var listItem = $(
-                            '<li>' +
-                            '<div class="file-info">' +
-                            '<span class="file-name">' + file.filename + '</span>' +
-                            '<span class="file-meta">(' + fileSize + ') - Uploaded on ' + fileDate + '</span>' +
-                            '</div>' +
-                            '<span class="qa-status active">Active</span>' +
-                            '<button type="button" class="delete-file" data-file-id="' + file.id + '"></button>' +
-                            '</li>'
-                        );
-                        $assistantFilesList.append(listItem);
+                        uploadedCount++;
+                        $assistantFilesList.append(fileRow({
+                            icon: fileTypeIcon(file.filename),
+                            name: file.filename,
+                            meta: formatFileSize(file.bytes) + ' · Uploaded ' + formatFileDate(file.created_at),
+                            deleteClass: 'delete-file',
+                            fileId: file.id
+                        }));
                     }
                 });
+                setListCount('assistant-files-count', uploadedCount);
                 if (!hasFiles) {
-                    $assistantFilesList.html('<li class="empty-list">Empty List</li>');
+                    $assistantFilesList.empty().append(emptyRow('dashicons-media-default', 'No files yet', 'Upload a document above and your assistant can use it in its answers.'));
                 } else {
                     // Show file count and performance info
                     var uploadedFiles = files.filter(function(file) {
@@ -49,24 +145,6 @@ function refreshFileList(retryCount = 0) {
                     var totalFiles = uploadedFiles.length;
                     
                     if (totalFiles > 0) {
-                        var perfMsg = 'Loaded ' + totalFiles + ' uploaded files';
-                        if (performance && performance.file_breakdown) {
-                            // Use accurate file breakdown from backend
-                            var uploadedFromAPI = performance.file_breakdown.uploaded_files;
-                            var cacheRatio = performance.cached_files / performance.total_files;
-                            var cachedUploadedFiles = Math.round(uploadedFromAPI * cacheRatio);
-                            var apiUploadedFiles = uploadedFromAPI - cachedUploadedFiles;
-                            
-                            perfMsg += ' (' + cachedUploadedFiles + ' from cache, ' + apiUploadedFiles + ' from API)';
-                        } else if (performance) {
-                            // Fallback to estimation method
-                            var uploadedFileRatio = totalFiles / performance.total_files;
-                            var cachedUploadedFiles = Math.round(performance.cached_files * uploadedFileRatio);
-                            var apiUploadedFiles = Math.round(performance.api_fetched * uploadedFileRatio);
-                            perfMsg += ' (' + cachedUploadedFiles + ' from cache, ' + apiUploadedFiles + ' from API)';
-                        }
-                        console.log(perfMsg);
-                        
                         // Add performance info to UI if there are many uploaded files
                         if (performance && totalFiles > 10) {
                             var perfText = '';
@@ -113,11 +191,10 @@ function refreshUrlProcessingFileList(retryCount = 0) {
     
     // Check if the element exists
     if (!$urlProcessingFilesList.length) {
-        console.log('URL processing files list element not found');
         return;
     }
     
-    $urlProcessingFilesList.html('<li class="loading">Loading...</li>');
+    $urlProcessingFilesList.html('<li class="loading">Loading pages…</li>');
 
     jQuery.ajax({
         url: ajaxurl,
@@ -156,34 +233,21 @@ function refreshUrlProcessingFileList(retryCount = 0) {
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                         .join(' ');
 
-                    var listItem = $(
-                        '<li>' +
-                        '<div class="file-info">' +
-                        '<span class="file-name">' + displayName + '</span>' +
-                        '<span class="file-meta"> (' + fileSize + ') - Uploaded on ' + fileDate + '</span>' +
-                        '</div>' +
-                        '<span class="qa-status active">Active</span>' +
-                        '<button class="delete-page-file" data-file-id="' + file.id + '"></button>' +
-                        '</li>'
-                    );
-                    $urlProcessingFilesList.append(listItem);
+                    $urlProcessingFilesList.append(fileRow({
+                        icon: 'dashicons-admin-page',
+                        name: displayName,
+                        meta: formatFileSize(file.bytes) + ' · Scanned ' + formatFileDate(file.created_at),
+                        deleteClass: 'delete-page-file',
+                        fileId: file.id
+                    }));
                 });
                 
+                setListCount('url-processing-files-count', pageFiles.length);
                 if (!hasUrlProcessingFiles) {
-                    $urlProcessingFilesList.html('<li class="empty-list"><div class="file-info">No scanned pages found</div><span class="qa-status disabled">Disabled</span></li>');
+                    $urlProcessingFilesList.empty().append(emptyRow('dashicons-admin-page', 'No pages scanned yet', 'Find a page above and generate its Q&A.'));
                 } else {
                     // Show page file count and performance info
                     var pageFileCount = pageFiles.length;
-                    var perfMsg = 'Loaded ' + pageFileCount + ' scanned page files';
-                    if (performance && performance.file_breakdown) {
-                        // Use accurate count from backend
-                        var actualPageFiles = performance.file_breakdown.page_files;
-                        perfMsg = 'Loaded ' + actualPageFiles + ' scanned page files (optimized loading)';
-                    } else if (performance) {
-                        perfMsg += ' (optimized loading)';
-                    }
-                    console.log(perfMsg);
-                    
                     // Add performance info to UI if there are many page files
                     if (performance && pageFileCount > 5) {
                         var perfInfo = jQuery('<div class="file-performance-info">').html(
@@ -218,7 +282,7 @@ function refreshUrlProcessingFileList(retryCount = 0) {
 // Q&A files list
 function refreshQAFileList(retryCount = 0) {
     var $qaFilesList = jQuery('#qa-files-list');
-    $qaFilesList.html('<li class="loading">Loading...</li>');
+    $qaFilesList.html('<li class="loading">Loading…</li>');
 
     jQuery.ajax({
         url: ajaxurl,
@@ -247,33 +311,20 @@ function refreshQAFileList(retryCount = 0) {
                     hasQAFiles = true;
                     var fileSize = (file.bytes / 1024).toFixed(2) + ' KB';
                     var fileDate = new Date(file.created_at * 1000).toLocaleString();
-                    var listItem = $(
-                        '<li>' +
-                        '<div class="file-info">' +
-                        '<span class="file-name">Questions & Answers</span>' +
-                        '<span class="file-meta"> (' + fileSize + ') - Uploaded on ' + fileDate + '</span>' +
-                        '</div>' +
-                        '<span class="qa-status active">Active</span>' +
-                        '</li>'
-                    );
-                    $qaFilesList.append(listItem);
+                    $qaFilesList.append(fileRow({
+                        icon: 'dashicons-editor-help',
+                        name: 'Questions & Answers',
+                        title: file.filename,
+                        meta: formatFileSize(file.bytes) + ' · Uploaded ' + formatFileDate(file.created_at)
+                    }));
                 });
                 
                 if (!hasQAFiles) {
-                    $qaFilesList.html('<li class="empty-list"><div class="file-info">No Q&A Files Found</div><span class="qa-status disabled">Disabled</span></li>');
+                    // The sync summary above already says there is no file yet.
+                    $qaFilesList.empty();
                 } else {
                     // Show Q&A file count and performance info
                     var qaFileCount = qaFiles.length;
-                    var perfMsg = 'Loaded ' + qaFileCount + ' Q&A files';
-                    if (performance && performance.file_breakdown) {
-                        // Use accurate count from backend
-                        var actualQAFiles = performance.file_breakdown.qa_files;
-                        perfMsg = 'Loaded ' + actualQAFiles + ' Q&A files (optimized loading)';
-                    } else if (performance) {
-                        perfMsg += ' (optimized loading)';
-                    }
-                    console.log(perfMsg);
-                    
                     // Add performance info to UI if there are multiple Q&A files
                     if (performance && qaFileCount > 1) {
                         var perfInfo = jQuery('<div class="file-performance-info">').html(
@@ -302,7 +353,7 @@ function refreshQAFileList(retryCount = 0) {
 // WooCommerce files list
 function refreshWooCommerceFileList(retryCount = 0) {
     var $woocommerceFilesList = jQuery('#woocommerce-files-list');
-    $woocommerceFilesList.html('<li class="loading">Loading...</li>');
+    $woocommerceFilesList.html('<li class="loading">Loading product files…</li>');
 
     jQuery.ajax({
         url: ajaxurl,
@@ -333,34 +384,22 @@ function refreshWooCommerceFileList(retryCount = 0) {
                     var fileDate = new Date(file.created_at * 1000).toLocaleString();
                     var displayName = file.filename.replace('woocommerce_', '').replace('.json', '');
                     displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1); // Capitalize first letter
-                    var listItem = $(
-                        '<li>' +
-                        '<div class="file-info">' +
-                        '<span class="file-name">' + displayName + '</span>' +
-                        '<span class="file-meta"> (' + fileSize + ') - Uploaded on ' + fileDate + '</span>' +
-                        '</div>' +
-                        '<span class="qa-status active">Active</span>' +
-                        '<button class="delete-woo-file" data-file-id="' + file.id + '">×</button>' +
-                        '</li>'
-                    );
-                    $woocommerceFilesList.append(listItem);
+                    $woocommerceFilesList.append(fileRow({
+                        icon: 'dashicons-cart',
+                        name: displayName,
+                        title: file.filename,
+                        meta: formatFileSize(file.bytes) + ' · Synced ' + formatFileDate(file.created_at),
+                        deleteClass: 'delete-woo-file',
+                        fileId: file.id
+                    }));
                 });
                 
+                setListCount('woocommerce-files-count', wooFiles.length);
                 if (!hasWooCommerceFiles) {
-                    $woocommerceFilesList.html('<li class="empty-list"><div class="file-info">No WooCommerce Files Found</div><span class="qa-status disabled">Disabled</span></li>');
+                    $woocommerceFilesList.empty().append(emptyRow('dashicons-cart', 'No product files yet', 'Turn on the integration and sync your products to create them.'));
                 } else {
                     // Show WooCommerce file count and performance info
                     var wooFileCount = wooFiles.length;
-                    var perfMsg = 'Loaded ' + wooFileCount + ' WooCommerce files';
-                    if (performance && performance.file_breakdown) {
-                        // Use accurate count from backend
-                        var actualWooFiles = performance.file_breakdown.woocommerce_files;
-                        perfMsg = 'Loaded ' + actualWooFiles + ' WooCommerce files (optimized loading)';
-                    } else if (performance) {
-                        perfMsg += ' (optimized loading)';
-                    }
-                    console.log(perfMsg);
-                    
                     // Add performance info to UI if there are multiple WooCommerce files
                     if (performance && wooFileCount > 2) {
                         var perfInfo = jQuery('<div class="file-performance-info">').html(
@@ -387,7 +426,9 @@ function refreshWooCommerceFileList(retryCount = 0) {
 }
     
 // Generic deleteFile
-function deleteFile(fileId, refreshFunction) {
+function deleteFile(fileId, refreshFunction, $anchor) {
+    // Messages appear above the list the file was deleted from.
+    var noticeOptions = $anchor && $anchor.length ? { before: $anchor } : {};
     $.ajax({
         url: ajaxurl,
         type: 'POST',
@@ -398,55 +439,75 @@ function deleteFile(fileId, refreshFunction) {
         },
         success: function(response) {
             if (response.success) {
-                alert('File deleted successfully');
+                window.wpikoChatbotNotices.show('File deleted successfully.', 'success', noticeOptions);
                 refreshFunction();
             } else {
-                alert('Error deleting file: ' + (response.data ? response.data.message : 'Unknown error'));
+                window.wpikoChatbotNotices.show('Error deleting file: ' + (response.data ? response.data.message : 'Unknown error'), 'error', noticeOptions);
             }
         },
         error: function(xhr, status, error) {
             console.error('AJAX error:', status, error);
             // Check if the file was actually deleted despite the AJAX error
             refreshFunction();
-            alert('The file may have been deleted, but there was an error in the response. Please check and try again if necessary.');
+            window.wpikoChatbotNotices.show('The file may have been deleted, but there was an error in the response. Please check and try again if necessary.', 'warning', noticeOptions);
         }
     });
 }
 
     // Event listener for Uploaded file delete buttons
     $(document).on('click', '.delete-file', function(e) {
-        e.preventDefault(); // Prevent any default action
-        var fileId = $(this).data('file-id');
-        if (confirm('Are you sure you want to delete this file?')) {
-            deleteFile(fileId, refreshFileList);
-        }
+        e.preventDefault();
+        var $button = $(this);
+        var fileId = $button.data('file-id');
+        var $list = $button.closest('ul');
+        confirmDelete('Delete this file?', 'Your assistant will stop using it in its answers. This cannot be undone.').then(function(ok) {
+            if (ok) {
+                $button.prop('disabled', true);
+                deleteFile(fileId, refreshFileList, $list);
+            }
+        });
     });
 
     // Event listener for Content processing file delete buttons
     $(document).on('click', '.delete-page-file', function(e) {
-        e.preventDefault(); // Prevent any default action
-        var fileId = $(this).data('file-id');
-        if (confirm('Are you sure you want to delete this page file?')) {
-            deleteFile(fileId, refreshUrlProcessingFileList);
-        }
+        e.preventDefault();
+        var $button = $(this);
+        var fileId = $button.data('file-id');
+        var $list = $button.closest('ul');
+        confirmDelete('Delete this scanned page?', 'Its Q&A will be removed from the knowledge base. You can scan the page again later.').then(function(ok) {
+            if (ok) {
+                $button.prop('disabled', true);
+                deleteFile(fileId, refreshUrlProcessingFileList, $list);
+            }
+        });
     });
     
     // Event listener for Q&A file delete buttons
     $(document).on('click', '.delete-qa-file', function(e) {
         e.preventDefault();
-        var fileId = $(this).data('file-id');
-        if (confirm('Are you sure you want to delete this Q&A file?')) {
-            deleteFile(fileId, refreshQAFileList);
-        }
+        var $button = $(this);
+        var fileId = $button.data('file-id');
+        var $list = $button.closest('ul');
+        confirmDelete('Delete the Q&A file?', 'Your saved Q&A pairs stay in the builder, but the assistant stops using them until you save again.').then(function(ok) {
+            if (ok) {
+                $button.prop('disabled', true);
+                deleteFile(fileId, refreshQAFileList, $list);
+            }
+        });
     });
 
     // Event listener for WooCommerce file delete buttons
     $(document).on('click', '.delete-woo-file', function(e) {
-        e.preventDefault(); // Prevent any default action
-        var fileId = $(this).data('file-id');
-        if (confirm('Are you sure you want to delete this WooCommerce file?')) {
-            deleteFile(fileId, refreshWooCommerceFileList);
-        }
+        e.preventDefault();
+        var $button = $(this);
+        var fileId = $button.data('file-id');
+        var $list = $button.closest('ul');
+        confirmDelete('Delete this product file?', 'The assistant stops using it until you sync your products again.').then(function(ok) {
+            if (ok) {
+                $button.prop('disabled', true);
+                deleteFile(fileId, refreshWooCommerceFileList, $list);
+            }
+        });
     });
 
     // Initial file list load
@@ -485,7 +546,7 @@ function deleteFile(fileId, refreshFunction) {
         var $woocommerceFilesList = jQuery('#woocommerce-files-list');
         
         // Show loading state on all lists
-        $assistantFilesList.html('<li class="loading">Refreshing cache...</li>');
+        $assistantFilesList.html('<li class="loading">Reloading files…</li>');
         if ($urlProcessingFilesList.length) {
             $urlProcessingFilesList.html('<li class="loading">Refreshing cache...</li>');
         }
@@ -506,16 +567,6 @@ function deleteFile(fileId, refreshFunction) {
             timeout: 60000, // 60 seconds for cache refresh
             success: function(response) {
                 if (response.success) {
-                    console.log('File cache refreshed:', response.data.message);
-                    
-                    if (response.data.performance) {
-                        console.log('Cache refresh performance: ' + response.data.performance.total_files + ' total files loaded from API');
-                        if (response.data.performance.file_breakdown) {
-                            var breakdown = response.data.performance.file_breakdown;
-                            console.log('File breakdown: ' + breakdown.uploaded_files + ' uploaded, ' + breakdown.page_files + ' pages, ' + breakdown.qa_files + ' Q&A, ' + breakdown.woocommerce_files + ' WooCommerce');
-                        }
-                    }
-                    
                     // Refresh all visible file lists to show updated data
                     refreshFileList(); // Main uploaded files
                     
@@ -565,7 +616,11 @@ function deleteFile(fileId, refreshFunction) {
     
     // Add cache refresh button handler (if button exists)
     $(document).on('click', '.refresh-file-cache', function() {
+        var $button = $(this).addClass('is-spinning').prop('disabled', true);
         refreshFileCache();
+        setTimeout(function() {
+            $button.removeClass('is-spinning').prop('disabled', false);
+        }, 1500);
     });
     
     // Make functions and variables available globally

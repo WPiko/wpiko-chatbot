@@ -57,6 +57,7 @@ function wpiko_chatbot_proactive_greeting_styles() {
 add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_chatbot_proactive_greeting_styles');
 
 function wpiko_chatbot_proactive_greeting_section() {
+    $settings_saved = false;
     if (isset($_POST['action']) && $_POST['action'] == 'save_proactive_greeting') {
         check_admin_referer('save_proactive_greeting', 'proactive_greeting_nonce');
 
@@ -108,7 +109,7 @@ function wpiko_chatbot_proactive_greeting_section() {
         update_option('wpiko_chatbot_proactive_hide_tablet', isset($_POST['proactive_hide_tablet']));
         update_option('wpiko_chatbot_proactive_hide_mobile', isset($_POST['proactive_hide_mobile']));
 
-        echo '<div class="updated"><p>Proactive Greeting settings updated successfully.</p></div>';
+        $settings_saved = true;
     }
 
     $proactive_enabled = get_option('wpiko_chatbot_proactive_enabled', false);
@@ -133,115 +134,123 @@ function wpiko_chatbot_proactive_greeting_section() {
         $proactive_frequency = 'session';
     }
     ?>
-    <div class="proactive-greeting-section">
-        <h2> <span class="dashicons dashicons-format-status"></span> Proactive Greeting</h2>
-        <p class="description">Automatically greet visitors with a short message card next to the chat icon, inviting them to start chatting — no click required.</p>
-        <?php if (!$floating_enabled): ?>
-            <div class="notice notice-warning inline"><p>The Proactive Greeting requires the <strong>Floating Chatbot</strong> to be enabled. Enable it in the Floating Chatbot tab.</p></div>
+    <div class="wpiko-chatbot-settings-page wpiko-proactive-greeting-page">
+        <header class="wpiko-chatbot-settings-header">
+            <h1>Proactive Greeting</h1>
+            <p class="wpiko-chatbot-settings-subtitle">Automatically greet visitors with a short message next to the chat icon and invite them to start a conversation.</p>
+        </header>
+        <?php if ($settings_saved): ?>
+            <div class="wpiko-chatbot-settings-notice is-success" role="status"><p>Proactive Greeting settings updated successfully.</p></div>
         <?php endif; ?>
-        <form method="post" action="">
+        <?php if (!$floating_enabled): ?>
+            <div class="wpiko-chatbot-settings-notice is-warning" role="note"><p>Proactive Greeting requires the <strong>Floating Chatbot</strong> to be enabled. Enable it on the Floating Chatbot page.</p></div>
+        <?php endif; ?>
+        <form method="post" action="" class="wpiko-chatbot-settings-form">
             <?php wp_nonce_field('save_proactive_greeting', 'proactive_greeting_nonce'); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_enabled">Enable Proactive Greeting</label></th>
-                    <td>
-                        <label class="wpiko-switch">
-                            <input type="checkbox" name="proactive_enabled" id="proactive_enabled" <?php checked($proactive_enabled); ?>>
-                            <span class="wpiko-slider round"></span>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="proactive-content-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="proactive-content-title">Greeting card</h2>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Proactive greeting</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <label class="wpiko-chatbot-settings-switch" for="proactive_enabled">
+                            <input type="checkbox" role="switch" name="proactive_enabled" id="proactive_enabled" aria-describedby="proactive_enabled-description" <?php checked($proactive_enabled); ?>>
+                            <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                            <span class="wpiko-chatbot-settings-switch__label">Enable proactive greeting</span>
                         </label>
-                        <p class="description">Show a greeting card next to the floating chat icon.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_heading">Greeting Heading</label></th>
-                    <td>
-                        <input type="text" name="proactive_heading" id="proactive_heading" value="<?php echo esc_attr($proactive_heading); ?>" class="regular-text">
-                        <p class="description">The bold heading of the greeting card. Leave empty to hide the heading.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_message">Greeting Message</label></th>
-                    <td>
-                        <textarea name="proactive_message" id="proactive_message" rows="3" class="large-text"><?php echo esc_textarea($proactive_message); ?></textarea>
-                        <p class="description">The message inviting visitors to start chatting.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_trigger">When to Appear</label></th>
-                    <td>
-                        <select name="proactive_trigger" id="proactive_trigger">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_enabled-description">Show a greeting card next to the floating chat icon.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_heading">Greeting heading</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="text" name="proactive_heading" id="proactive_heading" value="<?php echo esc_attr($proactive_heading); ?>" aria-describedby="proactive_heading-description">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_heading-description">The bold heading of the greeting card. Leave empty to hide the heading.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_message">Greeting message</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <textarea name="proactive_message" id="proactive_message" rows="3" aria-describedby="proactive_message-description"><?php echo esc_textarea($proactive_message); ?></textarea>
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_message-description">The message inviting visitors to start chatting.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="proactive-timing-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="proactive-timing-title">Timing &amp; frequency</h2>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_trigger">When to appear</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <select name="proactive_trigger" id="proactive_trigger" aria-describedby="proactive_trigger-description">
                             <option value="immediate" <?php selected($proactive_trigger, 'immediate'); ?>>Immediately on page load</option>
                             <option value="delay" <?php selected($proactive_trigger, 'delay'); ?>>After a delay</option>
                             <option value="scroll" <?php selected($proactive_trigger, 'scroll'); ?>>After scrolling down the page</option>
                         </select>
-                        <p class="description">Choose when the greeting card appears to visitors.</p>
-                    </td>
-                </tr>
-                <tr valign="top" class="proactive-delay-row">
-                    <th scope="row"><label for="proactive_delay">Delay (seconds)</label></th>
-                    <td>
-                        <input type="number" name="proactive_delay" id="proactive_delay" value="<?php echo esc_attr($proactive_delay); ?>" class="small-text" min="0" max="300">
-                        <p class="description">How many seconds to wait before showing the greeting (0–300).</p>
-                    </td>
-                </tr>
-                <tr valign="top" class="proactive-scroll-row">
-                    <th scope="row"><label for="proactive_scroll_depth">Scroll Depth (%)</label></th>
-                    <td>
-                        <input type="number" name="proactive_scroll_depth" id="proactive_scroll_depth" value="<?php echo esc_attr($proactive_scroll_depth); ?>" class="small-text" min="1" max="100">
-                        <p class="description">Show the greeting once the visitor has scrolled this percentage of the page (1–100).</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_frequency">How Often to Show</label></th>
-                    <td>
-                        <select name="proactive_frequency" id="proactive_frequency">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_trigger-description">Choose when the greeting card appears to visitors.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row proactive-delay-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_delay">Delay (seconds)</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="number" name="proactive_delay" id="proactive_delay" value="<?php echo esc_attr($proactive_delay); ?>" aria-describedby="proactive_delay-description" min="0" max="300">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_delay-description">How many seconds to wait before showing the greeting (0–300).</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row proactive-scroll-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_scroll_depth">Scroll depth (%)</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="number" name="proactive_scroll_depth" id="proactive_scroll_depth" value="<?php echo esc_attr($proactive_scroll_depth); ?>" aria-describedby="proactive_scroll_depth-description" min="1" max="100">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_scroll_depth-description">Show the greeting after the visitor has scrolled this percentage of the page (1–100).</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_frequency">How often to show</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <select name="proactive_frequency" id="proactive_frequency" aria-describedby="proactive_frequency-description">
                             <option value="session" <?php selected($proactive_frequency, 'session'); ?>>Once per session</option>
                             <option value="once" <?php selected($proactive_frequency, 'once'); ?>>Only once (per visitor)</option>
                             <option value="always" <?php selected($proactive_frequency, 'always'); ?>>Every page visit</option>
                         </select>
-                        <p class="description">"Once per session" resets when the visitor closes their browser tab. "Only once" remembers across visits on the same device.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_show_input">Quick Message Box</label></th>
-                    <td>
-                        <label class="wpiko-switch">
-                            <input type="checkbox" name="proactive_show_input" id="proactive_show_input" <?php checked($proactive_show_input, '1'); ?>>
-                            <span class="wpiko-slider round"></span>
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_frequency-description">"Once per session" resets when the visitor closes their browser tab. "Only once" remembers across visits on the same device.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="proactive-interaction-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="proactive-interaction-title">Interaction &amp; visibility</h2>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Quick message box</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <label class="wpiko-chatbot-settings-switch" for="proactive_show_input">
+                            <input type="checkbox" role="switch" name="proactive_show_input" id="proactive_show_input" aria-describedby="proactive_show_input-description" <?php checked($proactive_show_input, '1'); ?>>
+                            <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                            <span class="wpiko-chatbot-settings-switch__label">Allow a quick message</span>
                         </label>
-                        <p class="description">Let visitors type a message directly from the greeting card. The full chat opens with their message sent.<?php if (wpiko_chatbot_is_pro_plugin_active()): ?> If Email Capture is enabled, visitors will be asked for their details first and their message is sent right after.<?php endif; ?></p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="proactive_placeholder">Message Box Placeholder</label></th>
-                    <td>
-                        <input type="text" name="proactive_placeholder" id="proactive_placeholder" value="<?php echo esc_attr($proactive_placeholder); ?>" class="regular-text">
-                        <p class="description">Placeholder text shown inside the quick message box.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Hide Greeting on Devices</th>
-                    <td>
-                        <fieldset>
-                            <label for="proactive_hide_desktop">
-                                <input type="checkbox" name="proactive_hide_desktop" id="proactive_hide_desktop" <?php checked($proactive_hide_desktop); ?>>
-                                Desktop
-                            </label><br>
-                            <label for="proactive_hide_tablet">
-                                <input type="checkbox" name="proactive_hide_tablet" id="proactive_hide_tablet" <?php checked($proactive_hide_tablet); ?>>
-                                Tablet
-                            </label><br>
-                            <label for="proactive_hide_mobile">
-                                <input type="checkbox" name="proactive_hide_mobile" id="proactive_hide_mobile" <?php checked($proactive_hide_mobile); ?>>
-                                Mobile
-                            </label>
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_show_input-description">Let visitors type directly in the greeting card. The full chat opens with their message sent.<?php if (wpiko_chatbot_is_pro_plugin_active()): ?> If Email Capture is enabled, visitors will be asked for their details first and their message is sent right after.<?php endif; ?></p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="proactive_placeholder">Message placeholder</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="text" name="proactive_placeholder" id="proactive_placeholder" value="<?php echo esc_attr($proactive_placeholder); ?>" aria-describedby="proactive_placeholder-description">
+                        <p class="wpiko-chatbot-settings-field-description" id="proactive_placeholder-description">Placeholder text shown inside the quick message box.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Hide on devices</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <fieldset class="wpiko-chatbot-settings-checkbox-group">
+                            <legend class="screen-reader-text">Hide proactive greeting on devices</legend>
+                            <label for="proactive_hide_desktop"><input type="checkbox" name="proactive_hide_desktop" id="proactive_hide_desktop" <?php checked($proactive_hide_desktop); ?>> Desktop</label>
+                            <label for="proactive_hide_tablet"><input type="checkbox" name="proactive_hide_tablet" id="proactive_hide_tablet" <?php checked($proactive_hide_tablet); ?>> Tablet</label>
+                            <label for="proactive_hide_mobile"><input type="checkbox" name="proactive_hide_mobile" id="proactive_hide_mobile" <?php checked($proactive_hide_mobile); ?>> Mobile</label>
                         </fieldset>
-                        <p class="description">Choose which device types should not display the greeting card. The chatbot device visibility settings from the Floating Chatbot tab also apply.</p>
-                    </td>
-                </tr>
-            </table>
+                        <p class="wpiko-chatbot-settings-field-description">Choose which devices should not display the greeting. Device visibility settings from the Floating Chatbot page also apply.</p>
+                    </div>
+                </div>
+            </section>
             <input type="hidden" name="action" value="save_proactive_greeting">
-            <?php submit_button('Save Proactive Greeting Settings'); ?>
+            <div class="wpiko-chatbot-settings-actions">
+                <button type="submit" name="submit" id="submit" class="button wpiko-chatbot-settings-save">Save Proactive Greeting Settings</button>
+            </div>
         </form>
     </div>
     <script>

@@ -92,6 +92,7 @@ function wpiko_floating_chatbot_styles() {
 add_action('wpiko_chatbot_enqueue_frontend_assets', 'wpiko_floating_chatbot_styles');
 
 function wpiko_chatbot_floating_chatbot_section() {
+    $settings_saved = false;
     if (isset($_POST['action']) && $_POST['action'] == 'save_floating_chatbot') {
         check_admin_referer('save_floating_chatbot', 'floating_chatbot_nonce');
         $allowed_positions = array('right', 'left', 'top-right', 'top-left');
@@ -134,7 +135,7 @@ function wpiko_chatbot_floating_chatbot_section() {
             update_option('wpiko_chatbot_floating_height', absint(wp_unslash($_POST['chatbot_floating_height'])));
         }
         
-        echo '<div class="updated"><p>Floating Chatbot settings updated successfully.</p></div>';
+        $settings_saved = true;
     }
     
     $enable_floating_chatbot = get_option('wpiko_chatbot_enable_floating', false);
@@ -158,112 +159,102 @@ function wpiko_chatbot_floating_chatbot_section() {
     }
     
     ?>
-    <div class="floating-chatbot-section">
-        <h2> <span class="dashicons dashicons-admin-settings"></span> Floating Chatbot</h2>
-        <p class="description">Configure a chatbot that appears as a floating icon on your website, allowing easy access for visitors.</p>
-        <form method="post" action="">
+    <div class="wpiko-chatbot-settings-page wpiko-floating-chatbot-page">
+        <header class="wpiko-chatbot-settings-header">
+            <h1>Floating Chatbot</h1>
+            <p class="wpiko-chatbot-settings-subtitle">Configure a floating chat icon so visitors can open your chatbot from anywhere on your website.</p>
+        </header>
+        <?php if ($settings_saved): ?>
+            <div class="wpiko-chatbot-settings-notice is-success" role="status"><p>Floating Chatbot settings updated successfully.</p></div>
+        <?php endif; ?>
+        <form method="post" action="" class="wpiko-chatbot-settings-form">
             <?php wp_nonce_field('save_floating_chatbot', 'floating_chatbot_nonce'); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row"><label for="enable_floating_chatbot">Enable Floating Chatbot</label></th>
-                    <td>
-                        <label class="wpiko-switch">
-                            <input type="checkbox" name="enable_floating_chatbot" id="enable_floating_chatbot" <?php checked($enable_floating_chatbot); ?>>
-                            <span class="wpiko-slider round"></span>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="floating-display-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="floating-display-title">Display settings</h2>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Floating chatbot</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <label class="wpiko-chatbot-settings-switch" for="enable_floating_chatbot">
+                            <input type="checkbox" role="switch" name="enable_floating_chatbot" id="enable_floating_chatbot" aria-describedby="enable_floating_chatbot-description" <?php checked($enable_floating_chatbot); ?>>
+                            <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                            <span class="wpiko-chatbot-settings-switch__label">Enable floating chatbot</span>
                         </label>
-                        <p class="description">Enable a floating chatbot icon on your website.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="chatbot_floating_position">Floating Icon Position</label></th>
-                    <td>
-                        <select name="chatbot_floating_position" id="chatbot_floating_position">
+                        <p class="wpiko-chatbot-settings-field-description" id="enable_floating_chatbot-description">Display a floating chat icon on your website.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="chatbot_floating_position">Icon position</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <select name="chatbot_floating_position" id="chatbot_floating_position" aria-describedby="chatbot_floating_position-description">
                             <option value="right" <?php selected($floating_position, 'right'); ?>>Bottom Right</option>
                             <option value="left" <?php selected($floating_position, 'left'); ?>>Bottom Left</option>
                             <option value="top-right" <?php selected($floating_position, 'top-right'); ?>>Top Right</option>
                             <option value="top-left" <?php selected($floating_position, 'top-left'); ?>>Top Left</option>
                         </select>
-                       <p class="description">Choose which corner of the screen to display the floating chatbot icon.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="floating_text">Chatbot Floating Text</label></th>
-                    <td>
-                        <input type="text" name="floating_text" id="floating_text" value="<?php echo esc_attr($floating_text); ?>" class="regular-text">
-                        <p class="description">Enter the text to display next to the chat icon. Leave empty to hide the text.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Hide Chatbot on Devices</th>
-                    <td>
-                        <fieldset>
-                            <label for="hide_on_desktop">
-                                <input type="checkbox" name="hide_on_desktop" id="hide_on_desktop" <?php checked($hide_on_desktop); ?>>
-                                Desktop
-                            </label><br>
-                            <label for="hide_on_tablet">
-                                <input type="checkbox" name="hide_on_tablet" id="hide_on_tablet" <?php checked($hide_on_tablet); ?>>
-                                Tablet
-                            </label><br>
-                            <label for="hide_on_mobile">
-                                <input type="checkbox" name="hide_on_mobile" id="hide_on_mobile" <?php checked($hide_on_mobile); ?>>
-                                Mobile
+                        <p class="wpiko-chatbot-settings-field-description" id="chatbot_floating_position-description">Choose which corner of the screen displays the floating chat icon.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="floating_text">Floating text</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <input type="text" name="floating_text" id="floating_text" value="<?php echo esc_attr($floating_text); ?>" aria-describedby="floating_text-description">
+                        <p class="wpiko-chatbot-settings-field-description" id="floating_text-description">Text displayed next to the chat icon. Leave empty to hide the text.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Chat window size</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <div class="wpiko-chatbot-settings-inline-fields">
+                            <label for="chatbot_floating_width">Width (px)
+                                <input type="number" name="chatbot_floating_width" id="chatbot_floating_width" value="<?php echo esc_attr($chatbot_floating_width); ?>" aria-describedby="floating-size-description">
                             </label>
-                        </fieldset>
-                        <p class="description">Choose which device types should not display the floating chatbot widget.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Exclude Chatbot from Pages</th>
-                    <td>
-                        <fieldset>
-                            <label for="exclude_home">
-                                <input type="checkbox" name="exclude_home" id="exclude_home" <?php checked($exclude_home); ?>>
-                                Home Page
-                            </label><br>
-                            <label for="exclude_blog">
-                                <input type="checkbox" name="exclude_blog" id="exclude_blog" <?php checked($exclude_blog); ?>>
-                                Posts Page
-                            </label><br>
-                            <label for="exclude_articles">
-                                <input type="checkbox" name="exclude_articles" id="exclude_articles" <?php checked($exclude_articles); ?>>
-                                Article Pages
-                            </label><br>
-                            <label for="exclude_cart">
-                                <input type="checkbox" name="exclude_cart" id="exclude_cart" <?php checked($exclude_cart); ?>>
-                                Cart Page
-                            </label><br>
-                            <label for="exclude_checkout">
-                                <input type="checkbox" name="exclude_checkout" id="exclude_checkout" <?php checked($exclude_checkout); ?>>
-                                Checkout Page
+                            <label for="chatbot_floating_height">Height (px)
+                                <input type="number" name="chatbot_floating_height" id="chatbot_floating_height" value="<?php echo esc_attr($chatbot_floating_height); ?>" aria-describedby="floating-size-description">
                             </label>
+                        </div>
+                        <p class="wpiko-chatbot-settings-field-description" id="floating-size-description">Set the width of the chat container and the height of the messages area in pixels.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="wpiko-chatbot-settings-card" aria-labelledby="floating-visibility-title">
+                <h2 class="wpiko-chatbot-settings-card-title" id="floating-visibility-title">Visibility &amp; exclusions</h2>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Hide on devices</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <fieldset class="wpiko-chatbot-settings-checkbox-group">
+                            <legend class="screen-reader-text">Hide floating chatbot on devices</legend>
+                            <label for="hide_on_desktop"><input type="checkbox" name="hide_on_desktop" id="hide_on_desktop" <?php checked($hide_on_desktop); ?>> Desktop</label>
+                            <label for="hide_on_tablet"><input type="checkbox" name="hide_on_tablet" id="hide_on_tablet" <?php checked($hide_on_tablet); ?>> Tablet</label>
+                            <label for="hide_on_mobile"><input type="checkbox" name="hide_on_mobile" id="hide_on_mobile" <?php checked($hide_on_mobile); ?>> Mobile</label>
                         </fieldset>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="custom_exclusions">Custom Page Exclusions</label></th>
-                    <td>
-                        <textarea name="custom_exclusions" id="custom_exclusions" rows="5" cols="50" class="large-text code"><?php echo esc_textarea($custom_exclusions); ?></textarea>
-                        <p class="description">Enter page URL paths to hide the chatbot, one per line. For example:<br>/about-us/<br>/contact-us/</p>
-                    </td>
-                </tr>
-                 <tr valign="top">
-                    <th scope="row"><label for="chatbot_floating_width">Floating Chatbot Width (px)</label></th>
-                    <td>
-                        <input type="number" name="chatbot_floating_width" id="chatbot_floating_width" value="<?php echo esc_attr($chatbot_floating_width); ?>" class="small-text">
-                        <p class="description">Enter the width of the floating chatbot container in pixels.</p>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row"><label for="chatbot_floating_height">Floating Chatbot Height (px)</label></th>
-                    <td>
-                        <input type="number" name="chatbot_floating_height" id="chatbot_floating_height" value="<?php echo esc_attr($chatbot_floating_height); ?>" class="small-text">
-                        <p class="description">Enter the height of the floating chatbot messages area in pixels.</p>
-                    </td>
-                </tr>
-            </table>
+                        <p class="wpiko-chatbot-settings-field-description">Choose which device types should not display the floating chatbot.</p>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <div class="wpiko-chatbot-settings-field-label">Exclude pages</div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <fieldset class="wpiko-chatbot-settings-checkbox-group">
+                            <legend class="screen-reader-text">Exclude floating chatbot from pages</legend>
+                            <label for="exclude_home"><input type="checkbox" name="exclude_home" id="exclude_home" <?php checked($exclude_home); ?>> Home Page</label>
+                            <label for="exclude_blog"><input type="checkbox" name="exclude_blog" id="exclude_blog" <?php checked($exclude_blog); ?>> Posts Page</label>
+                            <label for="exclude_articles"><input type="checkbox" name="exclude_articles" id="exclude_articles" <?php checked($exclude_articles); ?>> Article Pages</label>
+                            <label for="exclude_cart"><input type="checkbox" name="exclude_cart" id="exclude_cart" <?php checked($exclude_cart); ?>> Cart Page</label>
+                            <label for="exclude_checkout"><input type="checkbox" name="exclude_checkout" id="exclude_checkout" <?php checked($exclude_checkout); ?>> Checkout Page</label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="wpiko-chatbot-settings-field-row">
+                    <label class="wpiko-chatbot-settings-field-label" for="custom_exclusions">Custom page exclusions</label>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <textarea name="custom_exclusions" id="custom_exclusions" rows="4" aria-describedby="custom_exclusions-description"><?php echo esc_textarea($custom_exclusions); ?></textarea>
+                        <p class="wpiko-chatbot-settings-field-description" id="custom_exclusions-description">Enter one URL path per line, such as <code>/about-us/</code> or <code>/contact-us/</code>.</p>
+                    </div>
+                </div>
+            </section>
             <input type="hidden" name="action" value="save_floating_chatbot">
-            <?php submit_button('Save Floating Chatbot Settings'); ?>
+            <div class="wpiko-chatbot-settings-actions">
+                <button type="submit" name="submit" id="submit" class="button wpiko-chatbot-settings-save">Save Floating Chatbot Settings</button>
+            </div>
         </form>
     </div>
     <?php

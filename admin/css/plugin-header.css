@@ -1,169 +1,254 @@
-/* WPiko Chatbot Plugin Header Styles */
-
+/* Compact wpiko header, matching wpiko SEO and using the shared root palette. */
 .wpiko-chatbot-plugin-header {
-    background: var(--wpiko-gradient-primary);
-    margin: 20px 20px 0 0;
-    border-radius: var(--wpiko-radius-lg);
-    box-shadow: var(--wpiko-shadow-primary);
-    overflow: hidden;
-    position: relative;
-}
-
-/* Subtle highlight sweep for depth */
-.wpiko-chatbot-plugin-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40%;
-    height: 100%;
-    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 70%);
-    pointer-events: none;
+    --wpiko-header-surface: var(--wpiko-ui-surface);
+    --wpiko-header-text: var(--wpiko-ui-text);
+    --wpiko-header-line: var(--wpiko-ui-line);
+    --wpiko-header-line-strong: var(--wpiko-ui-line-strong);
+    --wpiko-header-sunken: var(--wpiko-ui-sunken);
+    box-sizing: border-box;
+    margin: 0 0 4px -20px;
+    padding: 0 20px;
+    background: var(--wpiko-header-surface);
+    border-bottom: 1px solid var(--wpiko-header-line);
 }
 
 .wpiko-chatbot-header-content {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
     align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-    color: var(--wpiko-text-inverse);
-    position: relative;
+    padding: 12px 0 10px;
 }
 
 .wpiko-chatbot-header-branding {
-    display: flex;
+    display: inline-flex;
+    gap: 10px;
     align-items: center;
-    gap: 12px;
 }
 
 .wpiko-chatbot-header-icon {
-    width: 40px;
-    height: 40px;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--wpiko-header-surface);
+    background: var(--wpiko-ui-info);
+    border-radius: var(--wpiko-ui-radius-sm);
+}
+
+.wpiko-chatbot-header-icon svg {
     display: block;
-    flex-shrink: 0;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--wpiko-radius);
-    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
 }
 
 .wpiko-chatbot-header-title {
-    margin: 0;
-    font-size: 19px;
+    font-size: 15px;
     font-weight: 600;
+    color: var(--wpiko-header-text);
     letter-spacing: -0.01em;
-    color: var(--wpiko-text-inverse);
 }
 
 .wpiko-chatbot-header-pro-badge {
-    background: linear-gradient(135deg, var(--wpiko-gold) 0%, var(--wpiko-gold-light) 100%);
-    color: var(--wpiko-text-strong);
-    padding: 3px 10px;
-    border-radius: var(--wpiko-radius-full);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: var(--wpiko-shadow-sm);
+    padding: 2px 6px;
+    color: var(--wpiko-header-text);
+    background: var(--wpiko-ui-active);
+    border: 1px solid var(--wpiko-header-line);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+}
+
+a.wpiko-chatbot-header-pro-badge {
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+a.wpiko-chatbot-header-pro-badge:hover,
+a.wpiko-chatbot-header-pro-badge:focus {
+    color: var(--wpiko-header-text);
+    background: var(--wpiko-ui-surface);
+    border-color: var(--wpiko-ui-line-strong);
+}
+
+a.wpiko-chatbot-header-pro-badge:focus-visible {
+    outline: 2px solid var(--wpiko-header-text);
+    outline-offset: 2px;
+    box-shadow: none;
 }
 
 .wpiko-chatbot-header-links {
     display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
     align-items: center;
-    gap: 8px;
+    margin-left: auto;
 }
 
 .wpiko-chatbot-header-link {
-    display: flex;
-    align-items: center;
+    display: inline-flex;
     gap: 6px;
-    padding: 7px 12px;
-    color: var(--wpiko-text-inverse);
-    text-decoration: none;
-    border-radius: var(--wpiko-radius);
-    font-size: 13px;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 12px;
     font-weight: 500;
-    transition: background var(--wpiko-transition), transform var(--wpiko-transition), box-shadow var(--wpiko-transition);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.wpiko-chatbot-header-link:hover {
-    background: rgba(255, 255, 255, 0.22);
-    color: var(--wpiko-text-inverse);
+    line-height: 1.8;
+    color: var(--wpiko-header-text);
     text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: var(--wpiko-header-surface);
+    border: 1px solid var(--wpiko-header-line-strong);
+    border-radius: var(--wpiko-ui-radius-sm);
 }
 
+.wpiko-chatbot-header-link-icon {
+    flex: none;
+}
+
+.wpiko-chatbot-header-link:hover,
 .wpiko-chatbot-header-link:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
+    color: var(--wpiko-header-text);
+    border-color: var(--wpiko-header-text);
+}
+
+.wpiko-chatbot-header-link:focus-visible,
+.wpiko-chatbot-header-toggle:focus-visible {
+    outline: 2px solid var(--wpiko-header-text);
     outline-offset: 2px;
-    color: var(--wpiko-text-inverse);
-    text-decoration: none;
+    box-shadow: none;
 }
 
-.wpiko-chatbot-header-link.wpiko-chatbot-header-upgrade {
-    background: linear-gradient(135deg, var(--wpiko-gold) 0%, var(--wpiko-gold-light) 100%);
-    color: var(--wpiko-text-strong);
-    border: 1px solid var(--wpiko-gold);
-    font-weight: 600;
+.wpiko-chatbot-header-upgrade {
+    color: var(--wpiko-header-surface);
+    background: var(--wpiko-header-text);
+    border-color: var(--wpiko-header-text);
 }
 
-.wpiko-chatbot-header-link.wpiko-chatbot-header-upgrade:hover {
-    background: linear-gradient(135deg, var(--wpiko-gold-light) 0%, var(--wpiko-gold) 100%);
-    color: var(--wpiko-text-strong);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+.wpiko-chatbot-header-upgrade:hover,
+.wpiko-chatbot-header-upgrade:focus {
+    color: var(--wpiko-header-surface);
+    background: var(--wpiko-ui-accent-dark);
 }
 
-.wpiko-chatbot-header-link .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+.wpiko-chatbot-header-toggle {
+    display: none;
 }
 
-/* Responsive design */
 @media screen and (max-width: 782px) {
     .wpiko-chatbot-plugin-header {
-        margin: 10px 20px 0 10px;
+        position: relative;
+        z-index: 2;
+        margin-left: -10px;
+        padding: 0 10px;
     }
 
     .wpiko-chatbot-header-content {
-        flex-direction: column;
-        gap: 16px;
-        padding: 16px 20px;
-        text-align: center;
+        gap: 0 12px;
+        padding: 0;
     }
 
     .wpiko-chatbot-header-branding {
+        order: 1;
+        padding: 10px 0;
+    }
+
+    .wpiko-chatbot-header-toggle {
+        display: inline-flex;
+        order: 2;
+        align-items: center;
         justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin: 0 -8px 0 auto;
+        padding: 0;
+        color: var(--wpiko-header-text);
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        border-radius: var(--wpiko-ui-radius-sm);
+    }
+
+    .wpiko-chatbot-header-toggle:hover,
+    .wpiko-chatbot-header-toggle[aria-expanded="true"] {
+        background: var(--wpiko-header-sunken);
+    }
+
+    .wpiko-chatbot-header-burger {
+        position: relative;
+        display: block;
+        width: 20px;
+        height: 14px;
+    }
+
+    .wpiko-chatbot-header-burger span {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: currentColor;
+        border-radius: 2px;
+        transition: transform 0.2s ease, opacity 0.15s ease, top 0.2s ease;
+    }
+
+    .wpiko-chatbot-header-burger span:nth-child(1) { top: 0; }
+    .wpiko-chatbot-header-burger span:nth-child(2) { top: 6px; }
+    .wpiko-chatbot-header-burger span:nth-child(3) { top: 12px; }
+
+    .wpiko-chatbot-plugin-header.is-open .wpiko-chatbot-header-burger span:nth-child(1) {
+        top: 6px;
+        transform: rotate(45deg);
+    }
+
+    .wpiko-chatbot-plugin-header.is-open .wpiko-chatbot-header-burger span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .wpiko-chatbot-plugin-header.is-open .wpiko-chatbot-header-burger span:nth-child(3) {
+        top: 6px;
+        transform: rotate(-45deg);
     }
 
     .wpiko-chatbot-header-links {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 6px;
+        display: none;
+        order: 4;
+        flex-basis: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0 -10px;
+        padding: 14px 10px 16px;
+        background: var(--wpiko-header-sunken);
+        border-top: 1px solid var(--wpiko-header-line);
+    }
+
+    .wpiko-chatbot-plugin-header.is-open .wpiko-chatbot-header-links {
+        display: grid;
     }
 
     .wpiko-chatbot-header-link {
-        padding: 6px 10px;
-        font-size: 12px;
+        justify-content: center;
+        padding: 9px 12px;
+        font-size: 13px;
     }
 
-    .wpiko-chatbot-header-title {
-        font-size: 18px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .wpiko-chatbot-header-branding {
-        flex-wrap: wrap;
-        gap: 8px;
+    .wpiko-chatbot-header-upgrade {
+        grid-column: 1 / -1;
     }
 }
 
-/* Adjust margin for the wrapper when header is present */
-.wpiko-chatbot-plugin-header + .wpiko-chatbot-admin-container {
-    margin-top: 16px;
+/* Core adds 46px above #wpbody under 600px. Place the header below the admin
+   toolbar, then compensate for that padding so content keeps its spacing. */
+@media screen and (max-width: 600px) {
+    .wpiko-chatbot-plugin-header {
+        padding-top: 46px;
+        margin-bottom: -42px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wpiko-chatbot-header-burger span {
+        transition: none;
+    }
 }

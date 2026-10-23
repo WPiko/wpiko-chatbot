@@ -447,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (message) {
             // Request Queue: Prevent sending if a request is already in progress
             if (isRequestInProgress) {
-                console.log('WPiko Chatbot: Request already in progress, please wait...');
                 return;
             }
 
@@ -526,14 +525,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (response.data.contact_form_nonce) {
                             wpikoChatbot.contact_form_nonce = response.data.contact_form_nonce;
                         }
-                        console.log('WPiko Chatbot: Nonce refreshed successfully');
                         resolve(response.data.nonce);
                     } else {
                         reject(new Error('Invalid nonce refresh response'));
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error('WPiko Chatbot: Failed to refresh nonce:', error);
+                    console.error('WPiko AI Chatbot: Failed to refresh nonce:', error);
                     reject(error);
                 }
             });
@@ -555,10 +553,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(function (errorInfo) {
                     if (errorInfo && errorInfo.status === 403 && !isRetry) {
-                        console.log('WPiko Chatbot: Nonce may be expired, attempting to refresh...');
                         refreshNonce()
                             .then(function () {
-                                console.log('WPiko Chatbot: Retrying streamed message with new nonce...');
                                 sendMessageWithRetry(message, userEmail, userName, true);
                             })
                             .catch(function () {
@@ -625,12 +621,10 @@ document.addEventListener('DOMContentLoaded', function () {
             error: function (xhr, status, error) {
                 // Check if this is a 403 error (nonce expired) and we haven't retried yet
                 if (xhr.status === 403 && !isRetry) {
-                    console.log('WPiko Chatbot: Nonce may be expired, attempting to refresh...');
 
                     // Try to refresh the nonce and retry the request
                     refreshNonce()
                         .then(function () {
-                            console.log('WPiko Chatbot: Retrying message with new nonce...');
                             sendMessageWithRetry(message, userEmail, userName, true);
                         })
                         .catch(function () {
@@ -1400,32 +1394,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function Download Transcript
     function downloadTranscript() {
-
-        if (!isTranscriptDownloadEnabled) {
-            console.log('Transcript download is disabled');
-            return;
-        }
-
-        jQuery.ajax({
-            url: wpikoChatbot.ajax_url,
-            type: 'post',
-            data: {
-                action: 'get_chatbot_name',
-                security: wpikoChatbot.nonce
-            },
-            success: function (response) {
-                const chatbotName = response.success ? response.data : (wpikoChatbot.chatbotName || 'Chatbot');
-                generateAndDownloadTranscript(chatbotName);
-            },
-            error: function () {
-                generateAndDownloadTranscript(wpikoChatbot.chatbotName || 'Chatbot');
-            }
-        });
+        generateAndDownloadTranscript(wpikoChatbot.chatbotName || 'Chatbot');
     }
 
     function generateAndDownloadTranscript(chatbotName) {
         if (!isTranscriptDownloadEnabled) {
-            console.log('Transcript download is disabled');
             return;
         }
         const messages = messagesContainer.querySelectorAll('.message-container');
@@ -1443,10 +1416,10 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Chat Transcript - ${siteName}</title>`;
+            <title>Chat Transcript - ${escapeHtml(String(siteName))}</title>`;
 
         // Add inlined CSS if available
-        if (wpikoAjax && wpikoAjax.frontendTranscriptCss) {
+        if (typeof wpikoAjax !== 'undefined' && wpikoAjax.frontendTranscriptCss) {
             html += `\n            <style type="text/css">\n${wpikoAjax.frontendTranscriptCss}\n            </style>`;
         }
 
@@ -1456,7 +1429,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="transcript-container">
                 <div class="transcript-header">
                     <h1>Chat Transcript</h1>
-                    <p>From ${siteName} | Generated on ${dateGenerated}</p>
+                    <p>From ${escapeHtml(String(siteName))} | Generated on ${escapeHtml(String(dateGenerated))}</p>
                 </div>
                 <div class="messages-container">
         `;
@@ -1474,7 +1447,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += `
                 <div class="message user">
                     <div class="message-header">
-                        <span class="role-label">${typeof getUserName === 'function' ? (getUserName() || 'User') : 'User'}</span>
+                        <span class="role-label">${escapeHtml(String(typeof getUserName === 'function' ? (getUserName() || 'User') : 'User'))}</span>
                     </div>
                     <div class="message-content">
                         <div class="message-text">${userMessageText}</div>
@@ -1485,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += `
                 <div class="message bot">
                     <div class="message-header">
-                        <span class="role-label">${chatbotName}</span>
+                        <span class="role-label">${escapeHtml(String(chatbotName))}</span>
                     </div>
                     <div class="message-content">
                         <div class="message-text">${botMessage.innerHTML}</div>
@@ -1497,7 +1470,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += `
                 <div class="message admin">
                     <div class="message-header">
-                        <span class="role-label">${adminName}</span>
+                        <span class="role-label">${escapeHtml(String(adminName))}</span>
                     </div>
                     <div class="message-content">
                         <div class="message-text">${adminMessage.innerHTML}</div>
@@ -1901,11 +1874,6 @@ function checkCacheVersion() {
 
         // Update stored cache version
         localStorage.setItem('wpiko_chatbot_cache_version', currentCacheVersion);
-
-        // Optional: Show a subtle notification that content has been refreshed
-        if (typeof console !== 'undefined') {
-            console.log('WPiko Chatbot: Cache refreshed');
-        }
     } else if (!storedCacheVersion) {
         // First time visit, store the cache version
         localStorage.setItem('wpiko_chatbot_cache_version', currentCacheVersion);

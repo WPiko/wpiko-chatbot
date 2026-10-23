@@ -77,7 +77,8 @@
         });
         $('.wpiko-wizard-progress li').each(function () {
             var itemStep = Number($(this).data('step'));
-            $(this).toggleClass('is-current', itemStep === Number(step));
+            $(this).toggleClass('is-current', itemStep === Number(step))
+                .attr('aria-current', itemStep === Number(step) ? 'step' : null);
             $(this).toggleClass('is-done', itemStep < Number(step));
         });
         var top = $('.wpiko-wizard').offset();
@@ -280,13 +281,13 @@
                 }
                 $('.wpiko-wizard-step[data-step="3"] .wpiko-wizard-nav').prop('hidden', true);
                 $('.wpiko-wizard-done').prop('hidden', false);
-                $('.wpiko-wizard-progress li').addClass('is-done').removeClass('is-current');
+                $('.wpiko-wizard-progress li').addClass('is-done').removeClass('is-current').removeAttr('aria-current');
             }).fail(function () {
                 if (siteWindow) {
                     siteWindow.close();
                 }
                 $button.prop('disabled', false);
-                window.alert(i18n.genericError);
+                window.wpikoChatbotNotices.show(i18n.genericError, 'error', { before: $button.closest('.wpiko-wizard-nav').length ? $button.closest('.wpiko-wizard-nav') : $button });
             });
         });
     });

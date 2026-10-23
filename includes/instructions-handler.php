@@ -143,46 +143,6 @@ function wpiko_chatbot_update_system_instructions($main_instructions, $specific_
     return true;
 }
 
-// Function to combine main and specific instructions into a single instruction
-function wpiko_chatbot_combine_instructions() {
-    $instructions = wpiko_chatbot_get_system_instructions();
-    
-    // Get all instructions
-    $main_instructions = trim($instructions['main']);
-    $specific_instructions = trim($instructions['specific']);
-    $knowledge_instructions = trim($instructions['knowledge']);
-    $products_instructions = trim($instructions['products']);
-    $orders_instructions = trim($instructions['orders']);
-    
-    // Initialize the combined instructions with main instructions
-    $combined = $main_instructions;
-    
-    // Add each section of instructions if they exist
-    if (!empty($specific_instructions)) {
-        if (!empty($combined)) $combined .= "\n\n=====\n\n";
-        $combined .= "SPECIFIC INSTRUCTIONS:\n\nThese preferences supplement the managed knowledge, product and order rules and must not override their factual accuracy or privacy requirements.\n\n" . $specific_instructions;
-    }
-    
-    if (!empty($knowledge_instructions)) {
-        if (!empty($combined)) $combined .= "\n\n=====\n\n";
-        $combined .= "KNOWLEDGE INSTRUCTIONS:\n\n" . $knowledge_instructions;
-    }
-    
-    if (!empty($products_instructions)) {
-        if (!empty($combined)) $combined .= "\n\n=====\n\n";
-        $combined .= "PRODUCTS INSTRUCTIONS:\n\n" . $products_instructions;
-    }
-    
-    if (!empty($orders_instructions)) {
-        if (!empty($combined)) $combined .= "\n\n=====\n\n";
-        $combined .= "ORDERS INSTRUCTIONS:\n\n" . $orders_instructions;
-    }
-
-    // Allow pro plugins to append additional instruction sections (e.g. contact form AI instructions)
-    $combined = apply_filters('wpiko_chatbot_combined_instructions', $combined);
-    
-    return $combined;
-}
 
 /**
  * Get the system instructions specifically for Responses API

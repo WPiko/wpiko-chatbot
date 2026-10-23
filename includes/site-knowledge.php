@@ -8,8 +8,8 @@
  * about the business straight away. No AI requests are made per page.
  *
  * The limit is the same for every site (with or without Pro) and keeps the
- * build fast on any host. WPiko Chatbot Pro's separate "Scan Website" tool
- * covers whole sites with AI-written Q&A.
+ * build fast on any host. WPiko AI Chatbot Pro's separate "Scan Website" tool
+ * covers whole sites: AI-written Q&A for pages, clean Markdown for posts and docs.
  *
  * @package WPiko_Chatbot
  */
@@ -121,11 +121,19 @@ function wpiko_chatbot_site_knowledge_candidates()
     $front_page_id = (int) get_option('page_on_front');
     $priority_words = wpiko_chatbot_site_knowledge_priority_words();
     $covered = wpiko_chatbot_site_knowledge_covered_pages();
-    $excluded_ids = array_filter(array(
-        (int) get_option('woocommerce_cart_page_id'),
-        (int) get_option('woocommerce_checkout_page_id'),
-        (int) get_option('woocommerce_myaccount_page_id'),
-    ));
+    // WooCommerce's Cart, Checkout and My account pages only show each
+    // visitor's own cart, form or account. The Shop page is built from the
+    // product list, so its saved text is usually empty. None of them have
+    // text to learn from.
+    $excluded_ids = array();
+    foreach (array('cart', 'checkout', 'myaccount', 'shop') as $woo_page) {
+        $woo_page_id = function_exists('wc_get_page_id')
+            ? (int) wc_get_page_id($woo_page)
+            : (int) get_option('woocommerce_' . $woo_page . '_page_id');
+        if ($woo_page_id > 0) {
+            $excluded_ids[] = $woo_page_id;
+        }
+    }
 
     $candidates = array();
     foreach ($pages as $page) {
@@ -438,7 +446,7 @@ function wpiko_chatbot_reset_site_knowledge_state()
 }
 
 /**
- * Take pages out of the quick-learn file, for example because WPiko Chatbot
+ * Take pages out of the quick-learn file, for example because WPiko AI Chatbot
  * Pro's Scan Website now covers them. The file is rebuilt without them, or
  * removed when no pages are left.
  *
@@ -618,9 +626,9 @@ function wpiko_chatbot_render_site_knowledge_panel($context = 'settings')
             <div class="wpiko-knowledge-compare-card is-pro">
                 <strong><span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span> <?php esc_html_e('Scan Website', 'wpiko-chatbot'); ?> <span class="wpiko-pro-pill">PRO</span></strong>
                 <ul>
-                    <li><?php esc_html_e('AI writes questions & answers', 'wpiko-chatbot'); ?></li>
-                    <li><?php esc_html_e('Sharper, more accurate replies', 'wpiko-chatbot'); ?></li>
-                    <li><?php esc_html_e('Any number of pages', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('AI writes Q&A from your pages', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Posts and docs added as clean Markdown', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Any number of pages, posts and docs', 'wpiko-chatbot'); ?></li>
                 </ul>
                 <?php if ($pro_licensed) : ?>
                     <a href="<?php echo esc_url($scan_url); ?>" class="button button-small wpiko-open-scan-website"><?php esc_html_e('Open Scan Website', 'wpiko-chatbot'); ?></a>

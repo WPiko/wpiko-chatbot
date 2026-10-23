@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,7 +16,7 @@ WPiko AI Chatbot adds an AI assistant to your WordPress site that answers visito
 
 A 3-step setup wizard connects your OpenAI account, teaches the chatbot about your business from your own pages, and lets you test it before it goes live.
 
-https://www.youtube.com/watch?v=yRSKh06YWRc
+https://www.youtube.com/watch?v=68E5sxxMli0
 
 ### 💬 What you can do
 
@@ -42,12 +42,12 @@ https://www.youtube.com/watch?v=yRSKh06YWRc
 - Loads its scripts only on pages where the chatbot appears
 - Encrypted API key storage
 
-### 🚀 WPiko Chatbot Pro adds
+### 🚀 WPiko AI Chatbot Pro adds
 
 - Live chat: take over any conversation from the AI and reply to visitors yourself (Admin Takeover)
 - Mobile app (PWA) with push notifications to reply from your phone
-- Full website scan with AI-generated Q&A and no page limit
-- Q&A Builder to control exact answers
+- Website scan with no page limit: AI-written Q&A from your pages, and clean Markdown from your posts and documentation plugin articles (no AI cost). Scan many at once, rescan what changed, and optionally keep posts and docs updated automatically
+- Q&A Builder to control exact answers (up to 50 Q&A pairs)
 - WooCommerce integration: product cards, product recommendations and order questions
 - Lead capture: email capture and a contact form with file attachments and reCAPTCHA
 - Analytics: conversations, devices, locations and usage trends
@@ -73,12 +73,12 @@ The chatbot's scripts and styles only load on pages where it is shown. Your API 
 
 The chatbot adapts to phones, tablets and desktops, with touch-friendly controls, adjustable dimensions and per-device visibility.
 
-Learn more: [WPiko Chatbot](https://wpiko.com/chatbot)
+Learn more: [WPiko AI Chatbot](https://wpiko.com/chatbot)
 
 == Installation ==
 
 1. Install the plugin from the WordPress plugins screen (or upload it to `/wp-content/plugins/wpiko-chatbot`) and activate it.
-2. The setup wizard opens automatically. You can also open it any time from WPiko Chatbot → Setup Wizard.
+2. The setup wizard opens automatically. You can also open it any time from WPiko AI Chatbot → Setup Wizard.
 3. Connect OpenAI: add credit to your OpenAI Platform account, create a secret key and paste it. WPiko sends a tiny test message to confirm everything works.
 4. Teach it your business: describe what you do and pick the pages the chatbot should learn from.
 5. Test it in the wizard, then switch on the floating chatbot. Done.
@@ -95,7 +95,7 @@ No. ChatGPT subscriptions and the OpenAI API are billed separately. The API need
 
 = The chatbot says "temporarily unavailable". What's wrong? =
 
-Almost always your OpenAI account has no credit, or the key was deleted. When you (as a site admin) chat with the bot, you see the exact reason and a link to fix it. You can also go to WPiko Chatbot → API Key and click "Test connection".
+Almost always your OpenAI account has no credit, or the key was deleted. When you (as a site admin) chat with the bot, you see the exact reason and a link to fix it. You can also go to WPiko AI Chatbot → API Key and click "Test connection".
 
 = How much does it cost to run the chatbot? =
 
@@ -103,7 +103,7 @@ You pay OpenAI per use. For most small sites that is a few dollars a month. You 
 
 = How does the chatbot learn about my business? =
 
-Pick up to 10 pages in "Quick learn from your pages" and upload documents such as price lists or FAQs in File Management. With Pro, Scan Website covers every page of your site with AI-written Q&A, and WooCommerce products stay in sync.
+Pick up to 10 pages in "Quick learn from your pages" and upload documents such as price lists or FAQs in File Management. With Pro, Scan Website covers every page, post and documentation article on your site: pages become AI-written Q&A, and posts and articles are added as clean Markdown with their exact wording. WooCommerce products stay in sync.
 
 = Does it include live chat? =
 
@@ -135,7 +135,7 @@ Yes. It replies in the visitor's language, and you can translate every interface
 
 = What happens to my data if I delete the plugin? =
 
-Your settings and conversations are kept so nothing is lost if you reinstall. To remove everything on deletion, turn on "Delete all WPiko Chatbot data" under Manage & Tools → Debug Log → Plugin data.
+Your settings and conversations are kept so nothing is lost if you reinstall. To remove everything on deletion, turn on "Delete all WPiko AI Chatbot data" under Manage & Tools → Debug Log → Plugin data.
 
 = What is the Mobile App (PWA)? =
 
@@ -149,26 +149,51 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 1. The chatbot on your site, answering visitors from your own pages.
 2. The setup wizard connects your OpenAI account and checks the key and credit for you.
-3. Quick learn from your pages: tick the pages your chatbot should know about.
-4. Test the chatbot in the wizard before it goes live on your site.
+3. The Dashboard shows what is set up, what needs attention and your latest conversations.
+4. Teach the chatbot from your pages and drag-and-drop documents into its knowledge base.
 5. Style presets and full color, avatar and position settings with a live preview.
-6. Conversations: every chat in one inbox, with search, download and translation.
+6. Conversations: every chat in one inbox, with search, translation, download and email export.
 7. Clear connection diagnostics: the exact OpenAI problem and a button to fix it.
-8. (Pro) Live chat takeover from the mobile app, with push notifications.
+8. (Pro) Scan Website: pages become AI-written Q&A, posts and docs are added as clean Markdown.
+9. (Pro) WooCommerce product cards and recommendations right in the chat.
+10. (Pro) Live chat takeover from the mobile app, with push notifications.
+
 
 == Changelog ==
 
-= 2.1.1 =
-* Security: Added default-on chat limits and mandatory server-side per-IP and site-wide caps to reduce unauthenticated OpenAI API cost abuse. Existing installations receive safety caps automatically, including those with limits disabled. Thanks to Ali Hidayat for responsibly reporting this issue.
-* Security: Replaced transient counters with atomic database reservations, rejected requests when rate-limit storage or the client IP is unavailable, and bounded chat input and AI output size.
-* Improve: User Limits now explains safety caps and includes an adjustable site-wide daily limit. Rejected chat traffic no longer creates conversation error rows.
+= 2.1.2 =
+* Improve: The plugin is now called "WPiko AI Chatbot" everywhere (admin menu, screens, notices and messages), and its name and description on the Plugins screen match the WordPress.org listing.
+* Improve: Redesigned the plugin header, navigation, dashboard, settings pages, Conversations and setup wizard with consistent cards, controls and responsive layouts.
+* Developer: Consolidated admin colors and settings controls into shared CSS and removed unused legacy styles.
+* Fix: Updated downloaded transcripts to match the new styling and corrected oversized emoji in frontend transcript downloads.
+* Improve: Centered the Contact User dialog, aligned its toolbar actions and made conversation action buttons consistent.
+* Improve: Redesigned the Train AI popups (File Management, plus Pro's Scan Website, Q&A Builder and WooCommerce) as one consistent window with a header, scrolling content and footer actions. They fit the screen instead of covering the whole page, open full-screen on phones, and use the new admin styling.
+* Improve: The popups work with the keyboard and screen readers: focus moves into the window and stays there, Escape closes it, and focus returns to the button that opened it.
+* Improve: Closing a popup with unsaved changes now asks first, and the page warns before you leave it.
+* Feature: File Management has a drag-and-drop upload area, and the file list shows file-type icons, sizes, upload dates and a file count.
+* Improve: Deleting a knowledge file asks for confirmation in a styled dialog instead of the browser prompt. Empty lists explain what to do next instead of showing "Disabled".
+* Fix: Pressing Enter in a popup field no longer submits the AI Settings form behind it.
+* Fix: Knowledge file names are now escaped in the file lists.
+* Developer: New `wpiko_chatbot_render_modal()` helper and `wpikoModal` JavaScript API (open, close, load, setDirty, setGuard, confirm) for admin popups.
+* Improve: AI Configuration, Quick learn and File Management describe the updated Pro Scan Website: pages become AI-written Q&A, while posts and docs are added as clean Markdown.
+* Improve: Quick learn no longer lists the WooCommerce Shop page. WooCommerce builds it from the product list, so it has no text to learn from (Cart, Checkout and My account were already hidden).
+* Improve: Downloading a chat transcript no longer makes an extra server request that always failed.
+* Improve: Removed debug messages from the browser console on the chatbot and admin screens, and the model debug commands from AI Configuration.
+* Developer: Removed unused code: old link and model helper aliases, the legacy transcript generator and file writer, unused error-message saving, a duplicate database upgrade check, the old instructions combiner, and unused popup loaders and CSS.
+* Improve: Recent activity on the Dashboard: each conversation opens directly in Conversations, shows its number of messages and the exact time on hover, marks conversations that ended in an error, shows when a contact left an email, and shows where guests are chatting from. The empty state links to your site so you can try the chatbot.
+* Fix: The Conversations inbox showed wrong "x ago" times when your computer's timezone differed from the site's timezone.
+* Improve: Redesigned Configuration status on the Dashboard. A progress bar shows how many of the four essentials are done: OpenAI connection (including credit and access problems), AI model, knowledge base (what the chatbot can answer from, or a warning when it is empty) and whether the chatbot is visible on the site. Optional features are compact On/Off chips, and every row links to its setting.
+* Developer: New `wpiko_chatbot_dashboard_features` filter for add-ons to list their features on the Dashboard. Rows added through the `wpiko_chatbot_dashboard_config_status` action still appear.
+* Improve: The Conversations inbox has a compact pager (previous, "Page X of Y" with a page picker, next) that always fits on one line, however many pages there are.
+* Improve: Download emails shows how many addresses were collected, how many are new in the last 30 days and when the last one arrived. Exports can be limited to contacts active in the last 7, 30 or 90 days, and the CSV now includes name, number of conversations and first and last contact. Values that could run as spreadsheet formulas are neutralised.
+* Compatibility: If WPiko AI Chatbot is updated before WPiko AI Chatbot Pro, Pro's training popups keep working in the new design, and a notice asks you to update Pro to 2.1.2.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.1 =
-Security update: adds automatic chat abuse protection for new and existing installations. Review User Limits for per-IP and site-wide daily caps. Public guest chat remains available.
+= 2.1.2 =
+Redesigned admin interface and Train AI popups, and improved transcript downloads. If you use WPiko AI Chatbot Pro, update both plugins to 2.1.2 together.
 
 == External Services ==
 

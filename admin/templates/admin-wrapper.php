@@ -10,152 +10,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Include header component
-require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/plugin-header.php';
-
-// Get the template name and other variables
-$wpiko_active_tab = isset($wpiko_active_tab) ? $wpiko_active_tab : 'api_key';
-$wpiko_get_tab_url = isset($wpiko_get_tab_url) ? $wpiko_get_tab_url : function($tab) {
-    return wp_nonce_url(
-        add_query_arg(
-            array(
-                'page' => 'ai-chatbot',
-                'tab' => $tab
-            ),
-            admin_url('admin.php')
-        ),
-        'wpiko_chatbot_tab_nonce'
-    );
-};
-
-$wpiko_admin_tabs = wpiko_chatbot_get_admin_tabs();
-$wpiko_admin_tab_groups = wpiko_chatbot_get_admin_tab_groups();
-$wpiko_standalone_tabs = array();
-$wpiko_grouped_tabs = array();
-
-foreach ($wpiko_admin_tabs as $wpiko_tab_id => $wpiko_tab) {
-    $wpiko_capability = isset($wpiko_tab['capability']) ? $wpiko_tab['capability'] : 'manage_options';
-    if (!current_user_can($wpiko_capability)) {
-        continue;
-    }
-
-    $wpiko_group_id = isset($wpiko_tab['group']) ? $wpiko_tab['group'] : 'more';
-    if ($wpiko_group_id === '') {
-        $wpiko_standalone_tabs[$wpiko_tab_id] = $wpiko_tab;
-        continue;
-    }
-
-    if (!isset($wpiko_admin_tab_groups[$wpiko_group_id])) {
-        $wpiko_group_id = 'more';
-    }
-
-    if (!isset($wpiko_grouped_tabs[$wpiko_group_id])) {
-        $wpiko_grouped_tabs[$wpiko_group_id] = array();
-    }
-
-    $wpiko_grouped_tabs[$wpiko_group_id][$wpiko_tab_id] = $wpiko_tab;
-}
-
-// Render the plugin header
-wpiko_chatbot_render_plugin_header();
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/plugin-navigation.php';
+$wpiko_active_tab = isset($wpiko_active_tab) ? $wpiko_active_tab : 'dashboard';
 ?>
 
-<div class="wrap">
+<div class="wrap wpiko-chatbot-admin-wrap">
     <div class="wpiko-chatbot-admin-container">
-        <div class="wpiko-chatbot-nav">
-            <!-- Mobile Navigation Toggle -->
-            <button class="wpiko-mobile-nav-toggle" id="wpiko-mobile-nav-toggle" aria-expanded="false" aria-controls="wpiko-nav-menu">
-                <span class="dashicons dashicons-menu"></span>
-                <span class="wpiko-current-tab"><?php
-                    $wpiko_current_tab_label = isset($wpiko_admin_tabs[$wpiko_active_tab]['label'])
-                        ? $wpiko_admin_tabs[$wpiko_active_tab]['label']
-                        : ucfirst(str_replace('_', ' ', $wpiko_active_tab));
-                    echo esc_html($wpiko_current_tab_label);
-                ?></span>
-                Menu
-                <span class="dashicons dashicons-arrow-down nav-arrow"></span>
-            </button>
-
-            <ul id="wpiko-nav-menu" class="wpiko-nav-root">
-                <?php foreach ($wpiko_standalone_tabs as $wpiko_tab_id => $wpiko_tab) : ?>
-                    <?php
-                    $wpiko_is_active = $wpiko_active_tab === $wpiko_tab_id;
-                    $wpiko_icon = isset($wpiko_tab['icon']) ? $wpiko_tab['icon'] : 'dashicons-plus';
-                    ?>
-                    <li class="wpiko-nav-standalone wpiko-nav-<?php echo esc_attr(sanitize_html_class($wpiko_tab_id)); ?>">
-                        <a href="<?php echo esc_url($wpiko_get_tab_url($wpiko_tab_id)); ?>"
-                            class="<?php echo $wpiko_is_active ? 'nav-tab-active' : ''; ?>"
-                            <?php echo $wpiko_is_active ? 'aria-current="page"' : ''; ?>>
-                            <span class="dashicons <?php echo esc_attr($wpiko_icon); ?>"></span>
-                            <?php echo esc_html($wpiko_tab['label']); ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-
-                <li class="wpiko-nav-actions">
-                    <button type="button"
-                        id="wpiko-nav-toggle-all"
-                        class="wpiko-nav-toggle-all"
-                        data-expand-label="<?php echo esc_attr__('Expand all', 'wpiko-chatbot'); ?>"
-                        data-collapse-label="<?php echo esc_attr__('Collapse all', 'wpiko-chatbot'); ?>">
-                        <?php esc_html_e('Expand all', 'wpiko-chatbot'); ?>
-                    </button>
-                </li>
-
-                <?php foreach ($wpiko_admin_tab_groups as $wpiko_group_id => $wpiko_group) : ?>
-                    <?php
-                    if (empty($wpiko_grouped_tabs[$wpiko_group_id])) {
-                        continue;
-                    }
-
-                    $wpiko_group_tabs = $wpiko_grouped_tabs[$wpiko_group_id];
-                    $wpiko_is_group_active = isset($wpiko_group_tabs[$wpiko_active_tab]);
-                    $wpiko_group_dom_id = 'wpiko-nav-group-' . sanitize_html_class($wpiko_group_id);
-                    $wpiko_group_classes = array('wpiko-nav-group');
-                    if ($wpiko_is_group_active) {
-                        $wpiko_group_classes[] = 'is-open';
-                        $wpiko_group_classes[] = 'has-active-tab';
-                    }
-                    if (!empty($wpiko_group['class'])) {
-                        $wpiko_group_classes[] = sanitize_html_class($wpiko_group['class']);
-                    }
-                    ?>
-                    <li class="<?php echo esc_attr(implode(' ', $wpiko_group_classes)); ?>"
-                        data-nav-group="<?php echo esc_attr($wpiko_group_id); ?>">
-                        <button type="button"
-                            class="wpiko-nav-group-toggle"
-                            aria-expanded="<?php echo $wpiko_is_group_active ? 'true' : 'false'; ?>"
-                            aria-controls="<?php echo esc_attr($wpiko_group_dom_id); ?>">
-                            <span><?php echo esc_html($wpiko_group['label']); ?></span>
-                            <?php if (!empty($wpiko_group['badge'])) : ?>
-                                <span class="wpiko-nav-group-badge"><?php echo esc_html($wpiko_group['badge']); ?></span>
-                            <?php endif; ?>
-                            <span class="dashicons dashicons-arrow-down wpiko-nav-group-arrow" aria-hidden="true"></span>
-                        </button>
-
-                        <ul id="<?php echo esc_attr($wpiko_group_dom_id); ?>" class="wpiko-nav-group-items">
-                            <?php foreach ($wpiko_group_tabs as $wpiko_tab_id => $wpiko_tab) : ?>
-                                <?php
-                                $wpiko_is_active = $wpiko_active_tab === $wpiko_tab_id;
-                                $wpiko_icon = isset($wpiko_tab['icon']) ? $wpiko_tab['icon'] : 'dashicons-plus';
-                                $wpiko_item_class = !empty($wpiko_tab['separator_before']) ? 'has-separator-before' : '';
-                                ?>
-                                <li class="<?php echo esc_attr($wpiko_item_class); ?>">
-                                    <a href="<?php echo esc_url($wpiko_get_tab_url($wpiko_tab_id)); ?>"
-                                        class="<?php echo $wpiko_is_active ? 'nav-tab-active' : ''; ?>"
-                                        <?php echo $wpiko_is_active ? 'aria-current="page"' : ''; ?>>
-                                        <span class="dashicons <?php echo esc_attr($wpiko_icon); ?>"></span>
-                                        <?php echo esc_html($wpiko_tab['label']); ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+        <aside class="wpiko-chatbot-nav">
+            <?php wpiko_chatbot_render_navigation($wpiko_active_tab, 'wpiko-chatbot-sidebar-menu', 'wpiko-chatbot-sidenav'); ?>
+        </aside>
         <div class="wpiko-chatbot-content">
             <?php
+            wpiko_chatbot_render_subnavigation($wpiko_active_tab);
+
             // Load the appropriate section based on active tab
             switch ($wpiko_active_tab) {
                 case 'dashboard':
