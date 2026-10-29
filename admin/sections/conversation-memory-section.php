@@ -23,7 +23,7 @@ function wpiko_chatbot_conversation_memory_section()
 
     $memory = wpiko_chatbot_get_conversation_memory();
     $menu_url = add_query_arg(array('page' => 'ai-chatbot', 'tab' => 'chatbot_menu', '_wpnonce' => wp_create_nonce('wpiko_chatbot_tab_nonce')), admin_url('admin.php'));
-    $clear_label = get_option('wpiko_chatbot_menu_clear_chat', 'Clear Chat');
+    $clear_label = get_option('wpiko_chatbot_menu_clear_chat', 'Start New Chat');
     ?>
     <div class="wpiko-chatbot-settings-page wpiko-conversation-memory-page">
         <header class="wpiko-chatbot-settings-header">
@@ -42,13 +42,11 @@ function wpiko_chatbot_conversation_memory_section()
                 <div class="wpiko-chatbot-settings-field-row">
                     <label class="wpiko-chatbot-settings-field-label" for="conversation_memory"><?php esc_html_e('Remember conversations', 'wpiko-chatbot'); ?></label>
                     <div class="wpiko-chatbot-settings-field-control">
-                        <div class="wpiko-select-wrap">
-                            <select name="conversation_memory" id="conversation_memory" aria-describedby="conversation_memory-description">
+                        <select name="conversation_memory" id="conversation_memory" aria-describedby="conversation_memory-description">
                                 <?php foreach (wpiko_chatbot_conversation_memory_choices() as $value => $label): ?>
                                     <option value="<?php echo esc_attr($value); ?>" <?php selected($memory, $value); ?>><?php echo esc_html($label); ?></option>
                                 <?php endforeach; ?>
-                            </select>
-                        </div>
+                        </select>
                         <div class="wpiko-chatbot-settings-field-description" id="conversation_memory-description">
                             <p><strong><?php esc_html_e('Only while the browser tab is open:', 'wpiko-chatbot'); ?></strong> <?php esc_html_e('the chat stays while the visitor moves between pages. Closing the tab or opening the site in a new tab starts a new chat.', 'wpiko-chatbot'); ?></p>
                             <p><strong><?php esc_html_e('Across visits:', 'wpiko-chatbot'); ?></strong> <?php esc_html_e('the visitor can close the browser and continue the same chat later on the same device, in any tab. The chat starts fresh after the chosen time without a message.', 'wpiko-chatbot'); ?></p>

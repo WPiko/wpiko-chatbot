@@ -64,6 +64,9 @@ $wpiko_active_tab = isset($wpiko_active_tab) ? $wpiko_active_tab : 'dashboard';
                 case 'error_messages':
                     wpiko_chatbot_error_messages_section();
                     break;
+                case 'conversation_memory':
+                    wpiko_chatbot_conversation_memory_section();
+                    break;
                 case 'debug_log':
                     wpiko_chatbot_debug_log_section();
                     break;

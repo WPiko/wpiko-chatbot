@@ -1,21 +1,228 @@
+/**
+ * Where the visitor's conversation is kept.
+ *
+ * "Only while the tab is open" (default): sessionStorage, as before.
+ * "Across visits": localStorage, shared by every tab of the site and forgotten
+ * after the chosen number of days without a message.
+ *
+ * Add-ons should read and write the conversation through this object.
+ */
+window.wpikoChatbotStore = (function () {
+    var MESSAGES_KEY = 'wpiko_chatbot_messages';
+    var THREAD_KEY = 'wpiko_chatbot_thread_id';
+    var RESPONSE_KEY = 'wpiko_chatbot_last_response_id';
+    var SCOPE_KEY = 'wpiko_chatbot_history_scope';
+    var ACTIVITY_KEY = 'wpiko_chatbot_last_activity';
+    // Last team message shown in this conversation (Pro live chat), so replies
+    // sent while the visitor was away appear when they come back.
+    var TEAM_CURSOR_KEY = 'wpiko_chatbot_last_admin_message_id';
+    var CONVERSATION_KEYS = [MESSAGES_KEY, THREAD_KEY, RESPONSE_KEY, TEAM_CURSOR_KEY];
+
+    var ready = false;
+    var persistent = false;
+    var lifetimeMs = 0;
+    var area = null;
+
+    function storageWorks(storage) {
+        try {
+            storage.setItem('wpiko_chatbot_storage_test', '1');
+            storage.removeItem('wpiko_chatbot_storage_test');
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function safeGet(storage, key) {
+        try {
+            return storage ? storage.getItem(key) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function safeSet(storage, key, value) {
+        try {
+            if (storage) {
+                storage.setItem(key, value);
+            }
+        } catch (e) {
+            // Storage full or blocked: the chat still works for this page.
+        }
+    }
+
+    function safeRemove(storage, key) {
+        try {
+            if (storage) {
+                storage.removeItem(key);
+            }
+        } catch (e) {
+            // Ignore blocked storage.
+        }
+    }
+
+    function init() {
+        if (ready) {
+            return;
+        }
+        ready = true;
+
+        var config = (window.wpikoChatbot && window.wpikoChatbot.conversation_memory) || {};
+        var days = parseInt(config.days, 10) || 0;
+        var local = null;
+        try {
+            local = window.localStorage;
+        } catch (e) {
+            local = null;
+        }
+
+        persistent = !!config.persistent && days > 0 && !!local && storageWorks(local);
+        lifetimeMs = days * 86400000;
+
+        try {
+            area = persistent ? local : window.sessionStorage;
+        } catch (e) {
+            area = null;
+        }
+
+        if (persistent) {
+            if (isExpired()) {
+                clearConversation();
+            } else if (safeGet(local, THREAD_KEY) && !safeGet(local, ACTIVITY_KEY)) {
+                touch();
+            }
+            mirrorThreadId();
+        } else if (local) {
+            // Conversations remembered before the site switched to "only while
+            // the tab is open" are removed from this device.
+            CONVERSATION_KEYS.concat([SCOPE_KEY, ACTIVITY_KEY]).forEach(function (key) {
+                safeRemove(local, key);
+            });
+        }
+    }
+
+    function touch() {
+        if (persistent) {
+            safeSet(area, ACTIVITY_KEY, String(Date.now()));
+        }
+    }
+
+    // Add-ons from before this change read the conversation ID from the tab's sessionStorage.
+    function mirrorThreadId() {
+        if (!persistent) {
+            return;
+        }
+        var threadId = safeGet(area, THREAD_KEY);
+        try {
+            if (threadId) {
+                window.sessionStorage.setItem(THREAD_KEY, threadId);
+            } else {
+                window.sessionStorage.removeItem(THREAD_KEY);
+            }
+        } catch (e) {
+            // Ignore blocked storage.
+        }
+    }
+
+    function isExpired() {
+        if (!persistent) {
+            return false;
+        }
+        var lastActivity = parseInt(safeGet(area, ACTIVITY_KEY) || '0', 10);
+        return lastActivity > 0 && (Date.now() - lastActivity) > lifetimeMs;
+    }
+
+    function clearConversation() {
+        init();
+        CONVERSATION_KEYS.concat([ACTIVITY_KEY]).forEach(function (key) {
+            safeRemove(area, key);
+        });
+        mirrorThreadId();
+    }
+
+    return {
+        isPersistent: function () {
+            init();
+            return persistent;
+        },
+        isExpired: function () {
+            init();
+            return isExpired();
+        },
+        get: function (key) {
+            init();
+            return safeGet(area, key);
+        },
+        set: function (key, value) {
+            init();
+            safeSet(area, key, value);
+            // Only messages count as activity, so a remembered chat expires
+            // after the chosen time without messages, not without page views.
+            if (key === MESSAGES_KEY) {
+                touch();
+            }
+            if (key === THREAD_KEY) {
+                mirrorThreadId();
+            }
+        },
+        remove: function (key) {
+            init();
+            safeRemove(area, key);
+            if (key === THREAD_KEY) {
+                mirrorThreadId();
+            }
+        },
+        clearConversation: clearConversation,
+        /**
+         * Run a callback when another tab changes the remembered conversation.
+         */
+        onChange: function (callback) {
+            init();
+            if (!persistent) {
+                return;
+            }
+            window.addEventListener('storage', function (event) {
+                if (event.key !== null && CONVERSATION_KEYS.indexOf(event.key) === -1) {
+                    return;
+                }
+                try {
+                    if (event.storageArea && event.storageArea !== window.localStorage) {
+                        return;
+                    }
+                } catch (e) {
+                    return;
+                }
+                mirrorThreadId();
+                callback(event.key);
+            });
+        }
+    };
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
     // Check for cache version mismatch and notify if needed
     checkCacheVersion();
 
+    const chatStore = window.wpikoChatbotStore;
+
     // Clear private answers when this tab changes account, or first upgrades to controlled lookup.
-    if (wpikoChatbot.private_history_scope) {
-        if (sessionStorage.getItem('wpiko_chatbot_history_scope') !== wpikoChatbot.private_history_scope) {
-            ['wpiko_chatbot_messages', 'wpiko_chatbot_thread_id', 'wpiko_chatbot_last_response_id',
-                'wpiko_chatbot_unread_count'].forEach(function (key) { sessionStorage.removeItem(key); });
+    // Conversations remembered across visits are also cleared when someone logs in or out.
+    const historyScope = wpikoChatbot.private_history_scope
+        || (chatStore.isPersistent() && wpikoChatbot.conversation_memory && wpikoChatbot.conversation_memory.account)
+        || '';
+    if (historyScope) {
+        if (chatStore.get('wpiko_chatbot_history_scope') !== historyScope) {
+            chatStore.clearConversation();
+            sessionStorage.removeItem('wpiko_chatbot_unread_count');
         }
-        sessionStorage.setItem('wpiko_chatbot_history_scope', wpikoChatbot.private_history_scope);
+        chatStore.set('wpiko_chatbot_history_scope', historyScope);
     }
 
     const inputField = document.getElementById('chatbot-input');
     const sendButton = document.getElementById('chatbot-send');
     const messagesContainer = document.getElementById('chatbot-messages');
     const downloadButton = document.getElementById('download-transcript');
-    let threadId = sessionStorage.getItem('wpiko_chatbot_thread_id') || null;
+    let threadId = chatStore.get('wpiko_chatbot_thread_id') || null;
     const isTranscriptDownloadEnabled = wpikoChatbot.enable_transcript_download === '1';
     let isSoundEnabled = wpikoChatbot.sound_enabled === '1';
 
@@ -24,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Optimistic Response ID: track the last response ID for multi-turn conversations
     // This prevents race conditions when users send messages quickly
-    let lastResponseId = sessionStorage.getItem('wpiko_chatbot_last_response_id') || null;
+    let lastResponseId = chatStore.get('wpiko_chatbot_last_response_id') || null;
 
     // Human takeover polling
     let pollingInterval = null;
@@ -122,19 +329,37 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function readStoredMessages() {
+        try {
+            const messages = JSON.parse(chatStore.get('wpiko_chatbot_messages') || '[]');
+            return Array.isArray(messages) ? messages : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
     // Initialize chatbot with stored messages
     function initChatbot() {
         if (!messagesContainer) return;
 
+        renderStoredMessages();
+
+        // Scroll to bottom for both main chatbot and floating chatbot
+        scrollToBottom();
+
+        restoreFloatingState();
+    }
+
+    // Show the stored conversation (or the welcome message for a new one)
+    function renderStoredMessages() {
         // Clear existing messages
         messagesContainer.innerHTML = '';
 
         // Get the current welcome message (could be null)
         const currentWelcomeMessage = getWelcomeMessage();
 
-        const storedMessages = sessionStorage.getItem('wpiko_chatbot_messages');
-        if (storedMessages) {
-            const messages = JSON.parse(storedMessages);
+        const messages = readStoredMessages();
+        if (messages.length) {
             messages.forEach((message, index) => {
                 if (index === 0 && message.type === 'bot' && currentWelcomeMessage) {
                     // Update the first message if it's a bot message and there's a welcome message
@@ -157,13 +382,12 @@ document.addEventListener('DOMContentLoaded', function () {
             // Add welcome message if it exists
             if (currentWelcomeMessage) {
                 appendMessage('bot', currentWelcomeMessage, 'general_error', true, true);
-                sessionStorage.setItem('wpiko_chatbot_messages', JSON.stringify([{ type: 'bot', content: currentWelcomeMessage }]));
+                chatStore.set('wpiko_chatbot_messages', JSON.stringify([{ type: 'bot', content: currentWelcomeMessage }]));
             }
         }
+    }
 
-        // Scroll to bottom for both main chatbot and floating chatbot
-        scrollToBottom();
-
+    function restoreFloatingState() {
         // Restore chatbot open/closed state
         const isChatbotOpen = sessionStorage.getItem('wpiko_chatbot_is_open') === 'true';
         const floatingContainer = document.getElementById('wpiko-chatbot-floating-container');
@@ -265,6 +489,46 @@ document.addEventListener('DOMContentLoaded', function () {
         startTakeoverCheck(threadId);
     }
 
+    // Conversations remembered across visits are shared by every tab of the site:
+    // show what another tab added or cleared, and continue from its latest answer.
+    chatStore.onChange(function () {
+        const previousThreadId = threadId;
+        threadId = chatStore.get('wpiko_chatbot_thread_id') || null;
+        lastResponseId = chatStore.get('wpiko_chatbot_last_response_id') || null;
+
+        if (threadId !== previousThreadId) {
+            stopTakeoverPolling();
+            lastKnownMessageId = 0;
+            if (threadId && !isProTakeoverFrontendActive) {
+                startTakeoverCheck(threadId);
+            }
+            if (!threadId) {
+                stopHeartbeat();
+            }
+        }
+
+        // A reply streaming into this tab is stored when it finishes.
+        if (!isRequestInProgress && messagesContainer) {
+            renderStoredMessages();
+            scrollToBottom();
+        }
+    });
+
+    /**
+     * Start a fresh conversation without the "clear chat" sound or server notice.
+     * Used when a remembered conversation expired while the page stayed open.
+     */
+    function startFreshConversation() {
+        threadId = null;
+        lastResponseId = null;
+        chatStore.clearConversation();
+        stopHeartbeat();
+        stopTakeoverPolling();
+        if (messagesContainer) {
+            renderStoredMessages();
+        }
+    }
+
     // Mobile close button functionality
     const mobileCloseButton = document.getElementById('wpiko-chatbot-mobile-close');
 
@@ -324,13 +588,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         messagesContainer.innerHTML = '';
-        sessionStorage.removeItem('wpiko_chatbot_messages');
 
-        // Reset the conversation chain - clear thread ID and response ID
+        // Reset the conversation chain - clear messages, thread ID and response ID
         threadId = null;
         lastResponseId = null;
-        sessionStorage.removeItem('wpiko_chatbot_thread_id');
-        sessionStorage.removeItem('wpiko_chatbot_last_response_id');
+        chatStore.clearConversation();
 
         // Stop heartbeat and polling since conversation is cleared
         stopHeartbeat();
@@ -352,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (clearChatOption) {
         clearChatOption.addEventListener('click', function () {
-            if (confirm('Are you sure you want to clear the chat history?')) {
+            if (confirm(wpikoChatbot.clear_chat_confirm || 'Start a new chat? The current conversation will be cleared.')) {
                 clearChat();
                 menuDropdown.style.display = 'none';
             }
@@ -449,6 +711,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isRequestInProgress) {
                 return;
             }
+
+            // Continue from what is stored now: another tab may have answered or
+            // cleared the chat, or a remembered chat may have expired.
+            if (chatStore.isExpired()) {
+                startFreshConversation();
+            }
+            threadId = chatStore.get('wpiko_chatbot_thread_id') || null;
+            lastResponseId = chatStore.get('wpiko_chatbot_last_response_id') || null;
 
             // Check if pro plugin has email validation and run it
             if (typeof window.wpikoProValidateEmailBeforeSend === 'function') {
@@ -741,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (parsedEvent.event === 'start') {
                     if (parsedEvent.data && parsedEvent.data.thread_id) {
                         threadId = parsedEvent.data.thread_id;
-                        sessionStorage.setItem('wpiko_chatbot_thread_id', threadId);
+                        chatStore.set('wpiko_chatbot_thread_id', threadId);
                     }
                     continue;
                 }
@@ -1107,12 +1377,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleSuccessfulResponseData(data) {
         if (data.thread_id) {
             threadId = data.thread_id;
-            sessionStorage.setItem('wpiko_chatbot_thread_id', threadId);
+            chatStore.set('wpiko_chatbot_thread_id', threadId);
         }
 
         if (data.response_id) {
             lastResponseId = data.response_id;
-            sessionStorage.setItem('wpiko_chatbot_last_response_id', lastResponseId);
+            chatStore.set('wpiko_chatbot_last_response_id', lastResponseId);
         }
 
         updateChatbotStatus(true);
@@ -1246,6 +1516,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Append Message
     function appendMessage(type, content, errorType = 'general_error', skipStoring = false, suppressSound = false, meta = {}) {
         if (content === null || content === '') return;
+        // Team messages are plain text and escaped below; store the original
+        // text so showing the conversation again doesn't escape it twice.
+        const originalContent = content;
         const messageElement = document.createElement('div');
         messageElement.className = 'message-container';
 
@@ -1342,14 +1615,14 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollToBottom();
 
         if (!skipStoring) {
-            storeMessage(type, content, errorType, meta);
+            storeMessage(type, type === 'admin' ? String(originalContent) : content, errorType, meta);
         }
     }
 
     function storeMessage(type, content, errorType = 'general_error', meta = {}) {
-        const storedMessages = JSON.parse(sessionStorage.getItem('wpiko_chatbot_messages') || '[]');
+        const storedMessages = readStoredMessages();
         storedMessages.push({ type, content, errorType, meta });
-        sessionStorage.setItem('wpiko_chatbot_messages', JSON.stringify(storedMessages));
+        chatStore.set('wpiko_chatbot_messages', JSON.stringify(storedMessages));
     }
 
     function getInitials(name) {
@@ -1716,7 +1989,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function sendHeartbeat() {
         if (!isHeartbeatEnabled()) return;
 
-        var currentThreadId = sessionStorage.getItem('wpiko_chatbot_thread_id');
+        var currentThreadId = chatStore.get('wpiko_chatbot_thread_id');
         if (!currentThreadId) return;
 
         jQuery.ajax({
@@ -1769,7 +2042,7 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function sendOfflineBeacon(status) {
         if (!isHeartbeatEnabled()) return;
-        var currentThreadId = sessionStorage.getItem('wpiko_chatbot_thread_id');
+        var currentThreadId = chatStore.get('wpiko_chatbot_thread_id');
         if (!currentThreadId) return;
 
         status = status || 'page_left';
@@ -1840,7 +2113,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             stopHeartbeat();
-        } else if (sessionStorage.getItem('wpiko_chatbot_thread_id')) {
+        } else if (chatStore.get('wpiko_chatbot_thread_id')) {
             startHeartbeat();
         }
     });
@@ -1868,8 +2141,11 @@ function checkCacheVersion() {
         // Clear relevant localStorage items
         localStorage.removeItem('wpiko_chatbot_user_email');
         localStorage.removeItem('wpiko_chatbot_user_name');
-        sessionStorage.removeItem('wpiko_chatbot_messages');
-        sessionStorage.removeItem('wpiko_chatbot_thread_id');
+        // A chat kept only for this tab starts fresh after a settings change.
+        // A chat remembered across visits is kept until it expires or the visitor clears it.
+        if (!window.wpikoChatbotStore.isPersistent()) {
+            window.wpikoChatbotStore.clearConversation();
+        }
         sessionStorage.removeItem('wpiko_chatbot_is_open');
 
         // Update stored cache version

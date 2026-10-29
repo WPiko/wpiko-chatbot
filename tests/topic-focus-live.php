@@ -4,6 +4,7 @@
 // mode = website (Only questions about this website) or any (Any question).
 // part = 1 or 2 (each part sends 5 real OpenAI requests, kept short for timeouts).
 // Prints each question and answer for review, then removes the test conversations.
+// Open the links one at a time: each run switches the site setting while it runs.
 // The site's Topic focus setting is restored afterwards. Keep tests out of release ZIPs.
 require dirname(__DIR__, 4) . '/wp-load.php';
 

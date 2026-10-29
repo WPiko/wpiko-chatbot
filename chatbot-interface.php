@@ -145,12 +145,12 @@ function wpiko_chatbot_display()
                         <li id="clear-chat">
                             <span class="menu-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                    <path d="M12 7v6" />
+                                    <path d="M9 10h6" />
                                 </svg></span>
                             <span
-                                class="menu-text"><?php echo esc_html(get_option('wpiko_chatbot_menu_clear_chat', 'Clear Chat')); ?></span>
+                                class="menu-text"><?php echo esc_html(get_option('wpiko_chatbot_menu_clear_chat', 'Start New Chat')); ?></span>
                         </li>
                         <?php
                         // Allow pro plugin to add additional menu items

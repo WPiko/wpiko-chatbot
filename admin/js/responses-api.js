@@ -40,7 +40,7 @@ jQuery(document).ready(function ($) {
         // If you modify this template, make sure to update both files to keep them in sync
         var mainInstructions = "You are an " + assistantType + " for the website " + websiteName + ". " +
             "The website specializes in " + websiteSpecialization + ". " +
-            "Your goal is to provide helpful, accurate, and engaging responses to user queries " +
+            "Your goal is to provide helpful, accurate, and engaging responses to questions about this website and what it offers " +
             "while maintaining a " + assistantTone + " and " + assistantStyle + " tone. " +
             "Always respond as if you are a helpful member of the website team.";
 
@@ -269,6 +269,7 @@ jQuery(document).ready(function ($) {
             responses_website_specialization: $('#responses_website_specialization').val(),
             responses_assistant_tone: $('#responses_assistant_tone').val(),
             responses_assistant_style: $('#responses_assistant_style').val(),
+            topic_focus: $('#responses_topic_focus').val(),
             responses_reasoning_effort: $('#responses_reasoning_effort').val(),
             responses_verbosity: $('#responses_verbosity').val(),
             main_system_instructions: $('#responses_main_system_instructions').val(),

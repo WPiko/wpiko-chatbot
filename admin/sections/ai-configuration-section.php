@@ -227,6 +227,15 @@ function wpiko_chatbot_ai_configuration_section()
                                         ?>
                                     </select>
                                 </div>
+
+                                <div class="instruction-field topic-focus-field">
+                                    <label for="responses_topic_focus"><?php esc_html_e('Topic focus', 'wpiko-chatbot'); ?></label>
+                                    <select name="responses_topic_focus" id="responses_topic_focus" aria-describedby="responses_topic_focus-description">
+                                        <option value="website" <?php selected(wpiko_chatbot_get_topic_focus(), 'website'); ?>><?php esc_html_e('Only questions about this website (recommended)', 'wpiko-chatbot'); ?></option>
+                                        <option value="any" <?php selected(wpiko_chatbot_get_topic_focus(), 'any'); ?>><?php esc_html_e('Any question', 'wpiko-chatbot'); ?></option>
+                                    </select>
+                                    <p class="wpiko-chatbot-settings-field-description" id="responses_topic_focus-description"><?php esc_html_e('With "Only questions about this website", the chatbot answers questions about your website, business, products and services, and closely related general questions, and politely declines anything else. This stops visitors using it, and your OpenAI credit, as a free general assistant. To allow more topics, describe them in Website specialization or Specific system instructions.', 'wpiko-chatbot'); ?></p>
+                                </div>
                             </div>
                             <input type="hidden" name="responses_main_system_instructions"
                                 id="responses_main_system_instructions" value="<?php

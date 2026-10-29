@@ -28,6 +28,9 @@ define('WPIKO_CHATBOT_PRICING_URL', 'https://wpiko.com/chatbot-pricing/');
 // Ensures that the default options is set
 function wpiko_chatbot_set_default_options()
 {
+    // Never set up on this site before (no chatbot image or API key saved yet).
+    $is_fresh_install = get_option('wpiko_chatbot_image', false) === false && get_option('wpiko_chatbot_api_key', false) === false;
+
     $default_image = WPIKO_CHATBOT_PLUGIN_URL . 'assets/images/chatbot-icon.png';
     add_option('wpiko_chatbot_image', $default_image);
     add_option('wpiko_chatbot_floating_position', 'right');
@@ -37,6 +40,9 @@ function wpiko_chatbot_set_default_options()
     add_option('wpiko_chatbot_responses_model', 'gpt-6-luna');
     add_option('wpiko_chatbot_responses_reasoning_effort', 'medium');
     add_option('wpiko_chatbot_responses_verbosity', 'medium');
+
+    // New sites remember conversations across visits; existing sites keep their behaviour.
+    add_option('wpiko_chatbot_conversation_memory', wpiko_chatbot_default_conversation_memory($is_fresh_install));
 }
 register_activation_hook(__FILE__, 'wpiko_chatbot_set_default_options');
 
@@ -174,6 +180,7 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/questions-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/conversations-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/user-limits-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/error-messages-section.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/conversation-memory-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/debug-log-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/setup-wizard-section.php';
 
@@ -181,6 +188,7 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'chatbot-interface.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/logging.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/floating-chatbot.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/conversation-memory.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/responses-tools.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/responses-api.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/conversation-handler.php';
@@ -472,6 +480,7 @@ function wpiko_chatbot_localize_script()
         'user_email' => $user_email,
         'user_name' => $user_name,
         'welcome_message' => get_option('wpiko_chatbot_welcome_message', 'Welcome! Type your message to start chatting.'),
+        'clear_chat_confirm' => __('Start a new chat? The current conversation will be cleared.', 'wpiko-chatbot'),
         'botAvatarUrl' => get_option('wpiko_chatbot_image', WPIKO_CHATBOT_PLUGIN_URL . 'assets/images/chatbot-icon.png'),
         'enable_transcript_download' => get_option('wpiko_chatbot_enable_transcript_download', '1'),
         'sound_enabled' => $sound_enabled,

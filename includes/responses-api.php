@@ -251,6 +251,20 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
         'timeout' => 120 // Increased to 120s to accommodate High Reasoning Effort models
     ));
 
+    // The response this one continues from may no longer exist at OpenAI (stored
+    // responses expire after 30 days). Start a new chain with the recent messages.
+    if (!is_wp_error($response) && !empty($request_body['previous_response_id'])) {
+        $first_status = (int) wp_remote_retrieve_response_code($response);
+        if ($first_status !== 200 && wpiko_chatbot_is_missing_previous_response_error($first_status, json_decode(wp_remote_retrieve_body($response), true), $request_body)) {
+            $request_body = wpiko_chatbot_prepare_history_recovery_request($request_body, $conversation_id);
+            $response = wpiko_chatbot_api_call_with_retry('https://api.openai.com/v1/responses', array(
+                'headers' => $headers,
+                'body' => json_encode($request_body),
+                'timeout' => 120
+            ));
+        }
+    }
+
     $response = wpiko_chatbot_run_response_tools($response, $request_body, $headers);
 
     if (is_wp_error($response)) {
@@ -782,52 +796,24 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
         set_time_limit(200);
     }
 
-    $stream_state = array(
-        'assistant_message' => '',
-        'citation_pending' => '',
-        'response_id' => null,
-        'completed_response' => null,
-        'error' => null,
-        'error_code' => '',
-        'raw_body' => '',
-        'event_name' => 'message',
-        'data_lines' => array(),
-        'buffer' => ''
-    );
+    list($stream_state, $curl_result, $curl_error, $status_code) = wpiko_chatbot_send_openai_stream_request($context['headers'], $request_body, $callbacks);
 
-    // The WordPress HTTP API (wp_remote_post) does not support real-time, chunk-by-chunk
-    // response streaming via a write callback, which is required to relay Server-Sent Events
-    // from the OpenAI Responses API to the browser as they arrive. cURL with CURLOPT_WRITEFUNCTION
-    // is the only viable option here; a wp_remote_post() fallback is used when cURL is unavailable.
-    // phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
-    $ch = curl_init('https://api.openai.com/v1/responses');
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $context['headers']);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, wp_json_encode($request_body));
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($curl, $chunk) use (&$stream_state, $callbacks) {
-        if (connection_aborted()) {
-            return 0;
+    // The response this one continues from may no longer exist at OpenAI (stored
+    // responses expire after 30 days). Start a new chain with the recent messages.
+    // Nothing has been shown to the visitor yet when OpenAI rejects the request.
+    if ($curl_result !== false && empty($curl_error) && $stream_state['assistant_message'] === '' && !empty($request_body['previous_response_id'])) {
+        if (!empty($stream_state['error'])) {
+            $failed_status = ($status_code === 200 || $status_code === 0) ? 400 : $status_code;
+            $failed_body = array('error' => array('message' => $stream_state['error'], 'code' => $stream_state['error_code']));
+        } else {
+            $failed_status = $status_code;
+            $failed_body = json_decode($stream_state['raw_body'], true);
         }
-
-        if (strlen($stream_state['raw_body']) < 30000) {
-            $stream_state['raw_body'] .= $chunk;
+        if ($failed_status !== 200 && wpiko_chatbot_is_missing_previous_response_error($failed_status, is_array($failed_body) ? $failed_body : $stream_state['raw_body'], $request_body)) {
+            $request_body = wpiko_chatbot_prepare_history_recovery_request($request_body, $conversation_id);
+            list($stream_state, $curl_result, $curl_error, $status_code) = wpiko_chatbot_send_openai_stream_request($context['headers'], $request_body, $callbacks);
         }
-
-        wpiko_chatbot_parse_openai_stream_chunk($chunk, $stream_state, $callbacks);
-        return strlen($chunk);
-    });
-
-    $curl_result = curl_exec($ch);
-    $curl_error = curl_error($ch);
-    $status_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    // phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
-
-    wpiko_chatbot_flush_openai_stream_parser($stream_state, $callbacks);
+    }
 
     if ($curl_result === false || !empty($curl_error)) {
         wpiko_chatbot_log('Streaming Responses API cURL error: ' . $curl_error, 'error');
@@ -965,6 +951,66 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     }
 
     return $result;
+}
+
+/**
+ * Send one streaming request to the OpenAI Responses API and parse its events.
+ *
+ * @param array $headers      cURL header lines.
+ * @param array $request_body Request body.
+ * @param array $callbacks    Stream callbacks (delta is relayed as it arrives).
+ * @return array{0: array, 1: mixed, 2: string, 3: int} Stream state, cURL result, cURL error, HTTP status.
+ */
+function wpiko_chatbot_send_openai_stream_request($headers, $request_body, $callbacks)
+{
+    $stream_state = array(
+        'assistant_message' => '',
+        'citation_pending' => '',
+        'response_id' => null,
+        'completed_response' => null,
+        'error' => null,
+        'error_code' => '',
+        'raw_body' => '',
+        'event_name' => 'message',
+        'data_lines' => array(),
+        'buffer' => ''
+    );
+
+    // The WordPress HTTP API (wp_remote_post) does not support real-time, chunk-by-chunk
+    // response streaming via a write callback, which is required to relay Server-Sent Events
+    // from the OpenAI Responses API to the browser as they arrive. cURL with CURLOPT_WRITEFUNCTION
+    // is the only viable option here; a wp_remote_post() fallback is used when cURL is unavailable.
+    // phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
+    $ch = curl_init('https://api.openai.com/v1/responses');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, wp_json_encode($request_body));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($curl, $chunk) use (&$stream_state, $callbacks) {
+        if (connection_aborted()) {
+            return 0;
+        }
+
+        if (strlen($stream_state['raw_body']) < 30000) {
+            $stream_state['raw_body'] .= $chunk;
+        }
+
+        wpiko_chatbot_parse_openai_stream_chunk($chunk, $stream_state, $callbacks);
+        return strlen($chunk);
+    });
+
+    $curl_result = curl_exec($ch);
+    $curl_error = curl_error($ch);
+    $status_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    // phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
+
+    wpiko_chatbot_flush_openai_stream_parser($stream_state, $callbacks);
+
+    return array($stream_state, $curl_result, $curl_error, $status_code);
 }
 
 function wpiko_chatbot_parse_openai_stream_chunk($chunk, &$stream_state, $callbacks)
@@ -1232,6 +1278,10 @@ function wpiko_chatbot_update_responses_config()
 
     if (isset($_POST['responses_reasoning_effort'])) {
         update_option('wpiko_chatbot_responses_reasoning_effort', wpiko_chatbot_normalize_responses_reasoning_effort($model, sanitize_text_field(wp_unslash($_POST['responses_reasoning_effort']))));
+    }
+
+    if (isset($_POST['topic_focus'])) {
+        update_option('wpiko_chatbot_topic_focus', sanitize_key(wp_unslash($_POST['topic_focus'])) === 'any' ? 'any' : 'website');
     }
 
     if (isset($_POST['responses_verbosity'])) {

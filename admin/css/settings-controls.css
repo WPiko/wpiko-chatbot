@@ -254,6 +254,8 @@
     border-radius: var(--wpiko-ui-radius-sm);
 }
 .wpiko-chatbot-settings-page select { max-width: 400px; padding-right: 28px; }
+/* Conversation Memory: longer option labels. */
+.wpiko-conversation-memory-page select { max-width: 480px; }
 .wpiko-chatbot-settings-page input[type="number"] { max-width: 140px; }
 .wpiko-chatbot-settings-page textarea { min-height: 80px; resize: vertical; }
 .wpiko-chatbot-settings-page input::placeholder,

@@ -264,15 +264,21 @@
         $('#wpiko-wizard-finish').on('click', function () {
             var $button = $(this);
             var showFloating = $('#wpiko-wizard-show-floating').is(':checked');
+            var $remember = $('#wpiko-wizard-remember-conversations');
             // Open the tab now (inside the click) so pop-up blockers allow it.
             var siteWindow = window.open('', '_blank');
             $button.prop('disabled', true);
 
-            $.post(wpikoSetupWizard.ajaxUrl, {
+            var finishData = {
                 action: 'wpiko_chatbot_wizard_finish',
                 security: wpikoSetupWizard.nonce,
                 show_floating: showFloating ? '1' : '0'
-            }).done(function (response) {
+            };
+            if ($remember.length) {
+                finishData.remember_conversations = $remember.is(':checked') ? '1' : '0';
+            }
+
+            $.post(wpikoSetupWizard.ajaxUrl, finishData).done(function (response) {
                 var data = response && response.data ? response.data : {};
                 if (siteWindow && data.site_url) {
                     siteWindow.location = data.site_url;

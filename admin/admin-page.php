@@ -239,6 +239,14 @@ function wpiko_chatbot_get_admin_tabs()
             'section_label' => __('Error Messages', 'wpiko-chatbot'),
             'order' => 30,
         ),
+        'conversation_memory' => array(
+            'label' => 'Conversation Memory',
+            'icon' => 'dashicons-backup',
+            'group' => 'chat_widget',
+            'section' => 'messages',
+            'section_label' => __('Conversation Memory', 'wpiko-chatbot'),
+            'order' => 40,
+        ),
         'user_limits' => array(
             'label' => 'User Limits',
             'icon' => 'dashicons-shield',

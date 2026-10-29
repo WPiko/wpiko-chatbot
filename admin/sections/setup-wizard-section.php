@@ -166,6 +166,17 @@ function wpiko_chatbot_wizard_finish_ajax()
 
     $show_floating = isset($_POST['show_floating']) && sanitize_text_field(wp_unslash($_POST['show_floating'])) === '1';
     update_option('wpiko_chatbot_enable_floating', $show_floating ? '1' : '');
+
+    if (isset($_POST['remember_conversations'])) {
+        $remember = sanitize_text_field(wp_unslash($_POST['remember_conversations'])) === '1';
+        $current_memory = wpiko_chatbot_get_conversation_memory();
+        if (!$remember) {
+            update_option('wpiko_chatbot_conversation_memory', 'tab');
+        } elseif ($current_memory === 'tab') {
+            // Keep a length chosen earlier in Conversation Memory; otherwise 7 days.
+            update_option('wpiko_chatbot_conversation_memory', '7d');
+        }
+    }
     update_option('wpiko_chatbot_setup_completed', time(), false);
 
     wp_send_json_success(array(
@@ -203,6 +214,7 @@ function wpiko_chatbot_setup_wizard_section()
     $tone = get_option('wpiko_chatbot_responses_assistant_tone', 'friendly');
     $floating_enabled = get_option('wpiko_chatbot_enable_floating', null);
     $show_floating_default = $floating_enabled === null || (bool) $floating_enabled;
+    $remember_conversations = wpiko_chatbot_get_conversation_memory() !== 'tab';
     $tones = array(
         'friendly' => __('Friendly', 'wpiko-chatbot'),
         'professional' => __('Professional', 'wpiko-chatbot'),
@@ -351,6 +363,30 @@ function wpiko_chatbot_setup_wizard_section()
                         <span class="wpiko-chatbot-settings-switch__label"><?php esc_html_e('Show the chatbot on every page', 'wpiko-chatbot'); ?></span>
                     </label>
                     <p class="wpiko-chatbot-settings-field-description" id="wpiko-wizard-floating-description"><?php esc_html_e('Adds a chat button to the corner of your site. You can exclude pages or use the [wpiko_chatbot] shortcode instead later.', 'wpiko-chatbot'); ?></p>
+                </div>
+            </div>
+
+            <div class="wpiko-chatbot-settings-field-row wpiko-wizard-visibility">
+                <div class="wpiko-chatbot-settings-field-label"><?php esc_html_e('Conversation memory', 'wpiko-chatbot'); ?></div>
+                <div class="wpiko-chatbot-settings-field-control">
+                    <label class="wpiko-chatbot-settings-switch" for="wpiko-wizard-remember-conversations">
+                        <input type="checkbox" role="switch" id="wpiko-wizard-remember-conversations" aria-describedby="wpiko-wizard-remember-description" <?php checked($remember_conversations); ?>>
+                        <span class="wpiko-chatbot-settings-switch__track" aria-hidden="true"></span>
+                        <span class="wpiko-chatbot-settings-switch__label"><?php esc_html_e('Remember conversations between visits', 'wpiko-chatbot'); ?></span>
+                    </label>
+                    <p class="wpiko-chatbot-settings-field-description" id="wpiko-wizard-remember-description"><?php
+                        $memory_days = $remember_conversations ? wpiko_chatbot_conversation_memory_days() : 7;
+                        $memory_length = $memory_days === 1 ? __('24 hours', 'wpiko-chatbot') : sprintf(
+                            /* translators: %d: number of days. */
+                            _n('%d day', '%d days', $memory_days, 'wpiko-chatbot'),
+                            $memory_days
+                        );
+                        printf(
+                            /* translators: %s: how long, for example "7 days". */
+                            esc_html__('Visitors can close the browser and continue the same chat later, for %s after their last message. They can start a new chat at any time. Turn off to start a new chat each time the browser tab is closed.', 'wpiko-chatbot'),
+                            esc_html($memory_length)
+                        );
+                        ?></p>
                 </div>
             </div>
 

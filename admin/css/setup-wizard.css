@@ -74,6 +74,7 @@
 .wpiko-wizard .wpiko-wizard-chat-input { display: flex; gap: 8px; padding: 12px; background: var(--wpiko-ui-surface); }
 .wpiko-wizard .wpiko-wizard-chat-input input { flex: 1; min-width: 0; max-width: none; }
 .wpiko-wizard .wpiko-wizard-visibility { padding: 0; border-bottom: 0; }
+.wpiko-wizard .wpiko-wizard-visibility + .wpiko-wizard-visibility { margin-top: 20px; }
 @container chatbot-wizard (max-width: 620px) {
     .wpiko-wizard .wpiko-wizard-progress { grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .wpiko-wizard .wpiko-wizard-progress li { border-right: 0; padding-right: 0; }

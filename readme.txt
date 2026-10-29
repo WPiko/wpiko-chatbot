@@ -162,6 +162,13 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 == Changelog ==
 
 = 2.1.3 =
+* Feature: New Conversation Memory setting (Chat Widget → Messages). Choose whether visitors' conversations are kept only while the browser tab is open, as before, or across visits for 24 hours, 7 days or 30 days after the last message. Remembered conversations are shared by every tab of the site, start fresh when the visitor uses Clear Chat, and are removed from the browser when someone logs in or out. The setup wizard asks too. New sites remember conversations for 7 days; existing sites keep the current behaviour until you change it.
+* Fix: Team members' messages no longer show "&amp;" or a visible "<br>" after the visitor moves to another page.
+* Improve: The chat menu option "Clear Chat" is now "Start New Chat", with a new chat icon instead of a bin. Sites that kept the default text get the new text automatically; text you changed is kept.
+* Security: New Topic focus setting (AI & Training → AI Settings → Model & Knowledge → System instructions). With "Only questions about this website" the chatbot answers questions about your website and closely related topics, and politely declines anything else, so visitors can't use it, and your OpenAI credit, as a free general assistant. This is the default for new and existing sites; choose "Any question" for the previous behaviour, or describe extra topics in your instructions.
+* Developer: New `wpiko_chatbot_topic_focus_instructions` filter to change or remove the topic rule.
+* Improve: When OpenAI no longer has the earlier part of a conversation (it keeps it for 30 days), the chatbot now continues with the recent messages as context instead of showing an error.
+* Developer: New `wpiko_chatbot_conversation_memory_days` filter (0 = only while the tab is open, at most 30) and `window.wpikoChatbotStore` for reading and writing the visitor's conversation in the browser.
 * Feature: Added GPT-6.1 Terra to AI Configuration with supported reasoning efforts, file search, and model details including context size and token pricing.
 * Update: Scan Website now generates page Q&A with GPT-6.1 Terra using Medium reasoning and Medium verbosity, including when processing large pages in chunks.
 * Fix: An unknown or unavailable admin screen, such as an old link to a WPiko AI Chatbot Pro screen on a site without Pro, now opens the Dashboard instead of an empty page.
@@ -173,7 +180,7 @@ Older releases: `changelog.txt`.
 == Upgrade Notice ==
 
 = 2.1.3 =
-Fixes an empty admin page when opening an unknown or unavailable screen. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
+Adds the Conversation Memory setting, so conversations can continue across visits. Fixes an empty admin page when opening an unknown or unavailable screen. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
 
 == External Services ==
 

@@ -31,6 +31,12 @@ The existing Pro order-lookup suite can be run separately from the plugins direc
 php -d disable_functions=curl_init,curl_setopt,curl_exec,curl_error,curl_getinfo,curl_close wpiko-chatbot-pro/tests/controlled-order-lookup.php
 ```
 
+The Pro takeover auto-release check runs from the Pro plugin directory with
+`php tests/takeover-auto-release.php` (no WordPress needed). On the local site,
+`/wp-content/plugins/wpiko-chatbot-pro/tests/takeover-auto-release-live.php`
+(as an admin) runs it against the real tables with two test conversations and
+removes them afterwards.
+
 Exclude development tests from public release ZIPs.
 
 
@@ -62,3 +68,41 @@ real `admin/templates/admin-wrapper.php` with stubbed screens and checks that an
 unknown or unavailable tab opens the Dashboard, and that add-on screens printed
 through the `wpiko_chatbot_admin_tab_content` filter appear once, without the
 Dashboard. It needs no WordPress install and makes no network calls.
+
+
+## Conversation memory
+
+Run `php tests/conversation-memory.php` from the plugin directory. It checks the
+Conversation Memory choices and defaults (tab only for existing sites, 7 days
+for new ones), the 30-day cap on the filter, the data passed to the chat script
+(including the account marker that clears remembered chats on log in/out), how
+an expired `previous_response_id` error from OpenAI is recognised, and the
+recovery request built from the recent messages. It needs no WordPress install
+and makes no network calls.
+
+`tests/history-recovery-live.php` checks the recovery against the real OpenAI
+API on the local site. Open it as an admin at
+`/wp-content/plugins/wpiko-chatbot/tests/history-recovery-live.php`. It first
+checks, for a guest and for the logged-in admin, that the server keeps the link
+between the browser and its conversation for 7 days (across visits) or 1 day
+(tab only) and that another account cannot continue it (no OpenAI requests;
+needs Pro's controlled order lookup). Then it sends one
+normal and one streaming request that continue from a response ID OpenAI does
+not have, expects both answers to use the earlier messages, and removes its test
+conversations. It refuses to run for non-admins and on hosts other than
+`.local`, `.test` or `.localhost`.
+
+
+## Topic focus
+
+Run `php tests/topic-focus.php` from the plugin directory. It checks that the
+"Only questions about this website" rule is sent by default (also without
+knowledge files), that "Any question" sends no rule, that the owner's specific
+instructions are still sent, the main template wording and the
+`wpiko_chatbot_topic_focus_instructions` filter. No WordPress or network needed.
+
+`tests/topic-focus-live.php` sends real questions through the local site, with
+`?mode=website` or `?mode=any` and `&part=1` or `&part=2` (five questions each),
+and prints the answers for review. Open the links one at a time, as an admin on
+a `.local`, `.test` or `.localhost` site. It restores the setting and removes
+its test conversations.

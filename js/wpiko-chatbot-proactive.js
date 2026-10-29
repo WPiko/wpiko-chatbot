@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function hasExistingConversation() {
+        if (window.wpikoChatbotStore) {
+            return !!window.wpikoChatbotStore.get('wpiko_chatbot_thread_id');
+        }
         return !!sessionStorage.getItem('wpiko_chatbot_thread_id');
     }
 

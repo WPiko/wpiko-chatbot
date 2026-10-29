@@ -15,7 +15,7 @@ function wpiko_chatbot_menu_section() {
         update_option('wpiko_chatbot_enable_transcript_download', isset($_POST['enable_transcript_download']) ? '1' : '0');
 
         // Save customizable menu text
-        update_option('wpiko_chatbot_menu_clear_chat', sanitize_text_field(wp_unslash($_POST['menu_clear_chat'] ?? 'Clear Chat')));
+        update_option('wpiko_chatbot_menu_clear_chat', sanitize_text_field(wp_unslash($_POST['menu_clear_chat'] ?? 'Start New Chat')));
         update_option('wpiko_chatbot_menu_sound_off', sanitize_text_field(wp_unslash($_POST['menu_sound_off'] ?? 'Turn Sound Off')));
         update_option('wpiko_chatbot_menu_sound_on', sanitize_text_field(wp_unslash($_POST['menu_sound_on'] ?? 'Turn Sound On')));
         update_option('wpiko_chatbot_menu_download_transcript', sanitize_text_field(wp_unslash($_POST['menu_download_transcript'] ?? 'Download Transcript')));
@@ -27,7 +27,7 @@ function wpiko_chatbot_menu_section() {
     $enable_transcript_download = get_option('wpiko_chatbot_enable_transcript_download', '1');
 
     // Get customizable menu text
-    $menu_clear_chat = get_option('wpiko_chatbot_menu_clear_chat', 'Clear Chat');
+    $menu_clear_chat = get_option('wpiko_chatbot_menu_clear_chat', 'Start New Chat');
     $menu_sound_off = get_option('wpiko_chatbot_menu_sound_off', 'Turn Sound Off');
     $menu_sound_on = get_option('wpiko_chatbot_menu_sound_on', 'Turn Sound On');
     $menu_download_transcript = get_option('wpiko_chatbot_menu_download_transcript', 'Download Transcript');
@@ -75,10 +75,10 @@ function wpiko_chatbot_menu_section() {
                 <div class="wpiko-chatbot-settings-disclosure-content">
                     <p class="wpiko-chatbot-settings-field-description">Customize the text displayed in the chatbot menu.</p>
                     <div class="wpiko-chatbot-settings-field-row">
-                        <label class="wpiko-chatbot-settings-field-label" for="menu_clear_chat">Clear chat text</label>
+                        <label class="wpiko-chatbot-settings-field-label" for="menu_clear_chat">New chat text</label>
                         <div class="wpiko-chatbot-settings-field-control">
                             <input type="text" name="menu_clear_chat" id="menu_clear_chat" value="<?php echo esc_attr($menu_clear_chat); ?>" aria-describedby="menu_clear_chat-description">
-                            <p class="wpiko-chatbot-settings-field-description" id="menu_clear_chat-description">Default: Clear Chat</p>
+                            <p class="wpiko-chatbot-settings-field-description" id="menu_clear_chat-description">Default: Start New Chat</p>
                         </div>
                     </div>
                     <div class="wpiko-chatbot-settings-field-row">

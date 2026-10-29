@@ -136,6 +136,31 @@ function wpiko_chatbot_conversation_memory_script_data($data)
 add_filter('wpiko_chatbot_frontend_script_data', 'wpiko_chatbot_conversation_memory_script_data');
 
 /**
+ * The chat menu option that clears the conversation is called "Start New Chat"
+ * since 2.1.3 (it was "Clear Chat"). Sites that kept the old default text get
+ * the new one once; text the owner changed is left alone. ("Start new chat"
+ * was only used by development builds of 2.1.3.)
+ *
+ * @return void
+ */
+function wpiko_chatbot_migrate_new_chat_label()
+{
+    if (get_option('wpiko_chatbot_new_chat_label_version', '') === '2.1.3') {
+        return;
+    }
+
+    $label = get_option('wpiko_chatbot_menu_clear_chat', false);
+    if (is_string($label) && in_array(strtolower(trim($label)), array('clear chat', 'start new chat'), true)) {
+        update_option('wpiko_chatbot_menu_clear_chat', 'Start New Chat');
+    }
+
+    update_option('wpiko_chatbot_new_chat_label_version', '2.1.3');
+    delete_option('wpiko_chatbot_new_chat_label_migrated');
+}
+// After the cache manager is set up (init, 10), so the change also clears page caches.
+add_action('init', 'wpiko_chatbot_migrate_new_chat_label', 20);
+
+/**
  * Whether OpenAI rejected the request because the earlier response it should
  * continue from no longer exists (expired or deleted).
  *

@@ -168,6 +168,9 @@
     max-width: 100%;
 }
 .ai-configuration-section .website-specialization-field { grid-column: 1 / -1; }
+.ai-configuration-section .topic-focus-field { grid-column: 1 / -1; }
+.ai-configuration-section .topic-focus-field select { max-width: 420px; }
+.ai-configuration-section .topic-focus-field .wpiko-chatbot-settings-field-description { margin: 0; }
 .ai-configuration-section .form-table {
     margin: 0;
     background: transparent;

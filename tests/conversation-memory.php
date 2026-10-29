@@ -14,6 +14,9 @@ $user_id = 0;
 $history_rows = array();
 function get_option($key, $default = false) { return array_key_exists($key, $GLOBALS['options']) ? $GLOBALS['options'][$key] : $default; }
 function add_filter($name, $fn, $priority = 10) { $GLOBALS['filters'][$name][] = $fn; }
+function add_action(...$args) {}
+function update_option($key, $value) { $GLOBALS['options'][$key] = $value; return true; }
+function delete_option($key) { unset($GLOBALS['options'][$key]); return true; }
 function apply_filters($name, $value, ...$args) {
     foreach ($GLOBALS['filters'][$name] ?? array() as $fn) { $value = $fn($value, ...$args); }
     return $value;
@@ -119,6 +122,21 @@ $history = wpiko_chatbot_get_recent_history_text('resp_conv');
 check('Long history stays within 6000 characters', mb_strlen($history) <= 6000 + 20, true);
 check('Long messages are clipped', strpos($history, '…') !== false, true);
 check('Most recent earlier message is kept', strpos($history, 'Message 39') !== false, true);
+
+// "Clear Chat" menu text becomes "Start New Chat" once, unless the owner changed it.
+$migrate = function ($stored) {
+    $GLOBALS['options'] = $stored === null ? array() : array('wpiko_chatbot_menu_clear_chat' => $stored);
+    wpiko_chatbot_migrate_new_chat_label();
+    return $GLOBALS['options']['wpiko_chatbot_menu_clear_chat'] ?? null;
+};
+check('Old default "Clear Chat" becomes "Start New Chat"', $migrate('Clear Chat'), 'Start New Chat');
+check('Old default with other spacing or case is updated too', $migrate(' clear chat '), 'Start New Chat');
+check('"Start new chat" from development builds becomes "Start New Chat"', $migrate('Start new chat'), 'Start New Chat');
+check('Text the owner changed is kept', $migrate('Neuer Chat'), 'Neuer Chat');
+check('Sites that never saved the text use the new default', $migrate(null), null);
+$options = array('wpiko_chatbot_menu_clear_chat' => 'Clear Chat', 'wpiko_chatbot_new_chat_label_version' => '2.1.3');
+wpiko_chatbot_migrate_new_chat_label();
+check('Runs only once: "Clear Chat" chosen again later is kept', $options['wpiko_chatbot_menu_clear_chat'], 'Clear Chat');
 
 echo $failures ? "\n$failures check(s) failed\n" : "\nAll checks passed\n";
 exit($failures ? 1 : 0);

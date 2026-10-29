@@ -8,23 +8,27 @@ function wpiko_chatbot_private_orders_retired() {
     return (bool) get_option('wpiko_chatbot_private_orders_retired', false);
 }
 
-function wpiko_chatbot_chat_browser_token() {
+function wpiko_chatbot_chat_browser_token($refresh = false) {
     static $token = null;
-    if ($token !== null) {
-        return $token;
-    }
+    static $refreshed = false;
     $cookie = isset($_COOKIE['wpiko_chat_session']) ? (string) $_COOKIE['wpiko_chat_session'] : '';
-    $token = preg_match('/^[a-zA-Z0-9]{48}$/D', $cookie) ? $cookie : wp_generate_password(48, false, false);
-    if ($cookie !== $token && !headers_sent()) {
+    if ($token === null) {
+        $token = preg_match('/^[a-zA-Z0-9]{48}$/D', $cookie) ? $cookie : wp_generate_password(48, false, false);
+    }
+    // A new token is always sent. An existing one is renewed on chat messages when
+    // conversations are remembered across visits, so it outlives the conversation.
+    if (($cookie !== $token || ($refresh && !$refreshed)) && !headers_sent()) {
         // Positional arguments retain compatibility with PHP 7.0.
-        setcookie('wpiko_chat_session', $token, time() + 30 * DAY_IN_SECONDS, '/', '', is_ssl(), true);
+        setcookie('wpiko_chat_session', $token, time() + WPIKO_CHATBOT_MAX_MEMORY_DAYS * DAY_IN_SECONDS, '/', '', is_ssl(), true);
+        $_COOKIE['wpiko_chat_session'] = $token;
+        $refreshed = true;
     }
     return $token;
 }
 
 function wpiko_chatbot_prepare_private_chat() {
     if (wpiko_chatbot_private_orders_retired()) {
-        wpiko_chatbot_chat_browser_token();
+        wpiko_chatbot_chat_browser_token(wpiko_chatbot_conversation_memory_days() > 0);
     }
 }
 add_action('wpiko_chatbot_before_chat_request', 'wpiko_chatbot_prepare_private_chat');
@@ -55,7 +59,7 @@ function wpiko_chatbot_bind_chat_session($conversation_id) {
     if (!is_array($state)) {
         // Never import legacy context or context belonging to another browser/account.
         $conversation_id = 'resp_' . wp_generate_password(32, false, false);
-        set_transient(wpiko_chatbot_chat_state_key($conversation_id), array('response_id' => null), DAY_IN_SECONDS);
+        set_transient(wpiko_chatbot_chat_state_key($conversation_id), array('response_id' => null), wpiko_chatbot_chat_state_lifetime());
     }
     return $conversation_id;
 }
@@ -86,7 +90,7 @@ function wpiko_chatbot_prepare_response_tools($body, $conversation_id) {
 
 function wpiko_chatbot_record_private_response($conversation_id, $response_id) {
     if (wpiko_chatbot_private_orders_retired() && $response_id) {
-        set_transient(wpiko_chatbot_chat_state_key($conversation_id), array('response_id' => $response_id), DAY_IN_SECONDS);
+        set_transient(wpiko_chatbot_chat_state_key($conversation_id), array('response_id' => $response_id), wpiko_chatbot_chat_state_lifetime());
     }
 }
 

@@ -119,6 +119,9 @@ class WPiko_Chatbot_Cache_Manager
             // Questions
             'wpiko_chatbot_questions',
 
+            // Conversation memory (the chat script reads it from the page)
+            'wpiko_chatbot_conversation_memory',
+
             // Pro plugin options (if active)
             'wpiko_chatbot_enable_email_capture',
             'wpiko_chatbot_enable_contact_form',
