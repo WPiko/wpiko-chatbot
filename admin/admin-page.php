@@ -473,7 +473,7 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
     wp_enqueue_script('wpiko-chatbot-dashboard-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/dashboard.js', array('jquery'), $dashboard_script_version, true);
 
     wp_enqueue_script('wpiko-chatbot-responses-api-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/responses-api.js', array('jquery', 'wpiko-chatbot-admin-notices'), $responses_script_version, true);
-    wp_enqueue_script('wpiko-chatbot-models-info-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/models-info.js', array('jquery'), $version, true);
+    wp_enqueue_script('wpiko-chatbot-models-info-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/models-info.js', array('jquery'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/models-info.js') ?: $version, true);
 
     wp_localize_script('wpiko-chatbot-responses-api-js', 'wpikoChatbotAdmin', array(
         'ajax_url' => admin_url('admin-ajax.php'),

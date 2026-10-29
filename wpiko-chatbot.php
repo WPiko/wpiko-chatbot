@@ -3,7 +3,7 @@
  * Plugin Name: WPiko AI Chatbot – ChatGPT Assistant & Customer Support
  * Plugin URI: https://wpiko.com/chatbot
  * Description: AI chatbot powered by your own OpenAI account. Learns your pages in minutes and answers visitors 24/7. No monthly subscription.
- * Version: 2.1.2
+ * Version: 2.1.3
  * Requires at least: 6.0
  * Tested up to: 7.1
  * Requires PHP: 7.0
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_PLUGIN_FILE', __FILE__);
 define('WPIKO_CHATBOT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPIKO_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPIKO_CHATBOT_VERSION', '2.1.2');
+define('WPIKO_CHATBOT_VERSION', '2.1.3');
 define('WPIKO_CHATBOT_PRICING_URL', 'https://wpiko.com/chatbot-pricing/');
 
 // Ensures that the default options is set

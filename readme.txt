@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -161,39 +161,19 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 == Changelog ==
 
-= 2.1.2 =
-* Improve: The plugin is now called "WPiko AI Chatbot" everywhere (admin menu, screens, notices and messages), and its name and description on the Plugins screen match the WordPress.org listing.
-* Improve: Redesigned the plugin header, navigation, dashboard, settings pages, Conversations and setup wizard with consistent cards, controls and responsive layouts.
-* Developer: Consolidated admin colors and settings controls into shared CSS and removed unused legacy styles.
-* Fix: Updated downloaded transcripts to match the new styling and corrected oversized emoji in frontend transcript downloads.
-* Improve: Centered the Contact User dialog, aligned its toolbar actions and made conversation action buttons consistent.
-* Improve: Redesigned the Train AI popups (File Management, plus Pro's Scan Website, Q&A Builder and WooCommerce) as one consistent window with a header, scrolling content and footer actions. They fit the screen instead of covering the whole page, open full-screen on phones, and use the new admin styling.
-* Improve: The popups work with the keyboard and screen readers: focus moves into the window and stays there, Escape closes it, and focus returns to the button that opened it.
-* Improve: Closing a popup with unsaved changes now asks first, and the page warns before you leave it.
-* Feature: File Management has a drag-and-drop upload area, and the file list shows file-type icons, sizes, upload dates and a file count.
-* Improve: Deleting a knowledge file asks for confirmation in a styled dialog instead of the browser prompt. Empty lists explain what to do next instead of showing "Disabled".
-* Fix: Pressing Enter in a popup field no longer submits the AI Settings form behind it.
-* Fix: Knowledge file names are now escaped in the file lists.
-* Developer: New `wpiko_chatbot_render_modal()` helper and `wpikoModal` JavaScript API (open, close, load, setDirty, setGuard, confirm) for admin popups.
-* Improve: AI Configuration, Quick learn and File Management describe the updated Pro Scan Website: pages become AI-written Q&A, while posts and docs are added as clean Markdown.
-* Improve: Quick learn no longer lists the WooCommerce Shop page. WooCommerce builds it from the product list, so it has no text to learn from (Cart, Checkout and My account were already hidden).
-* Improve: Downloading a chat transcript no longer makes an extra server request that always failed.
-* Improve: Removed debug messages from the browser console on the chatbot and admin screens, and the model debug commands from AI Configuration.
-* Developer: Removed unused code: old link and model helper aliases, the legacy transcript generator and file writer, unused error-message saving, a duplicate database upgrade check, the old instructions combiner, and unused popup loaders and CSS.
-* Improve: Recent activity on the Dashboard: each conversation opens directly in Conversations, shows its number of messages and the exact time on hover, marks conversations that ended in an error, shows when a contact left an email, and shows where guests are chatting from. The empty state links to your site so you can try the chatbot.
-* Fix: The Conversations inbox showed wrong "x ago" times when your computer's timezone differed from the site's timezone.
-* Improve: Redesigned Configuration status on the Dashboard. A progress bar shows how many of the four essentials are done: OpenAI connection (including credit and access problems), AI model, knowledge base (what the chatbot can answer from, or a warning when it is empty) and whether the chatbot is visible on the site. Optional features are compact On/Off chips, and every row links to its setting.
-* Developer: New `wpiko_chatbot_dashboard_features` filter for add-ons to list their features on the Dashboard. Rows added through the `wpiko_chatbot_dashboard_config_status` action still appear.
-* Improve: The Conversations inbox has a compact pager (previous, "Page X of Y" with a page picker, next) that always fits on one line, however many pages there are.
-* Improve: Download emails shows how many addresses were collected, how many are new in the last 30 days and when the last one arrived. Exports can be limited to contacts active in the last 7, 30 or 90 days, and the CSV now includes name, number of conversations and first and last contact. Values that could run as spreadsheet formulas are neutralised.
-* Compatibility: If WPiko AI Chatbot is updated before WPiko AI Chatbot Pro, Pro's training popups keep working in the new design, and a notice asks you to update Pro to 2.1.2.
+= 2.1.3 =
+* Feature: Added GPT-6.1 Terra to AI Configuration with supported reasoning efforts, file search, and model details including context size and token pricing.
+* Update: Scan Website now generates page Q&A with GPT-6.1 Terra using Medium reasoning and Medium verbosity, including when processing large pages in chunks.
+* Fix: An unknown or unavailable admin screen, such as an old link to a WPiko AI Chatbot Pro screen on a site without Pro, now opens the Dashboard instead of an empty page.
+* Fix: Removed the DOMPurify source-map reference that caused a "404 Not Found" message for purify.min.js.map in browser developer tools.
+* Developer: `wpiko_chatbot_admin_tab_content` now counts a screen as printed only when a callback returns `true`. Callbacks should return the tab ID unchanged for screens they don't handle.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.2 =
-Redesigned admin interface and Train AI popups, and improved transcript downloads. If you use WPiko AI Chatbot Pro, update both plugins to 2.1.2 together.
+= 2.1.3 =
+Fixes an empty admin page when opening an unknown or unavailable screen. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
 
 == External Services ==
 

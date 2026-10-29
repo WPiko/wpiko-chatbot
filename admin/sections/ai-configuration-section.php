@@ -398,6 +398,7 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
             var modelConfigs = {
                 'gpt-6-astra': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-6.1-sol': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
+                'gpt-6.1-terra': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-6-sol': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-6-luna': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
                 'gpt-5.2': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },

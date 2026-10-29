@@ -121,8 +121,8 @@ function wpiko_chatbot_get_ai_feature_config($feature)
             'max_retries' => 2,
         ),
         'qa_generation' => array(
-            'model' => 'gpt-6.1-sol',
-            'reasoning_effort' => 'low',
+            'model' => 'gpt-6.1-terra',
+            'reasoning_effort' => 'medium',
             'verbosity' => 'medium',
             // Includes both visible output and reasoning tokens in the Responses API.
             'max_output_tokens' => 6000,

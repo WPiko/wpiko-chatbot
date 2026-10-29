@@ -68,12 +68,13 @@ $wpiko_active_tab = isset($wpiko_active_tab) ? $wpiko_active_tab : 'dashboard';
                     wpiko_chatbot_debug_log_section();
                     break;
                 default:
-                    // Allow other plugins to handle their own tabs
-                    $wpiko_tab_handled = false;
+                    // Let add-ons print their own tabs. The filter starts with the
+                    // tab ID, and a callback returns true once it has printed the tab.
                     $wpiko_tab_handled = apply_filters('wpiko_chatbot_admin_tab_content', $wpiko_active_tab);
-                    
-                    // If no plugin handled this tab, default to dashboard
-                    if (!$wpiko_tab_handled) {
+
+                    // Only true means a callback printed the tab. Anything else,
+                    // including the unchanged tab ID, falls back to the Dashboard.
+                    if ($wpiko_tab_handled !== true) {
                         wpiko_chatbot_dashboard_section();
                     }
                     break;

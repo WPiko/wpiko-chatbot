@@ -2,6 +2,7 @@
  * WPiko AI Chatbot - Models Information Handler
  * Displays detailed model information when users select models in the Responses API section
  * GPT-6 family details checked against OpenAI Models documentation on September 30, 2026
+ * GPT-6.1 Terra details checked against OpenAI Models and Pricing documentation on October 28, 2026
  */
 
 jQuery(document).ready(function ($) {
@@ -27,6 +28,16 @@ jQuery(document).ready(function ($) {
             contextWindow: '1,050,000',
             maxOutputTokens: '128,000',
             cost: '$2.00 / $10.00'
+        },
+        'gpt-6.1-terra': {
+            displayName: 'GPT-6.1 Terra',
+            description: 'Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing',
+            reasoning: null,
+            intelligence: null,
+            speed: null,
+            contextWindow: '1,050,000',
+            maxOutputTokens: '128,000',
+            cost: '$1.00 / $5.00'
         },
         'gpt-6-sol': {
             displayName: 'GPT-6 Sol',

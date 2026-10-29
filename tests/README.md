@@ -53,3 +53,12 @@ This requires PHP `pcntl`. It creates and removes a uniquely named test table,
 checks 240 reservations through 24 independent MySQL connections against a cap
 of 25, verifies expiry, and checks that missing storage blocks requests. It does
 not change site settings or conversations and does not call OpenAI.
+
+
+## Admin screen fallback test
+
+Run `php tests/admin-tab-content.php` from the plugin directory. It renders the
+real `admin/templates/admin-wrapper.php` with stubbed screens and checks that an
+unknown or unavailable tab opens the Dashboard, and that add-on screens printed
+through the `wpiko_chatbot_admin_tab_content` filter appear once, without the
+Dashboard. It needs no WordPress install and makes no network calls.
