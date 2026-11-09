@@ -148,6 +148,12 @@ function wpiko_chatbot_api_key_section() {
                                     <button type="submit" name="delete_api_key" class="button wpiko-chatbot-settings-danger" onclick="return confirm('<?php echo esc_js(__('Delete the API key? The chatbot will stop answering until a new key is added.', 'wpiko-chatbot')); ?>');"><span class="dashicons dashicons-trash" aria-hidden="true"></span><?php esc_html_e('Delete API Key', 'wpiko-chatbot'); ?></button>
                                 </form>
                             </div>
+                            <p class="wpiko-chatbot-settings-field-description wpiko-api-usage-links">
+                                <?php esc_html_e('The Dashboard shows an estimate of what the chatbot costs. Your real spending is on your OpenAI usage page.', 'wpiko-chatbot'); ?>
+                                <a href="<?php echo esc_url(wp_nonce_url('?page=ai-chatbot&tab=dashboard', 'wpiko_chatbot_tab_nonce')); ?>"><?php esc_html_e('AI usage & cost', 'wpiko-chatbot'); ?></a>
+                                &middot;
+                                <a href="<?php echo esc_url(wpiko_chatbot_openai_url('usage')); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('OpenAI usage', 'wpiko-chatbot'); ?><span class="screen-reader-text"> <?php esc_html_e('(opens in a new tab)', 'wpiko-chatbot'); ?></span></a>
+                            </p>
                         </div>
                     </div>
                 <?php endif; ?>

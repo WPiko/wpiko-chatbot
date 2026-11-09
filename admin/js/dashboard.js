@@ -50,6 +50,46 @@ jQuery(function($) {
 
     updateProgress();
 
+    // Recent activity: always the latest five conversations, plus as many more as fit
+    // beside AI usage & cost, so both cards end at the same height. On narrow screens,
+    // where the cards are stacked, only the five are shown.
+    var $overviewRow = $('.dashboard-overview-row');
+    var $activityWidget = $overviewRow.find('.activity-widget');
+    var $usageWidget = $overviewRow.find('.usage-widget');
+
+    function fitActivity() {
+        var $extra = $activityWidget.find('.activity-extra');
+        if (!$extra.length || !$usageWidget.length) {
+            return;
+        }
+        $extra.prop('hidden', true);
+        if (Math.abs($activityWidget.offset().top - $usageWidget.offset().top) > 2) {
+            return;
+        }
+        // Measure both cards at their natural height, not stretched to the row.
+        $overviewRow.addClass('is-measuring');
+        var target = $usageWidget.outerHeight();
+        $extra.each(function() {
+            this.hidden = false;
+            if ($activityWidget.outerHeight() > target) {
+                this.hidden = true;
+                return false;
+            }
+        });
+        $overviewRow.removeClass('is-measuring');
+    }
+
+    if ($activityWidget.length) {
+        var fitTimer = null;
+        fitActivity();
+        $(window).on('load', fitActivity).on('resize', function() {
+            clearTimeout(fitTimer);
+            fitTimer = setTimeout(fitActivity, 150);
+        });
+        // Opening "Tokens and models" makes the cost card taller.
+        $usageWidget.find('details').on('toggle', fitActivity);
+    }
+
     // Refresh the dashboard data every five minutes, but only while the tab is
     // visible: a background tab waits and refreshes when the admin comes back.
     var refreshDue = false;

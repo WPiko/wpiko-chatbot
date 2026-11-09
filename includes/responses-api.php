@@ -90,6 +90,11 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
     // Use conversation_id or generate one
     $conversation_id = wpiko_chatbot_bind_chat_session($conversation_id ?: 'resp_' . wp_generate_password(12, false));
 
+    // Attribute the OpenAI calls below (including retries) to this chat for the cost report.
+    if (function_exists('wpiko_chatbot_usage_begin')) {
+        wpiko_chatbot_usage_begin('chat', $conversation_id);
+    }
+
     if (empty($api_key)) {
         wpiko_chatbot_log('API key is missing', 'error');
         return array('error' => 'The chat is currently offline. Please contact the site administrator.');
@@ -762,6 +767,10 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     $user_id = get_current_user_id();
     $conversation_id = $context['conversation_id'];
 
+    if (function_exists('wpiko_chatbot_usage_begin')) {
+        wpiko_chatbot_usage_begin('chat', $conversation_id);
+    }
+
     wpiko_chatbot_save_message($user_id, $conversation_id, 'user', $message, $user_email);
 
     if (isset($callbacks['start']) && is_callable($callbacks['start'])) {
@@ -968,6 +977,7 @@ function wpiko_chatbot_send_openai_stream_request($headers, $request_body, $call
         'citation_pending' => '',
         'response_id' => null,
         'completed_response' => null,
+        'usage_response' => null,
         'error' => null,
         'error_code' => '',
         'raw_body' => '',
@@ -1009,6 +1019,11 @@ function wpiko_chatbot_send_openai_stream_request($headers, $request_body, $call
     // phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
 
     wpiko_chatbot_flush_openai_stream_parser($stream_state, $callbacks);
+
+    // Streamed calls do not pass through the WordPress HTTP API, so record their usage here.
+    if (!empty($stream_state['usage_response']) && function_exists('wpiko_chatbot_record_usage')) {
+        wpiko_chatbot_record_usage($stream_state['usage_response'], null, isset($request_body['model']) ? (string) $request_body['model'] : '');
+    }
 
     return array($stream_state, $curl_result, $curl_error, $status_code);
 }
@@ -1094,6 +1109,12 @@ function wpiko_chatbot_dispatch_openai_stream_event(&$stream_state, $callbacks)
             call_user_func($callbacks['delta'], $visible_delta);
         }
         return;
+    }
+
+    // Completed, incomplete and failed responses report the tokens that were billed.
+    if (in_array($event_name, array('response.completed', 'response.incomplete', 'response.failed'), true)
+        && isset($payload['response']['usage']) && is_array($payload['response']['usage'])) {
+        $stream_state['usage_response'] = $payload['response'];
     }
 
     if ($event_name === 'response.completed') {

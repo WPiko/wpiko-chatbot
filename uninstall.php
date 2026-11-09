@@ -24,6 +24,7 @@ function wpiko_chatbot_uninstall_site()
 
     // Rate-limit counters are temporary and are always removed on uninstall.
     wp_clear_scheduled_hook('wpiko_chatbot_cleanup_rate_limits');
+    wp_clear_scheduled_hook('wpiko_chatbot_cleanup_usage');
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}wpiko_chatbot_rate_limits");
     delete_option('wpiko_chatbot_rate_limits_schema');
 
@@ -57,6 +58,7 @@ function wpiko_chatbot_uninstall_site()
         $wpdb->prefix . 'wpiko_chatbot_system_instructions',
         $wpdb->prefix . 'wpiko_chatbot_conversation_meta',
         $wpdb->prefix . 'wpiko_chatbot_qa',
+        $wpdb->prefix . 'wpiko_chatbot_usage',
     );
     foreach ($tables as $table) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared

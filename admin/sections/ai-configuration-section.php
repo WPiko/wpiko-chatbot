@@ -264,8 +264,7 @@ function wpiko_chatbot_ai_configuration_section()
 Keep responses under 3 sentences when possible.
 For support inquiries, direct users to contact@example.com."><?php echo esc_textarea($instructions['specific']); ?></textarea>
                                         <p class="wpiko-chatbot-settings-field-description">Enter specific rules and guidelines for how your
-                                            assistant should behave and respond.</p>
-                                        <p class="wpiko-chatbot-settings-field-description"><?php esc_html_e('Knowledge, WooCommerce product and order instructions are managed automatically by the plugin when the relevant features are available. Use this field for additional preferences, such as response length or recommendation style.', 'wpiko-chatbot'); ?></p>
+                                            assistant should behave and respond.</p>                     
                                     </td>
                                 </tr>
                                 <?php

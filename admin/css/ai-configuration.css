@@ -414,3 +414,8 @@
 }
 
 .ai-configuration-section input[type="checkbox"] { border-color: var(--wpiko-ui-line-strong); }
+
+/* Dashboard "Topic focus" chip links here: keep the label visible below the admin bar. */
+#responses_topic_focus {
+    scroll-margin-top: 140px;
+}

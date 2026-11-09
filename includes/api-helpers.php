@@ -221,7 +221,11 @@ function wpiko_chatbot_openai_feature_text_request($api_key, $feature, $instruct
 
     $max_retries = isset($config['max_retries']) ? absint($config['max_retries']) : WPIKO_CHATBOT_OPENAI_MAX_RETRIES;
     $max_retries = max(1, $max_retries);
+    $previous_usage = function_exists('wpiko_chatbot_usage_begin') ? wpiko_chatbot_usage_begin($feature) : null;
     $response = wpiko_chatbot_api_call_with_retry('https://api.openai.com/v1/responses', $args, $max_retries);
+    if (function_exists('wpiko_chatbot_usage_end')) {
+        wpiko_chatbot_usage_end($previous_usage);
+    }
 
     if (is_wp_error($response)) {
         return $response;

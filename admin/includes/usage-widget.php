@@ -284,7 +284,7 @@ function wpiko_chatbot_render_usage_widget($snapshot = null)
                     if ($snapshot['partial'] && wpiko_chatbot_usage_has_earlier_chats($snapshot['since'])) {
                         echo ' ' . esc_html(sprintf(
                             /* translators: %s: date cost tracking started on this site (the day the plugin was updated). */
-                            __('Costs are counted from %s, the day this report was added to your site; earlier chats are not included.', 'wpiko-chatbot'),
+                            __('Costs are counted from %s.', 'wpiko-chatbot'),
                             $since_label
                         ));
                     }

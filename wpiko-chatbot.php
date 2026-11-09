@@ -3,7 +3,7 @@
  * Plugin Name: WPiko AI Chatbot – ChatGPT Assistant & Customer Support
  * Plugin URI: https://wpiko.com/chatbot
  * Description: AI chatbot powered by your own OpenAI account. Learns your pages in minutes and answers visitors 24/7. No monthly subscription.
- * Version: 2.1.3
+ * Version: 2.1.4
  * Requires at least: 6.0
  * Tested up to: 7.1
  * Requires PHP: 7.0
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_PLUGIN_FILE', __FILE__);
 define('WPIKO_CHATBOT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPIKO_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WPIKO_CHATBOT_VERSION', '2.1.3');
+define('WPIKO_CHATBOT_VERSION', '2.1.4');
 define('WPIKO_CHATBOT_PRICING_URL', 'https://wpiko.com/chatbot-pricing/');
 
 // Ensures that the default options is set
@@ -144,7 +144,7 @@ function wpiko_chatbot_enqueue_scripts()
     wp_enqueue_script('wpiko-chatbot-dompurify', WPIKO_CHATBOT_PLUGIN_URL . 'js/vendor/dompurify/purify.min.js', array(), '3.4.16', true);
     wp_enqueue_script('wpiko-chatbot-message-safety', WPIKO_CHATBOT_PLUGIN_URL . 'js/message-safety.js', array('wpiko-chatbot-dompurify'), $version, true);
     wp_enqueue_script('wpiko-chatbot-js', WPIKO_CHATBOT_PLUGIN_URL . 'js/wpiko-chatbot.js', array('jquery', 'wpiko-chatbot-message-safety'), $version . '.' . filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'js/wpiko-chatbot.js'), true);
-    wp_enqueue_style('wpiko-chatbot-css', WPIKO_CHATBOT_PLUGIN_URL . 'css/wpiko-chatbot.css', array(), $version);
+    wp_enqueue_style('wpiko-chatbot-css', WPIKO_CHATBOT_PLUGIN_URL . 'css/wpiko-chatbot.css', array(), $version . '.' . filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'css/wpiko-chatbot.css'));
 
     // Proactive greeting behavior (only when enabled alongside the floating chatbot)
     if (get_option('wpiko_chatbot_proactive_enabled', false) && get_option('wpiko_chatbot_enable_floating', false)) {
@@ -167,6 +167,7 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/admin-page.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/plugin-header.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/style-presets.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/deactivation-feedback.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/includes/usage-widget.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/dashboard-section.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/api-key-section.php';
@@ -187,6 +188,7 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'admin/sections/setup-wizard-section.php
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'chatbot-interface.php';
 
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/logging.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/usage-tracking.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/floating-chatbot.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/conversation-memory.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/responses-tools.php';

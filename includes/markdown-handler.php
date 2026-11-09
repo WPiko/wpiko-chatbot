@@ -39,7 +39,8 @@ function wpiko_chatbot_render_message($message, $role) {
     if ($role === 'assistant') {
         // Browsers render emoji entities directly. Decoding rich HTML here would
         // revive escaped tags and break quoted attributes such as contact JSON.
-        return wpiko_chatbot_process_message(nl2br((string) $message));
+        // Tables first: nl2br would split their rows into separate text parts.
+        return wpiko_chatbot_process_message(nl2br(wpiko_chatbot_markdown_tables((string) $message)));
     }
     $message = wpiko_chatbot_process_emoji((string) $message);
     return nl2br(esc_html($message));
@@ -74,6 +75,9 @@ function wpiko_chatbot_replace_message_text($pattern, $callback, $text) {
 // Add markdown
 function wpiko_chatbot_process_markdown($text) {
     return wpiko_chatbot_map_message_text($text, function ($text) {
+        // Tables before inline formatting, so **bold** etc. still work in cells.
+        $text = wpiko_chatbot_markdown_tables($text);
+
         // Convert headers
         $text = preg_replace('/^### (.*?)$/m', '<h3>$1</h3>', $text);
         $text = preg_replace('/^## (.*?)$/m', '<h2>$1</h2>', $text);
@@ -89,6 +93,119 @@ function wpiko_chatbot_process_markdown($text) {
     
         return $text;
     });
+}
+
+/**
+ * Turn Markdown (GitHub-style) tables into HTML tables.
+ *
+ * A table is a header row, a separator row such as |---|:---:| and any
+ * following rows that contain a "|". The HTML is written on one line, so
+ * nl2br() and the browser's "\n to <br>" never add <br> inside the table,
+ * and the line break right after the table is dropped (the table is a block).
+ * Cell text is left as it is: inline Markdown runs afterwards and the whole
+ * reply still goes through wpiko_chatbot_sanitize_message_html().
+ *
+ * @param string $text Reply text with "\n" line breaks.
+ * @return string
+ */
+function wpiko_chatbot_markdown_tables($text) {
+    $text = (string) $text;
+    if (strpos($text, '|') === false || strpos($text, '-') === false) {
+        return $text;
+    }
+
+    $lines = explode("\n", str_replace("\r\n", "\n", $text));
+    $count = count($lines);
+    $output = array();
+
+    for ($i = 0; $i < $count; $i++) {
+        $header = $lines[$i];
+        $aligns = ($i + 1 < $count && strpos($header, '|') !== false)
+            ? wpiko_chatbot_markdown_table_aligns($lines[$i + 1])
+            : null;
+        $header_cells = $aligns ? wpiko_chatbot_markdown_table_cells($header) : array();
+
+        if (!$aligns || count($header_cells) !== count($aligns)) {
+            $output[] = $header;
+            continue;
+        }
+
+        $columns = count($aligns);
+        $rows = array();
+        $j = $i + 2;
+        while ($j < $count && trim($lines[$j]) !== '' && strpos($lines[$j], '|') !== false) {
+            $rows[] = wpiko_chatbot_markdown_table_cells($lines[$j]);
+            $j++;
+        }
+
+        $html = '<div class="wpiko-table-wrap"><table class="wpiko-table"><thead><tr>';
+        foreach ($header_cells as $index => $cell) {
+            $html .= wpiko_chatbot_markdown_table_cell('th', $cell, $aligns[$index]);
+        }
+        $html .= '</tr></thead>';
+        if ($rows) {
+            $html .= '<tbody>';
+            foreach ($rows as $row) {
+                $html .= '<tr>';
+                for ($c = 0; $c < $columns; $c++) {
+                    $html .= wpiko_chatbot_markdown_table_cell('td', isset($row[$c]) ? $row[$c] : '', $aligns[$c]);
+                }
+                $html .= '</tr>';
+            }
+            $html .= '</tbody>';
+        }
+        $html .= '</table></div>';
+
+        // Join the next line to the table instead of starting it with a break.
+        if ($j < $count) {
+            $html .= $lines[$j];
+            $j++;
+        }
+        $output[] = $html;
+        $i = $j - 1;
+    }
+
+    return implode("\n", $output);
+}
+
+/**
+ * Column alignments of a Markdown table separator row, or null when the line
+ * is not one. Values: '', 'left', 'center' or 'right'.
+ */
+function wpiko_chatbot_markdown_table_aligns($line) {
+    $line = trim($line);
+    if (strpos($line, '|') === false || !preg_match('/^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/', $line)) {
+        return null;
+    }
+    $aligns = array();
+    foreach (wpiko_chatbot_markdown_table_cells($line) as $cell) {
+        $left = substr($cell, 0, 1) === ':';
+        $right = substr($cell, -1) === ':';
+        $aligns[] = ($left && $right) ? 'center' : ($right ? 'right' : ($left ? 'left' : ''));
+    }
+    return $aligns;
+}
+
+/**
+ * Split a Markdown table row into trimmed cells. "\|" is a literal pipe.
+ */
+function wpiko_chatbot_markdown_table_cells($line) {
+    $line = trim($line);
+    if (substr($line, 0, 1) === '|') {
+        $line = substr($line, 1);
+    }
+    if (substr($line, -1) === '|' && substr($line, -2) !== '\\|') {
+        $line = substr($line, 0, -1);
+    }
+    $cells = preg_split('/(?<!\\\\)\|/', $line);
+    return array_map(function ($cell) {
+        return trim(str_replace('\\|', '|', $cell));
+    }, $cells);
+}
+
+function wpiko_chatbot_markdown_table_cell($tag, $content, $align) {
+    $class = ($align === 'center' || $align === 'right') ? ' class="align-' . $align . '"' : '';
+    return '<' . $tag . $class . '>' . $content . '</' . $tag . '>';
 }
 
 /**

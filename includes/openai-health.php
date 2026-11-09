@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 /**
  * Useful OpenAI dashboard links.
  *
- * @param string $which One of billing, keys, limits, verification.
+ * @param string $which One of billing, keys, limits, verification, status, usage.
  * @return string URL.
  */
 function wpiko_chatbot_openai_url($which)
@@ -27,6 +27,7 @@ function wpiko_chatbot_openai_url($which)
         'limits' => 'https://platform.openai.com/settings/organization/limits',
         'verification' => 'https://platform.openai.com/settings/organization/general',
         'status' => 'https://status.openai.com/',
+        'usage' => 'https://platform.openai.com/usage',
     );
 
     return isset($urls[$which]) ? $urls[$which] : 'https://platform.openai.com/';
@@ -284,6 +285,7 @@ function wpiko_chatbot_test_openai_connection($api_key, $model = '')
         $request_body['reasoning'] = array('effort' => $effort);
     }
 
+    $previous_usage = function_exists('wpiko_chatbot_usage_begin') ? wpiko_chatbot_usage_begin('connection_test') : null;
     $response = wp_remote_post('https://api.openai.com/v1/responses', array(
         'headers' => array(
             'Authorization' => 'Bearer ' . $api_key,
@@ -292,6 +294,9 @@ function wpiko_chatbot_test_openai_connection($api_key, $model = '')
         'body' => wp_json_encode($request_body),
         'timeout' => 30,
     ));
+    if (function_exists('wpiko_chatbot_usage_end')) {
+        wpiko_chatbot_usage_end($previous_usage);
+    }
 
     if (is_wp_error($response)) {
         $classification = wpiko_chatbot_classify_openai_error(0, null, $response->get_error_message(), $model);

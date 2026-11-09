@@ -146,11 +146,18 @@ function wpiko_chatbot_run_response_tools($http_response, $body, $headers) {
     $body['input'] = $outputs;
     $body['tool_choice'] = 'none';
     unset($body['stream']);
+    $usage_context = function_exists('wpiko_chatbot_usage_context') ? wpiko_chatbot_usage_context() : null;
+    $previous_usage = function_exists('wpiko_chatbot_usage_begin')
+        ? wpiko_chatbot_usage_begin('chat_tools', is_array($usage_context) ? ($usage_context['session_id'] ?? '') : '')
+        : null;
     $final = wpiko_chatbot_api_call_with_retry('https://api.openai.com/v1/responses', array(
         'headers' => $headers,
         'body' => wp_json_encode($body),
         'timeout' => 60,
     ));
+    if (function_exists('wpiko_chatbot_usage_end')) {
+        wpiko_chatbot_usage_end($previous_usage);
+    }
     if (!is_wp_error($final) && wp_remote_retrieve_response_code($final) === 200) {
         $decoded = json_decode(wp_remote_retrieve_body($final), true);
         if (is_array($decoded) && wpiko_chatbot_response_has_function_calls($decoded)) {

@@ -420,6 +420,67 @@
 
 
 
+/* Tables in replies (Markdown tables from the AI). The wrapper scrolls
+   sideways when a table is wider than the chat window. */
+/* The bubble is a flex item: let it shrink to the chat width so a wide
+   table scrolls inside it instead of pushing it past the window. */
+#chatbot-messages .bot-message:has(.wpiko-table-wrap) {
+    min-width: 0;
+}
+
+.bot-message .wpiko-table-wrap {
+    max-width: 100%;
+    margin: 6px 0;
+    overflow-x: auto;
+    border: 1px solid color-mix(in srgb, var(--bot-text-color) 14%, transparent);
+    border-radius: 8px;
+}
+
+.bot-message .wpiko-table {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    font-size: 0.93em;
+    line-height: 1.4;
+    color: var(--bot-text-color);
+    background: transparent;
+}
+
+.bot-message .wpiko-table th,
+.bot-message .wpiko-table td {
+    padding: 6px 8px;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--bot-text-color) 10%, transparent);
+    text-align: left;
+    vertical-align: top;
+    min-width: 72px;
+    background: transparent;
+    color: inherit;
+}
+
+.bot-message .wpiko-table th {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--bot-text-color) 6%, transparent);
+}
+
+.bot-message .wpiko-table th + th,
+.bot-message .wpiko-table td + td {
+    border-left: 1px solid color-mix(in srgb, var(--bot-text-color) 10%, transparent);
+}
+
+.bot-message .wpiko-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.bot-message .wpiko-table .align-center {
+    text-align: center;
+}
+
+.bot-message .wpiko-table .align-right {
+    text-align: right;
+}
+
 /* Error Messages */
 .error-message {
     padding: 10px;
@@ -579,24 +640,18 @@
     max-height: min(220px, 32vh);
     overflow-y: auto;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
+    /* No visible scrollbar: it still scrolls with the wheel, trackpad or
+       touch, and a half-visible last question shows there is more. A
+       scrollbar took width from the right side only (and Safari kept that
+       narrower layout after the entrance animation), so the questions
+       were not centered. */
+    scrollbar-width: none;
 }
 
 #pre-made-questions::-webkit-scrollbar {
-    width: 6px;
-}
-
-#pre-made-questions::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#pre-made-questions::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--chatbot-border-color) 75%, transparent);
-    border-radius: 999px;
-}
-
-#pre-made-questions::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--chatbot-border-color) 95%, transparent);
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 /* Staggered entrance animation */

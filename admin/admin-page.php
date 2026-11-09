@@ -493,6 +493,7 @@ function wpiko_chatbot_admin_enqueue_scripts($hook)
 
     wp_enqueue_script('wpiko-chatbot-files-list-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/files-list.js', array('jquery', 'wpiko-chatbot-admin-notices', 'wpiko-chatbot-modal-handlers'), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/files-list.js') ?: $version, true);
 
+    wp_enqueue_script('wpiko-chatbot-user-limits-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/user-limits.js', array(), filemtime(WPIKO_CHATBOT_PLUGIN_DIR . 'admin/js/user-limits.js') ?: $version, true);
     wp_enqueue_script('wpiko-chatbot-admin-js', WPIKO_CHATBOT_PLUGIN_URL . 'admin/js/admin-script.js', array('jquery', 'wpiko-chatbot-admin-notices'), $admin_script_version, true);
     wp_localize_script('wpiko-chatbot-admin-js', 'wpikoChatbotAdmin', array(
         'ajax_url' => admin_url('admin-ajax.php'),

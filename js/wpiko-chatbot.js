@@ -1329,6 +1329,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return '%%URL' + (urls.length - 1) + '%%' + suffix;
         });
 
+        // Tables (mirrors wpiko_chatbot_markdown_tables()), before inline formatting.
+        out = renderStreamingTables(out);
+
         // Headers (line-based).
         out = out.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
         out = out.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
@@ -1372,6 +1375,77 @@ document.addEventListener('DOMContentLoaded', function () {
         out = out.replace(/<\/(h[1-3])><br>/g, '</$1>');
 
         return window.wpikoChatbotSanitizeMessage(out);
+    }
+
+    // Markdown tables while streaming. Same rules as the PHP version: a header
+    // row, a |---| separator row, then rows containing "|". Written on one line
+    // so the later "\n" to <br> step never lands inside the table, and the line
+    // after the table joins it (the table is a block).
+    function markdownTableCells(line) {
+        let row = line.trim();
+        if (row.charAt(0) === '|') row = row.slice(1);
+        if (row.slice(-1) === '|' && row.slice(-2) !== '\\|') row = row.slice(0, -1);
+        // "\|" is a literal pipe (no regex lookbehind: older Safari lacks it).
+        return row.replace(/\\\|/g, '\u0000').split('|').map(function (cell) {
+            return cell.replace(/\u0000/g, '|').trim();
+        });
+    }
+
+    function markdownTableAligns(line) {
+        const row = (line || '').trim();
+        if (row.indexOf('|') === -1 || !/^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(row)) {
+            return null;
+        }
+        return markdownTableCells(row).map(function (cell) {
+            const left = cell.charAt(0) === ':';
+            const right = cell.slice(-1) === ':';
+            return (left && right) ? 'center' : (right ? 'right' : (left ? 'left' : ''));
+        });
+    }
+
+    function markdownTableCell(tag, content, align) {
+        const cls = (align === 'center' || align === 'right') ? ' class="align-' + align + '"' : '';
+        return '<' + tag + cls + '>' + content + '</' + tag + '>';
+    }
+
+    function renderStreamingTables(text) {
+        if (text.indexOf('|') === -1 || text.indexOf('-') === -1) return text;
+        const lines = text.split('\n');
+        const output = [];
+        for (let i = 0; i < lines.length; i++) {
+            const header = lines[i];
+            const aligns = (i + 1 < lines.length && header.indexOf('|') !== -1) ? markdownTableAligns(lines[i + 1]) : null;
+            const headerCells = aligns ? markdownTableCells(header) : [];
+            if (!aligns || headerCells.length !== aligns.length) {
+                output.push(header);
+                continue;
+            }
+            let html = '<div class="wpiko-table-wrap"><table class="wpiko-table"><thead><tr>';
+            headerCells.forEach(function (cell, index) {
+                html += markdownTableCell('th', cell, aligns[index]);
+            });
+            html += '</tr></thead>';
+            let j = i + 2;
+            let body = '';
+            while (j < lines.length && lines[j].trim() !== '' && lines[j].indexOf('|') !== -1) {
+                const cells = markdownTableCells(lines[j]);
+                body += '<tr>';
+                for (let c = 0; c < aligns.length; c++) {
+                    body += markdownTableCell('td', c < cells.length ? cells[c] : '', aligns[c]);
+                }
+                body += '</tr>';
+                j++;
+            }
+            if (body) html += '<tbody>' + body + '</tbody>';
+            html += '</table></div>';
+            if (j < lines.length) {
+                html += lines[j];
+                j++;
+            }
+            output.push(html);
+            i = j - 1;
+        }
+        return output.join('\n');
     }
 
     function handleSuccessfulResponseData(data) {

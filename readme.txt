@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,7 @@ https://www.youtube.com/watch?v=68E5sxxMli0
 - Pre-made questions and conversation starters
 - Customize every interface text and error message in any language
 - Conversation history with export and translation
+- AI usage & cost on the Dashboard: an estimate of what the chatbot costs per day, month, conversation and feature
 - Per-IP hourly and daily limits to protect your OpenAI budget
 - Loads its scripts only on pages where the chatbot appears
 - Encrypted API key storage
@@ -99,7 +100,7 @@ Almost always your OpenAI account has no credit, or the key was deleted. When yo
 
 = How much does it cost to run the chatbot? =
 
-You pay OpenAI per use. For most small sites that is a few dollars a month. You can choose a cheaper model in AI Configuration and set hourly and daily limits per visitor under User Limits.
+You pay OpenAI per use. For most small sites that is a few dollars a month. The Dashboard shows an estimate of what the chatbot costs (today, the last 7 days, this month and per conversation). You can choose a cheaper model in AI Configuration and set hourly and daily limits per visitor under User Limits.
 
 = How does the chatbot learn about my business? =
 
@@ -149,7 +150,7 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 1. The chatbot on your site, answering visitors from your own pages.
 2. The setup wizard connects your OpenAI account and checks the key and credit for you.
-3. The Dashboard shows what is set up, what needs attention and your latest conversations.
+3. The Dashboard shows this month's AI cost, your latest conversations, what needs attention and what is set up.
 4. Teach the chatbot from your pages and drag-and-drop documents into its knowledge base.
 5. Style presets and full color, avatar and position settings with a live preview.
 6. Conversations: every chat in one inbox, with search, translation, download and email export.
@@ -161,26 +162,23 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 == Changelog ==
 
-= 2.1.3 =
-* Feature: New Conversation Memory setting (Chat Widget → Messages). Choose whether visitors' conversations are kept only while the browser tab is open, as before, or across visits for 24 hours, 7 days or 30 days after the last message. Remembered conversations are shared by every tab of the site, start fresh when the visitor uses Clear Chat, and are removed from the browser when someone logs in or out. The setup wizard asks too. New sites remember conversations for 7 days; existing sites keep the current behaviour until you change it.
-* Fix: Team members' messages no longer show "&amp;" or a visible "<br>" after the visitor moves to another page.
-* Improve: The chat menu option "Clear Chat" is now "Start New Chat", with a new chat icon instead of a bin. Sites that kept the default text get the new text automatically; text you changed is kept.
-* Security: New Topic focus setting (AI & Training → AI Settings → Model & Knowledge → System instructions). With "Only questions about this website" the chatbot answers questions about your website and closely related topics, and politely declines anything else, so visitors can't use it, and your OpenAI credit, as a free general assistant. This is the default for new and existing sites; choose "Any question" for the previous behaviour, or describe extra topics in your instructions.
-* Developer: New `wpiko_chatbot_topic_focus_instructions` filter to change or remove the topic rule.
-* Improve: When OpenAI no longer has the earlier part of a conversation (it keeps it for 30 days), the chatbot now continues with the recent messages as context instead of showing an error.
-* Developer: New `wpiko_chatbot_conversation_memory_days` filter (0 = only while the tab is open, at most 30) and `window.wpikoChatbotStore` for reading and writing the visitor's conversation in the browser.
-* Feature: Added GPT-6.1 Terra to AI Configuration with supported reasoning efforts, file search, and model details including context size and token pricing.
-* Update: Scan Website now generates page Q&A with GPT-6.1 Terra using Medium reasoning and Medium verbosity, including when processing large pages in chunks.
-* Fix: An unknown or unavailable admin screen, such as an old link to a WPiko AI Chatbot Pro screen on a site without Pro, now opens the Dashboard instead of an empty page.
-* Fix: Removed the DOMPurify source-map reference that caused a "404 Not Found" message for purify.min.js.map in browser developer tools.
-* Developer: `wpiko_chatbot_admin_tab_content` now counts a screen as printed only when a callback returns `true`. Callbacks should return the tab ID unchanged for screens they don't handle.
+= 2.1.4 =
+* Feature: New "AI usage & cost" on the Dashboard shows an estimate of what the chatbot costs in OpenAI credit: today, the last 7 days and this month, with a projection for the month and last month's total. It also shows the average cost per conversation and per AI reply, the cost of each feature (chat replies, knowledge search, conversation translations and connection tests, plus order and product lookups, Website scan and contact form writing help when WPiko AI Chatbot Pro is active), token counts and the cost per model. Costs are estimated with OpenAI's list prices; your OpenAI bill is the final amount. Costs are counted from the update to this version.
+* Improve: New Dashboard layout. A fifth card at the top shows this month's AI cost. Recent activity and AI usage & cost sit side by side, and Recent activity shows as many of the latest conversations as fit next to the cost card (at least five). Configuration status runs full width below them, with the essentials and optional features next to each other. Optional features now also show Pre-made questions (how many), Chat memory (how long visitors' chats are remembered: "Tab only", 24 hours, 7 or 30 days) and Topic focus (website only or any question). Until setup is finished, Configuration status stays near the top. The Attention required panel now appears only when something needs action, at the top of the page.
+* Improve: User Limits shows a cost check: what one AI reply cost on average over the last 30 days, and what your daily and site-wide limits mean in money.
+* Improve: AI Settings → API Connection links to the cost estimate and to your OpenAI usage page.
+* Improve: Tables in AI replies are shown as real tables in the chat window, Conversations and downloaded transcripts, instead of rows of "|" characters. Wide tables scroll sideways in the chat window. This also applies to replies saved before the update.
+* Fix: Pre-made questions in the chat window are centered again in every browser, including Safari. Their list no longer shows a scrollbar (it still scrolls with the mouse wheel, trackpad or touch), which had made the right side wider than the left.
+* Fix: After an update, browsers load the new chatbot stylesheet right away instead of a cached copy.
+* Privacy: Usage records contain token counts, the model and the conversation ID, never message text. They are kept for 400 days and are removed with the other plugin data when you choose to delete data on uninstall.
+* Developer: New `wpiko_chatbot_model_prices`, `wpiko_chatbot_file_search_call_price`, `wpiko_chatbot_usage_sources` and `wpiko_chatbot_usage_retention_days` filters and the `wpiko_chatbot_usage_recorded` action.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.3 =
-Adds the Conversation Memory setting, so conversations can continue across visits. Fixes an empty admin page when opening an unknown or unavailable screen. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
+= 2.1.4 =
+Adds AI usage & cost to the Dashboard, so you can see what the chatbot costs in OpenAI credit. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
 
 == External Services ==
 

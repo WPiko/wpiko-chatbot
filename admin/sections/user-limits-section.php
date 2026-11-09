@@ -41,6 +41,13 @@ function wpiko_chatbot_user_limits_section()
     $user_limits_daily = (int) get_option('wpiko_chatbot_user_limits_daily', 100);
     $site_daily = max(1, (int) get_option('wpiko_chatbot_user_limits_site_daily', 1000));
     $user_limits_message = get_option('wpiko_chatbot_user_limits_message', '');
+
+    // What the limits mean in money, based on the average reply cost of the last 30 days.
+    $average_reply_cost = function_exists('wpiko_chatbot_usage_average_reply_cost') ? wpiko_chatbot_usage_average_reply_cost(30) : null;
+    $visitor_daily_cap = 300;
+    if ($user_limits_enabled && $user_limits_daily > 0) {
+        $visitor_daily_cap = min($visitor_daily_cap, $user_limits_daily);
+    }
     $user_limits_message_placeholder = function_exists('wpiko_chatbot_user_limits_default_message')
         ? wpiko_chatbot_user_limits_default_message()
         : 'You have reached the maximum number of messages allowed. Please try again later.';
@@ -102,6 +109,66 @@ function wpiko_chatbot_user_limits_section()
                             Rejected or failed requests may consume capacity. Windows start with the first counted request.</p>
                         <p class="wpiko-chatbot-settings-field-description" id="user-limits-size-description">Chat messages are limited to 16,000 bytes (about 16,000 English characters).
                             AI output is limited to 8,192 tokens per API call, including reasoning.</p>
+                    </div>
+                </div>
+                <?php
+                // What the limits mean in money. The amounts follow the fields as they are changed.
+                $wpiko_cost_locale = isset($GLOBALS['wp_locale']->number_format) ? $GLOBALS['wp_locale']->number_format : array();
+                ?>
+                <div class="wpiko-chatbot-settings-field-row wpiko-cost-check-row">
+                    <div class="wpiko-chatbot-settings-field-label"><?php esc_html_e('Cost check', 'wpiko-chatbot'); ?></div>
+                    <div class="wpiko-chatbot-settings-field-control">
+                        <div class="wpiko-cost-check<?php echo $average_reply_cost === null ? ' is-empty' : ''; ?>" id="wpiko-cost-check"
+                            data-reply-cost="<?php echo esc_attr($average_reply_cost !== null ? sprintf('%.10F', $average_reply_cost) : ''); ?>"
+                            data-decimal="<?php echo esc_attr($wpiko_cost_locale['decimal_point'] ?? '.'); ?>"
+                            data-thousands="<?php echo esc_attr($wpiko_cost_locale['thousands_sep'] ?? ','); ?>">
+                            <div class="wpiko-cost-check__head">
+                                <span class="dashicons dashicons-chart-bar" aria-hidden="true"></span>
+                                <strong><?php esc_html_e('What these limits can cost', 'wpiko-chatbot'); ?></strong>
+                                <span class="wpiko-cost-check__period"><?php esc_html_e('Based on the last 30 days', 'wpiko-chatbot'); ?></span>
+                            </div>
+                            <?php if ($average_reply_cost === null): ?>
+                                <p class="wpiko-cost-check__text"><?php esc_html_e('No AI replies in the last 30 days yet. After the chatbot has answered a few visitors, this shows what one reply costs and what your limits mean in money.', 'wpiko-chatbot'); ?></p>
+                            <?php else: ?>
+                                <dl class="wpiko-cost-check__grid">
+                                    <div class="wpiko-cost-check__item">
+                                        <dt><?php esc_html_e('One AI reply', 'wpiko-chatbot'); ?></dt>
+                                        <dd><?php echo esc_html(wpiko_chatbot_format_usage_cost($average_reply_cost, true)); ?></dd>
+                                        <span class="wpiko-cost-check__meta"><?php esc_html_e('average', 'wpiko-chatbot'); ?></span>
+                                    </div>
+                                    <div class="wpiko-cost-check__item">
+                                        <dt><?php esc_html_e('One visitor, per day', 'wpiko-chatbot'); ?></dt>
+                                        <dd data-cost-for="visitor"><?php echo esc_html(wpiko_chatbot_format_usage_cost($average_reply_cost * $visitor_daily_cap)); ?></dd>
+                                        <span class="wpiko-cost-check__meta">
+                                            <?php
+                                            echo wp_kses(sprintf(
+                                                /* translators: %s: number of requests. */
+                                                __('at most, %s requests', 'wpiko-chatbot'),
+                                                '<span data-requests-for="visitor">' . esc_html(number_format_i18n($visitor_daily_cap)) . '</span>'
+                                            ), array('span' => array('data-requests-for' => true)));
+                                            ?>
+                                        </span>
+                                    </div>
+                                    <div class="wpiko-cost-check__item is-total">
+                                        <dt><?php esc_html_e('Whole site, per day', 'wpiko-chatbot'); ?></dt>
+                                        <dd data-cost-for="site"><?php echo esc_html(wpiko_chatbot_format_usage_cost($average_reply_cost * $site_daily)); ?></dd>
+                                        <span class="wpiko-cost-check__meta">
+                                            <?php
+                                            echo wp_kses(sprintf(
+                                                /* translators: %s: number of requests. */
+                                                __('at most, %s requests', 'wpiko-chatbot'),
+                                                '<span data-requests-for="site">' . esc_html(number_format_i18n($site_daily)) . '</span>'
+                                            ), array('span' => array('data-requests-for' => true)));
+                                            ?>
+                                        </span>
+                                    </div>
+                                </dl>
+                                <p class="wpiko-cost-check__text">
+                                    <?php esc_html_e('Estimated from the average reply cost with OpenAI list prices. A month at the site-wide limit would cost about 30 times the daily amount.', 'wpiko-chatbot'); ?>
+                                    <a href="<?php echo esc_url(wp_nonce_url('?page=ai-chatbot&tab=dashboard', 'wpiko_chatbot_tab_nonce')); ?>"><?php esc_html_e('See AI usage & cost on the Dashboard', 'wpiko-chatbot'); ?></a>
+                                </p>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </section>

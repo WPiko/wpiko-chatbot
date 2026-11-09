@@ -87,7 +87,8 @@ function wpiko_chatbot_dashboard_section() {
              GROUP BY c1.session_id
              ORDER BY MAX(c1.timestamp) DESC
              LIMIT %d",
-            5
+            // Five are always shown; the rest fill the height beside AI usage & cost (dashboard.js).
+            12
         ));
     } else {
         // Default values when table doesn't exist
@@ -217,6 +218,16 @@ function wpiko_chatbot_dashboard_section() {
         )
     );
 
+    // AI usage & cost: one snapshot for the stat card and the widget.
+    $usage_snapshot = function_exists('wpiko_chatbot_get_usage_snapshot') ? wpiko_chatbot_get_usage_snapshot() : null;
+    // Until setup is finished, Configuration status is the most useful panel, so it comes first.
+    $setup_complete = function_exists('wpiko_chatbot_setup_is_complete') ? wpiko_chatbot_setup_is_complete() : $is_configured;
+
+    // Only items with a title are shown; with none, the Attention panel is left out.
+    $attention_items = array_filter((array) $attention_items, function ($item) {
+        return is_array($item) && !empty($item['title']);
+    });
+
     // Format numbers
     $total_conversations = number_format((int)$total_conversations);
     $total_messages = number_format((int)$total_messages);
@@ -255,6 +266,10 @@ function wpiko_chatbot_dashboard_section() {
             </div>
         </div>
 
+        <?php
+        // Each part is buffered and printed below in the page order.
+        ob_start();
+        ?>
         <!-- Quick Stats Grid -->
         <div class="dashboard-stats-grid">
             <?php
@@ -264,6 +279,19 @@ function wpiko_chatbot_dashboard_section() {
                 array('class' => 'users', 'icon' => 'groups', 'label' => __('Unique users', 'wpiko-chatbot'), 'value' => $total_users, 'description' => __('Registered users and guest sessions.', 'wpiko-chatbot')),
                 array('class' => 'today', 'icon' => 'calendar-alt', 'label' => __("Today's conversations", 'wpiko-chatbot'), 'value' => $conversations_today, 'description' => __('Chat sessions with activity today.', 'wpiko-chatbot')),
             );
+            if (is_array($usage_snapshot)) {
+                $stats[] = array(
+                    'class' => 'cost',
+                    'icon' => 'chart-bar',
+                    'label' => __('AI cost this month', 'wpiko-chatbot'),
+                    'value' => wpiko_chatbot_format_usage_cost($usage_snapshot['month']['cost']),
+                    'description' => $usage_snapshot['projected'] !== null
+                        /* translators: %s: projected cost for the month. */
+                        ? sprintf(__('Estimate. On track for about %s.', 'wpiko-chatbot'), wpiko_chatbot_format_usage_cost($usage_snapshot['projected']))
+                        : __('Estimate of your OpenAI cost.', 'wpiko-chatbot'),
+                    'link' => array('url' => '#wpiko-usage', 'label' => __('See details', 'wpiko-chatbot')),
+                );
+            }
             foreach ($stats as $stat):
                 ?>
                 <div class="stat-card stat-<?php echo esc_attr($stat['class']); ?>">
@@ -273,15 +301,19 @@ function wpiko_chatbot_dashboard_section() {
                     </div>
                     <div class="stat-number"><?php echo esc_html($stat['value']); ?></div>
                     <p class="stat-description"><?php echo esc_html($stat['description']); ?></p>
+                    <?php if (!empty($stat['link'])): ?>
+                        <a class="stat-link" href="<?php echo esc_url($stat['link']['url']); ?>"><?php echo esc_html($stat['link']['label']); ?><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></a>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <!-- Main Dashboard Content -->
-        <div class="dashboard-main-content">
-            <div class="dashboard-activity-column">
+        <?php
+        $stats_html = ob_get_clean();
+        ob_start();
+        ?>
                 <!-- Recent Activity -->
-                <div class="dashboard-widget">
+                <div class="dashboard-widget activity-widget">
                     <div class="widget-header">
                         <h2><?php esc_html_e('Recent activity', 'wpiko-chatbot'); ?></h2>
                         <a href="<?php echo esc_url(wp_nonce_url('?page=ai-chatbot&tab=conversations', 'wpiko_chatbot_tab_nonce')); ?>" class="widget-action" aria-label="<?php esc_attr_e('View all conversations', 'wpiko-chatbot'); ?>"><?php esc_html_e('View all', 'wpiko-chatbot'); ?></a>
@@ -289,7 +321,9 @@ function wpiko_chatbot_dashboard_section() {
                     <div class="widget-content">
                         <?php if (!empty($recent_conversations)): ?>
                             <ul class="activity-list">
-                                <?php foreach ($recent_conversations as $conversation):
+                                <?php
+                                $activity_index = 0;
+                                foreach ($recent_conversations as $conversation):
                                     $user_display = __('Guest', 'wpiko-chatbot');
                                     $is_guest = true;
                                     if ($conversation->user_id != 0) {
@@ -316,7 +350,7 @@ function wpiko_chatbot_dashboard_section() {
                                     $show_email = !empty($conversation->user_email) && $user_display !== $conversation->user_email;
                                     $conversation_url = add_query_arg('conversation', rawurlencode($conversation->session_id), wp_nonce_url('?page=ai-chatbot&tab=conversations', 'wpiko_chatbot_tab_nonce'));
                                 ?>
-                                    <li>
+                                    <li<?php echo $activity_index++ >= 5 ? ' class="activity-extra" hidden' : ''; ?>>
                                         <a class="activity-item<?php echo $has_error ? ' has-error' : ''; ?>" href="<?php echo esc_url($conversation_url); ?>">
                                             <span class="activity-avatar">
                                                 <?php echo get_avatar($conversation->user_id, 32, '', ''); ?>
@@ -362,13 +396,17 @@ function wpiko_chatbot_dashboard_section() {
                     </div>
                 </div>
 
-                <!-- Attention Required -->
+                <?php
+                $activity_html = ob_get_clean();
+                ob_start();
+                ?>
+                <!-- Attention Required: only shown when something needs action -->
+                <?php if (!empty($attention_items)): ?>
                 <div class="dashboard-widget attention-widget">
                     <div class="widget-header">
                         <h2><?php esc_html_e('Attention required', 'wpiko-chatbot'); ?></h2>
                     </div>
                     <div class="widget-content">
-                        <?php if (!empty($attention_items)): ?>
                             <div class="attention-list">
                                 <?php
                                 foreach ($attention_items as $attention_item):
@@ -400,18 +438,11 @@ function wpiko_chatbot_dashboard_section() {
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        <?php else: ?>
-                            <div class="attention-empty" role="status">
-                                <span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                                <div>
-                                    <strong><?php esc_html_e('Everything looks good', 'wpiko-chatbot'); ?></strong>
-                                    <p><?php esc_html_e('No configuration problems or chatbot errors were detected in the last 24 hours.', 'wpiko-chatbot'); ?></p>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
-            </div>
+                <?php endif; ?>
+                <?php $attention_html = ob_get_clean(); ?>
+
             <!-- Configuration Status -->
             <?php
             $tab_url = function ($slug) {
@@ -470,6 +501,7 @@ function wpiko_chatbot_dashboard_section() {
             $essentials_total = count($essentials);
             $features = wpiko_chatbot_dashboard_features();
             ?>
+            <?php ob_start(); ?>
             <div class="dashboard-widget configuration-widget">
                 <div class="widget-header setup-header">
                     <div class="setup-heading">
@@ -492,6 +524,8 @@ function wpiko_chatbot_dashboard_section() {
                     </div>
                 </div>
                 <div class="widget-content">
+                    <div class="setup-groups">
+                    <div class="setup-group">
                     <h3 class="setup-group-title"><?php esc_html_e('Essentials', 'wpiko-chatbot'); ?></h3>
                     <ul class="setup-list">
                         <?php foreach ($essentials as $key => $item) : ?>
@@ -507,8 +541,10 @@ function wpiko_chatbot_dashboard_section() {
                             </li>
                         <?php endforeach; ?>
                     </ul>
+                    </div>
 
                     <?php if ($features) : ?>
+                        <div class="setup-group">
                         <h3 class="setup-group-title"><?php esc_html_e('Optional features', 'wpiko-chatbot'); ?></h3>
                         <ul class="feature-chips">
                             <?php foreach ($features as $feature) :
@@ -526,7 +562,7 @@ function wpiko_chatbot_dashboard_section() {
                                 <li>
                                     <a class="feature-chip <?php echo esc_attr($chip_class); ?>" href="<?php echo esc_url($feature['url']); ?>"<?php echo $feature['external'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
                                         <span class="feature-dot" aria-hidden="true"></span>
-                                        <span class="feature-label"><?php echo esc_html($feature['label']); ?></span>
+                                        <span class="feature-label" title="<?php echo esc_attr(!empty($feature['tooltip']) ? $feature['tooltip'] : sprintf('%s: %s', $feature['label'], $chip_state)); ?>"><?php echo esc_html($feature['label']); ?></span>
                                         <span class="feature-state"><?php echo esc_html($chip_state); ?></span>
                                         <?php if ($feature['external']) : ?>
                                             <span class="screen-reader-text"><?php esc_html_e('(opens the WPiko pricing page in a new tab)', 'wpiko-chatbot'); ?></span>
@@ -535,7 +571,9 @@ function wpiko_chatbot_dashboard_section() {
                                 </li>
                             <?php endforeach; ?>
                         </ul>
+                        </div>
                     <?php endif; ?>
+                    </div>
 
                     <?php
                     // Rows added by older add-ons (e.g. WPiko AI Chatbot Pro 2.1.1) through
@@ -550,7 +588,33 @@ function wpiko_chatbot_dashboard_section() {
                     ?>
                 </div>
             </div>
-        </div>
+            <?php
+            $config_html = ob_get_clean();
+
+            // Page order: problems first, then the numbers, then what is happening
+            // (activity and cost side by side), then setup. Until setup is finished,
+            // Configuration status moves up, above the activity row.
+            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Markup buffered from the escaped template above.
+            echo $attention_html;
+            echo $stats_html;
+            if (!$setup_complete) {
+                echo $config_html;
+            }
+            ?>
+            <div class="dashboard-main-content dashboard-overview-row">
+                <?php
+                echo $activity_html;
+                if (function_exists('wpiko_chatbot_render_usage_widget')) {
+                    wpiko_chatbot_render_usage_widget($usage_snapshot);
+                }
+                ?>
+            </div>
+            <?php
+            if ($setup_complete) {
+                echo $config_html;
+            }
+            // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+            ?>
     </div>
     <?php
 }
@@ -645,7 +709,8 @@ add_action('wp_ajax_wpiko_chatbot_dashboard_knowledge', 'wpiko_chatbot_dashboard
  *
  * Add-ons add their own through the `wpiko_chatbot_dashboard_features` filter.
  *
- * @return array[] Each: label, on (bool), url, pro (bool), locked (bool), state ('' or 'warn').
+ * @return array[] Each: label, on (bool), url, pro (bool), locked (bool), state ('' or 'warn'),
+ *                 optional state_label (text instead of On/Off) and tooltip (full description on hover).
  */
 function wpiko_chatbot_dashboard_features()
 {
@@ -657,6 +722,23 @@ function wpiko_chatbot_dashboard_features()
     $proactive_on = (bool) get_option('wpiko_chatbot_proactive_enabled', false);
     $proactive_ready = (bool) get_option('wpiko_chatbot_enable_floating', false)
         && (trim((string) get_option('wpiko_chatbot_proactive_heading', 'Hi!')) !== '' || trim((string) get_option('wpiko_chatbot_proactive_message', "Looking for something specific? We'll help you find it!")) !== '');
+    // Conversation memory: how long visitors' chats are remembered ("Tab only" = not across visits).
+    $memory_days = function_exists('wpiko_chatbot_conversation_memory_days') ? (int) wpiko_chatbot_conversation_memory_days() : 0;
+    if ($memory_days <= 0) {
+        $memory_label = __('Tab only', 'wpiko-chatbot');
+    } elseif ($memory_days === 1) {
+        $memory_label = __('24 hours', 'wpiko-chatbot');
+    } else {
+        /* translators: %d: number of days conversations are remembered. */
+        $memory_label = sprintf(_n('%d day', '%d days', $memory_days, 'wpiko-chatbot'), $memory_days);
+    }
+
+    // Pre-made questions shown as buttons in the chat window.
+    $question_count = count(array_filter(array_map('trim', array_map('strval', (array) get_option('wpiko_chatbot_questions', array())))));
+
+    // Topic focus: answer only about this website (default) or anything.
+    $topic_website = function_exists('wpiko_chatbot_get_topic_focus') ? wpiko_chatbot_get_topic_focus() === 'website' : true;
+
     $features = array(
         'proactive' => array(
             'label' => __('Proactive greeting', 'wpiko-chatbot'),
@@ -664,15 +746,39 @@ function wpiko_chatbot_dashboard_features()
             'state' => ($proactive_on && !$proactive_ready) ? 'warn' : '',
             'url' => $tab($proactive_on && !get_option('wpiko_chatbot_enable_floating', false) ? 'floating_chatbot' : 'proactive_greeting'),
         ),
+        'questions' => array(
+            'label' => __('Pre-made questions', 'wpiko-chatbot'),
+            'on' => $question_count > 0,
+            'state_label' => $question_count > 0 ? number_format_i18n($question_count) : '',
+            /* translators: %s: number of pre-made questions. */
+            'tooltip' => $question_count > 0 ? sprintf(_n('Pre-made questions: %s question', 'Pre-made questions: %s questions', $question_count, 'wpiko-chatbot'), number_format_i18n($question_count)) : __('Pre-made questions: Off', 'wpiko-chatbot'),
+            'url' => $tab('questions'),
+        ),
         'sound' => array(
             'label' => __('Sound notifications', 'wpiko-chatbot'),
             'on' => get_option('wpiko_chatbot_sound_enabled', '1') === '1',
             'url' => $tab('chatbot_menu'),
         ),
+        'conversation_memory' => array(
+            // Short label so it fits beside its state; the tooltip and setting use the full name.
+            'label' => __('Chat memory', 'wpiko-chatbot'),
+            /* translators: %s: how long chats are remembered, e.g. "7 days" or "Tab only". */
+            'tooltip' => sprintf(__('Conversation memory: %s', 'wpiko-chatbot'), $memory_label),
+            'on' => $memory_days > 0,
+            'state_label' => $memory_label,
+            'url' => $tab('conversation_memory'),
+        ),
         'transcript' => array(
             'label' => __('Transcript download', 'wpiko-chatbot'),
             'on' => get_option('wpiko_chatbot_enable_transcript_download', '1') === '1',
             'url' => $tab('chatbot_menu'),
+        ),
+        'topic_focus' => array(
+            'label' => __('Topic focus', 'wpiko-chatbot'),
+            'on' => $topic_website,
+            'state_label' => $topic_website ? __('Website', 'wpiko-chatbot') : __('Any', 'wpiko-chatbot'),
+            'tooltip' => $topic_website ? __('Topic focus: only questions about this website', 'wpiko-chatbot') : __('Topic focus: any question', 'wpiko-chatbot'),
+            'url' => $tab('ai_configuration') . '#responses_topic_focus',
         ),
     );
 

@@ -46,6 +46,8 @@ body {
 .message-text table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
 .message-text th, .message-text td { padding: 8px; border: 1px solid var(--wpiko-ui-line); text-align: left; }
 .message-text th { background: var(--wpiko-ui-sunken); font-weight: 600; }
+.message-text .align-center { text-align: center; }
+.message-text .align-right { text-align: right; }
 .message-text img { max-width: 100%; height: auto; }
 /* WordPress emoji images need their inline sizing in standalone files, too. */
 .message-text img.emoji,
