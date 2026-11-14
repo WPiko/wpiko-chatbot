@@ -58,6 +58,7 @@ function wpiko_chatbot_dashboard_section() {
                 c1.user_id,
                 MAX(c1.user_name) as user_name,
                 MAX(c1.user_email) as user_email,
+                MAX(CASE WHEN c1.message LIKE %s THEN 1 ELSE 0 END) as has_contact_form,
                 MAX(c1.timestamp) as timestamp,
                 MAX(c1.country) as country,
                 MAX(c1.city) as city,
@@ -87,6 +88,8 @@ function wpiko_chatbot_dashboard_section() {
              GROUP BY c1.session_id
              ORDER BY MAX(c1.timestamp) DESC
              LIMIT %d",
+            // Pro saves contact submissions with this prefix in the user message history.
+            $wpdb->esc_like('Contact Form Submission:') . '%',
             // Five are always shown; the rest fill the height beside AI usage & cost (dashboard.js).
             12
         ));
@@ -347,7 +350,18 @@ function wpiko_chatbot_dashboard_section() {
                                         : sprintf(__('%s ago', 'wpiko-chatbot'), human_time_diff($last_ts, $now_ts));
                                     $message_count = (int) $conversation->message_count;
                                     $has_error = $conversation->last_role === 'error';
-                                    $show_email = !empty($conversation->user_email) && $user_display !== $conversation->user_email;
+                                    $has_contact_form = !empty($conversation->has_contact_form);
+                                    $show_email = !empty($conversation->user_email) || $has_contact_form;
+                                    $email_tooltip = $has_contact_form
+                                        ? __('Contact form submitted', 'wpiko-chatbot')
+                                        : '';
+                                    if (!empty($conversation->user_email)) {
+                                        $email_tooltip = $has_contact_form
+                                            /* translators: %s: email address. */
+                                            ? sprintf(__('Contact form submitted · %s', 'wpiko-chatbot'), $conversation->user_email)
+                                            /* translators: %s: email address. */
+                                            : sprintf(__('Email saved: %s', 'wpiko-chatbot'), $conversation->user_email);
+                                    }
                                     $conversation_url = add_query_arg('conversation', rawurlencode($conversation->session_id), wp_nonce_url('?page=ai-chatbot&tab=conversations', 'wpiko_chatbot_tab_nonce'));
                                 ?>
                                     <li<?php echo $activity_index++ >= 5 ? ' class="activity-extra" hidden' : ''; ?>>
@@ -359,8 +373,8 @@ function wpiko_chatbot_dashboard_section() {
                                                 <span class="activity-user">
                                                     <span class="activity-name"><?php echo esc_html($user_display); ?></span>
                                                     <?php if ($show_email) : ?>
-                                                        <span class="dashicons dashicons-email-alt activity-email" title="<?php echo esc_attr($conversation->user_email); ?>" aria-hidden="true"></span>
-                                                        <span class="screen-reader-text"><?php echo esc_html(sprintf(/* translators: %s: email address. */ __('Email: %s', 'wpiko-chatbot'), $conversation->user_email)); ?></span>
+                                                        <span class="dashicons dashicons-email-alt activity-email<?php echo $has_contact_form ? ' has-contact-form' : ''; ?>" title="<?php echo esc_attr($email_tooltip); ?>" aria-hidden="true"></span>
+                                                        <span class="screen-reader-text"><?php echo esc_html($email_tooltip); ?></span>
                                                     <?php endif; ?>
                                                     <?php if ($is_guest && $location !== '') : ?>
                                                         <span class="activity-location"><?php echo esc_html($location); ?></span>

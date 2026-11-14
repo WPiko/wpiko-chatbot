@@ -476,6 +476,9 @@
     font-size: 14px;
     color: var(--wpiko-ui-muted);
 }
+.wpiko-chatbot-dashboard .activity-email.has-contact-form {
+    color: var(--wpiko-ui-info);
+}
 .wpiko-chatbot-dashboard .activity-location {
     flex: none;
     font-size: 12px;
