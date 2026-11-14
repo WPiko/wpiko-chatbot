@@ -149,6 +149,15 @@ function wpiko_chatbot_render_usage_widget($snapshot = null)
                     </div>
                 </div>
 
+                <?php
+                /**
+                 * Fires below the Today / Last 7 days / month figures of "AI usage & cost".
+                 *
+                 * @param array $snapshot Usage snapshot from wpiko_chatbot_get_usage_snapshot().
+                 */
+                do_action('wpiko_chatbot_usage_widget_after_periods', $snapshot);
+                ?>
+
                 <?php if ($month['conversations'] > 0 && $month['replies'] > 0): ?>
                     <dl class="usage-averages">
                         <div>

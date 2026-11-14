@@ -672,7 +672,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
         "name time"
-        "message message";
+        "message cost";
     column-gap: 8px;
     row-gap: 3px;
     align-items: baseline;
@@ -703,6 +703,16 @@
     grid-area: time;
     color: var(--wpiko-ui-muted);
     font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Estimated AI cost of the conversation, under the time */
+.conversation-item .conversation-cost {
+    grid-area: cost;
+    justify-self: end;
+    color: var(--wpiko-ui-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
@@ -1117,6 +1127,47 @@
 }
 
 .info-value.offline {
+    color: var(--wpiko-ui-muted);
+}
+
+/* AI cost of the conversation */
+.conversation-cost-section[hidden] {
+    display: none;
+}
+
+.conversation-cost-badge {
+    margin-left: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--wpiko-ui-muted);
+    background: var(--wpiko-ui-sunken);
+    border: 1px solid var(--wpiko-ui-line);
+    border-radius: var(--wpiko-ui-radius-pill, 999px);
+    vertical-align: middle;
+}
+
+/* A line above the note only when there is one; otherwise the section ends like Additional Info. */
+.conversation-cost-section.has-note .conversation-cost-rows .info-item:last-child {
+    border-bottom: 1px solid var(--wpiko-ui-line);
+}
+
+.conversation-cost-section .info-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.conversation-cost-section .info-value {
+    white-space: nowrap;
+}
+
+.conversation-cost-note[hidden] {
+    display: none;
+}
+
+.conversation-cost-note {
+    margin: 8px 0 4px;
+    font-size: 12px;
+    line-height: 1.45;
     color: var(--wpiko-ui-muted);
 }
 

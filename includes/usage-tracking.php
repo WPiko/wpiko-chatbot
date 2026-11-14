@@ -708,6 +708,201 @@ function wpiko_chatbot_usage_has_earlier_chats($since)
 }
 
 /**
+ * Estimated cost of each of the given conversations (chat replies, knowledge
+ * search and, with Pro, order/product lookups). Conversations without a
+ * recorded cost are left out.
+ *
+ * @param string[] $session_ids Conversation session IDs.
+ * @return array<string, float> Session ID => cost.
+ */
+function wpiko_chatbot_usage_costs_by_session($session_ids)
+{
+    global $wpdb;
+    $session_ids = array_values(array_unique(array_filter(array_map('strval', (array) $session_ids), 'strlen')));
+    $sources = wpiko_chatbot_usage_conversation_sources();
+    if (empty($session_ids) || empty($sources)) {
+        return array();
+    }
+
+    $table = wpiko_chatbot_usage_table();
+    $session_placeholders = implode(',', array_fill(0, count($session_ids), '%s'));
+    $source_placeholders = implode(',', array_fill(0, count($sources), '%s'));
+    $suppressed = $wpdb->suppress_errors(true);
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Table name and placeholders are internal; one query per inbox page.
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT session_id, SUM(token_cost + search_cost) AS cost FROM `$table`
+         WHERE session_id IN ($session_placeholders) AND source IN ($source_placeholders)
+         GROUP BY session_id",
+        array_merge($session_ids, $sources)
+    ), ARRAY_A);
+    $wpdb->suppress_errors($suppressed);
+
+    $costs = array();
+    foreach ((array) $rows as $row) {
+        $costs[(string) $row['session_id']] = (float) $row['cost'];
+    }
+    return $costs;
+}
+
+/**
+ * Everything recorded for one conversation, or null when nothing was recorded.
+ *
+ * @param string $session_id Conversation session ID.
+ * @return array|null
+ */
+function wpiko_chatbot_usage_conversation_totals($session_id)
+{
+    global $wpdb;
+    $session_id = (string) $session_id;
+    $sources = wpiko_chatbot_usage_conversation_sources();
+    if ($session_id === '' || empty($sources)) {
+        return null;
+    }
+
+    $table = wpiko_chatbot_usage_table();
+    $placeholders = implode(',', array_fill(0, count($sources), '%s'));
+    $suppressed = $wpdb->suppress_errors(true);
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Table name and placeholders are internal; one conversation.
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT source, model, COUNT(*) AS calls, SUM(search_calls) AS search_calls, SUM(input_tokens) AS input,
+            SUM(output_tokens) AS output, SUM(token_cost) AS token_cost, SUM(search_cost) AS search_cost, SUM(priced = 0) AS unpriced
+         FROM `$table` WHERE session_id = %s AND source IN ($placeholders)
+         GROUP BY source, model",
+        array_merge(array($session_id), $sources)
+    ), ARRAY_A);
+    $wpdb->suppress_errors($suppressed);
+
+    if (empty($rows)) {
+        return null;
+    }
+
+    $totals = array(
+        'cost' => 0.0,
+        'search_cost' => 0.0,
+        'replies' => 0,
+        'lookups' => 0,
+        'searches' => 0,
+        'input' => 0,
+        'output' => 0,
+        'unpriced' => 0,
+        'models' => array(),
+    );
+    foreach ($rows as $row) {
+        $calls = (int) $row['calls'];
+        $cost = (float) $row['token_cost'] + (float) $row['search_cost'];
+        if ($row['source'] === 'chat') {
+            $totals['replies'] += $calls;
+        } else {
+            $totals['lookups'] += $calls;
+        }
+        $totals['cost'] += $cost;
+        $totals['search_cost'] += (float) $row['search_cost'];
+        $totals['searches'] += (int) $row['search_calls'];
+        $totals['input'] += (int) $row['input'];
+        $totals['output'] += (int) $row['output'];
+        $totals['unpriced'] += (int) $row['unpriced'];
+        if ($row['model'] !== '') {
+            $totals['models'][$row['model']] = ($totals['models'][$row['model']] ?? 0) + $cost;
+        }
+    }
+    return $totals;
+}
+
+/**
+ * The "AI cost" block of a conversation's Details panel.
+ *
+ * @param string      $session_id         Conversation session ID.
+ * @param string|null $first_message_time Site-time timestamp of the conversation's first message.
+ * @return array{total: string, rows: array<int, array{label: string, value: string}>, note: string}
+ */
+function wpiko_chatbot_usage_conversation_details($session_id, $first_message_time = null)
+{
+    $totals = wpiko_chatbot_usage_conversation_totals($session_id);
+    $since_gmt = (string) get_option('wpiko_chatbot_usage_since', '');
+    $since = null;
+    if ($since_gmt !== '') {
+        try {
+            $since = (new DateTimeImmutable($since_gmt, new DateTimeZone('UTC')))->setTimezone(wp_timezone());
+        } catch (Exception $error) {
+            $since = null;
+        }
+    }
+    $since_label = $since ? wp_date(get_option('date_format', 'F j, Y'), $since->getTimestamp()) : '';
+    // The conversations table stores site time.
+    $started_before_tracking = $since && $first_message_time && $first_message_time < $since->format('Y-m-d H:i:s');
+
+    if ($totals === null) {
+        return array(
+            'total' => $started_before_tracking ? __('Not tracked', 'wpiko-chatbot') : wpiko_chatbot_format_usage_cost(0),
+            'rows' => array(),
+            'note' => $started_before_tracking
+                /* translators: %s: date cost tracking started. */
+                ? sprintf(__('Costs are counted from %s.', 'wpiko-chatbot'), $since_label)
+                : __('No AI cost recorded for this conversation.', 'wpiko-chatbot'),
+        );
+    }
+
+    $rows = array(
+        array(
+            'label' => __('AI replies', 'wpiko-chatbot'),
+            'value' => number_format_i18n($totals['replies']),
+        ),
+    );
+    if ($totals['searches'] > 0) {
+        $rows[] = array(
+            'label' => __('Knowledge search', 'wpiko-chatbot'),
+            'value' => sprintf(
+                /* translators: 1: number of knowledge searches, 2: their cost. */
+                __('%1$s (%2$s)', 'wpiko-chatbot'),
+                number_format_i18n($totals['searches']),
+                wpiko_chatbot_format_usage_cost($totals['search_cost'], true)
+            ),
+        );
+    }
+    if ($totals['lookups'] > 0) {
+        $rows[] = array(
+            'label' => __('Order and product lookups', 'wpiko-chatbot'),
+            'value' => number_format_i18n($totals['lookups']),
+        );
+    }
+    $rows[] = array(
+        'label' => __('Tokens', 'wpiko-chatbot'),
+        'value' => sprintf(
+            /* translators: 1: input tokens, 2: output tokens. */
+            __('%1$s in, %2$s out', 'wpiko-chatbot'),
+            number_format_i18n($totals['input']),
+            number_format_i18n($totals['output'])
+        ),
+    );
+    if (!empty($totals['models'])) {
+        $models = function_exists('wpiko_chatbot_usage_model_labels')
+            ? array_keys(wpiko_chatbot_usage_model_labels($totals['models']))
+            : array_keys($totals['models']);
+        $rows[] = array(
+            'label' => _n('Model', 'Models', count($models), 'wpiko-chatbot'),
+            'value' => implode(', ', $models),
+        );
+    }
+
+    // The "Estimate" badge already says it's an estimate; the note is only for exceptions.
+    $notes = array();
+    if ($started_before_tracking) {
+        /* translators: %s: date cost tracking started. */
+        $notes[] = sprintf(__('Only replies from %s are counted.', 'wpiko-chatbot'), $since_label);
+    }
+    if ($totals['unpriced'] > 0) {
+        $notes[] = __('Some replies used a model without a known price and are not included.', 'wpiko-chatbot');
+    }
+    $note = implode(' ', $notes);
+
+    return array(
+        'total' => wpiko_chatbot_format_usage_cost($totals['cost'], true),
+        'rows' => $rows,
+        'note' => $note,
+    );
+}
+
+/**
  * Average cost of one chat reply over the last N days (including knowledge
  * search and lookups), or null without data.
  *

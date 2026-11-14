@@ -3,6 +3,17 @@
 This file contains the release history for versions prior to the current release.
 The current release notes remain in readme.txt for the WordPress.org Plugin Directory.
 
+= 2.1.4 =
+* Feature: New "AI usage & cost" on the Dashboard shows an estimate of what the chatbot costs in OpenAI credit: today, the last 7 days and this month, with a projection for the month and last month's total. It also shows the average cost per conversation and per AI reply, the cost of each feature (chat replies, knowledge search, conversation translations and connection tests, plus order and product lookups, Website scan and contact form writing help when WPiko AI Chatbot Pro is active), token counts and the cost per model. Costs are estimated with OpenAI's list prices; your OpenAI bill is the final amount. Costs are counted from the update to this version.
+* Improve: New Dashboard layout. A fifth card at the top shows this month's AI cost. Recent activity and AI usage & cost sit side by side, and Recent activity shows as many of the latest conversations as fit next to the cost card (at least five). Configuration status runs full width below them, with the essentials and optional features next to each other. Optional features now also show Pre-made questions (how many), Chat memory (how long visitors' chats are remembered: "Tab only", 24 hours, 7 or 30 days) and Topic focus (website only or any question). Until setup is finished, Configuration status stays near the top. The Attention required panel now appears only when something needs action, at the top of the page.
+* Improve: User Limits shows a cost check: what one AI reply cost on average over the last 30 days, and what your daily and site-wide limits mean in money.
+* Improve: AI Settings → API Connection links to the cost estimate and to your OpenAI usage page.
+* Improve: Tables in AI replies are shown as real tables in the chat window, Conversations and downloaded transcripts, instead of rows of "|" characters. Wide tables scroll sideways in the chat window. This also applies to replies saved before the update.
+* Fix: Pre-made questions in the chat window are centered again in every browser, including Safari. Their list no longer shows a scrollbar (it still scrolls with the mouse wheel, trackpad or touch), which had made the right side wider than the left.
+* Fix: After an update, browsers load the new chatbot stylesheet right away instead of a cached copy.
+* Privacy: Usage records contain token counts, the model and the conversation ID, never message text. They are kept for 400 days and are removed with the other plugin data when you choose to delete data on uninstall.
+* Developer: New `wpiko_chatbot_model_prices`, `wpiko_chatbot_file_search_call_price`, `wpiko_chatbot_usage_sources` and `wpiko_chatbot_usage_retention_days` filters and the `wpiko_chatbot_usage_recorded` action.
+
 = 2.1.3 =
 * Feature: New Conversation Memory setting (Chat Widget → Messages). Choose whether visitors' conversations are kept only while the browser tab is open, as before, or across visits for 24 hours, 7 days or 30 days after the last message. Remembered conversations are shared by every tab of the site, start fresh when the visitor uses Clear Chat, and are removed from the browser when someone logs in or out. The setup wizard asks too. New sites remember conversations for 7 days; existing sites keep the current behaviour until you change it.
 * Fix: Team members' messages no longer show "&amp;" or a visible "<br>" after the visitor moves to another page.

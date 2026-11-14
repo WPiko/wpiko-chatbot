@@ -105,8 +105,8 @@ function wpiko_chatbot_display()
                     <?php if (!empty($email_capture_description)): ?>
                         <p><?php echo esc_html($email_capture_description); ?></p>
                     <?php endif; ?>
-                    <input type="text" id="user-name" placeholder="<?php echo esc_attr($email_capture_name_placeholder); ?>">
-                    <input type="email" id="user-email" placeholder="<?php echo esc_attr($email_capture_email_placeholder); ?>">
+                    <input type="text" id="user-name" placeholder="<?php echo esc_attr($email_capture_name_placeholder); ?>" aria-label="<?php echo esc_attr($email_capture_name_placeholder); ?>" autocomplete="name">
+                    <input type="email" id="user-email" placeholder="<?php echo esc_attr($email_capture_email_placeholder); ?>" aria-label="<?php echo esc_attr($email_capture_email_placeholder); ?>" autocomplete="email">
                     <button id="submit-email"><?php echo esc_html($email_capture_button_text); ?></button>
                 </div>
             </div>
@@ -132,7 +132,7 @@ function wpiko_chatbot_display()
                 </svg>
             </button>
             <div id="chatbot-menu">
-                <button id="chatbot-menu-button" title="Menu">
+                <button id="chatbot-menu-button" type="button" title="<?php esc_attr_e('Menu', 'wpiko-chatbot'); ?>" aria-label="<?php esc_attr_e('Menu', 'wpiko-chatbot'); ?>">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="1"></circle>
@@ -238,8 +238,8 @@ function wpiko_chatbot_display()
 
         <div id="input-container">
             <div id="chatbot-input-container">
-                <textarea id="chatbot-input" placeholder="<?php echo esc_attr($input_placeholder); ?>"></textarea>
-                <button id="chatbot-send">
+                <textarea id="chatbot-input" placeholder="<?php echo esc_attr($input_placeholder); ?>" aria-label="<?php esc_attr_e('Type your message', 'wpiko-chatbot'); ?>"></textarea>
+                <button id="chatbot-send" type="button" aria-label="<?php esc_attr_e('Send message', 'wpiko-chatbot'); ?>">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 32"
                         class="icon-2xl">
                         <path fill="currentColor" fill-rule="evenodd"

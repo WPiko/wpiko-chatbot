@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.4
+Stable tag: 2.1.5
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -162,23 +162,23 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 == Changelog ==
 
-= 2.1.4 =
-* Feature: New "AI usage & cost" on the Dashboard shows an estimate of what the chatbot costs in OpenAI credit: today, the last 7 days and this month, with a projection for the month and last month's total. It also shows the average cost per conversation and per AI reply, the cost of each feature (chat replies, knowledge search, conversation translations and connection tests, plus order and product lookups, Website scan and contact form writing help when WPiko AI Chatbot Pro is active), token counts and the cost per model. Costs are estimated with OpenAI's list prices; your OpenAI bill is the final amount. Costs are counted from the update to this version.
-* Improve: New Dashboard layout. A fifth card at the top shows this month's AI cost. Recent activity and AI usage & cost sit side by side, and Recent activity shows as many of the latest conversations as fit next to the cost card (at least five). Configuration status runs full width below them, with the essentials and optional features next to each other. Optional features now also show Pre-made questions (how many), Chat memory (how long visitors' chats are remembered: "Tab only", 24 hours, 7 or 30 days) and Topic focus (website only or any question). Until setup is finished, Configuration status stays near the top. The Attention required panel now appears only when something needs action, at the top of the page.
-* Improve: User Limits shows a cost check: what one AI reply cost on average over the last 30 days, and what your daily and site-wide limits mean in money.
-* Improve: AI Settings → API Connection links to the cost estimate and to your OpenAI usage page.
-* Improve: Tables in AI replies are shown as real tables in the chat window, Conversations and downloaded transcripts, instead of rows of "|" characters. Wide tables scroll sideways in the chat window. This also applies to replies saved before the update.
-* Fix: Pre-made questions in the chat window are centered again in every browser, including Safari. Their list no longer shows a scrollbar (it still scrolls with the mouse wheel, trackpad or touch), which had made the right side wider than the left.
-* Fix: After an update, browsers load the new chatbot stylesheet right away instead of a cached copy.
-* Privacy: Usage records contain token counts, the model and the conversation ID, never message text. They are kept for 400 days and are removed with the other plugin data when you choose to delete data on uninstall.
-* Developer: New `wpiko_chatbot_model_prices`, `wpiko_chatbot_file_search_call_price`, `wpiko_chatbot_usage_sources` and `wpiko_chatbot_usage_retention_days` filters and the `wpiko_chatbot_usage_recorded` action.
+= 2.1.5 =
+* Feature: Conversations shows what each conversation cost in OpenAI credit. The estimated cost appears under the time in the inbox, and the Details panel has a new AI cost section with the AI replies, knowledge searches, tokens and model of that conversation. Conversations from before cost tracking started say "Not tracked".
+* Improve: Accessibility of the chat window. The message box, the Send button and the menu button now have names that screen readers announce ("Type your message", "Send message", "Menu"), the reply field in the proactive greeting is announced as "Type your message", and the name and email fields in the email capture form are labelled with their placeholder text. Accessibility checkers no longer report form fields without a label or a button without text.
+* Improve: The name and email fields in the email capture form now let browsers fill in saved details.
+* Fix: A conversation opened from the Dashboard's Recent activity now opens even when it isn't among the 10 newest conversations in Conversations.
+* Fix: Conversations now shows the name and email a visitor gave later in the chat (for example in the WPiko AI Chatbot Pro contact form) in the Details panel and the inbox, not only details from their first message.
+* Improve: Download emails now lists the email addresses visitors gave through email capture and signed-in visitors. Addresses typed only into the contact form stay on their conversation but are no longer added to the download, because those visitors asked for help, not to be contacted.
+* Improve: The per-feature bars in the Dashboard's AI usage & cost widget are now teal, the colour used for AI cost.
+* Developer: The Send and menu buttons now have `type="button"`. The new labels can be translated with the `wpiko-chatbot` text domain.
+* Developer: New `wpiko_chatbot_usage_widget_after_periods` action in the Dashboard's AI usage & cost widget, below the Today, Last 7 days and month figures. WPiko AI Chatbot Pro uses it to show the monthly budget.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.4 =
-Adds AI usage & cost to the Dashboard, so you can see what the chatbot costs in OpenAI credit. Works with WPiko AI Chatbot Pro 2.1.1 and newer.
+= 2.1.5 =
+See what each conversation cost in Conversations. Accessibility improvements in the chat window: screen readers now announce the message box, Send button, menu button, proactive greeting reply field and email capture fields.
 
 == External Services ==
 

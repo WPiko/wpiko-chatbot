@@ -108,11 +108,11 @@ check($details['total'] === '$0.003', 'total: ' . $details['total']);
 $rows = array();
 foreach ($details['rows'] as $row) { $rows[$row['label']] = $row['value']; }
 check($rows['AI replies'] === '2', 'replies');
-check($rows['Knowledge searches'] === '1 ($0.0025)', 'knowledge searches with their cost: ' . $rows['Knowledge searches']);
+check($rows['Knowledge search'] === '1 ($0.0025)', 'knowledge searches with their cost: ' . $rows['Knowledge search']);
 check(!isset($rows['Order and product lookups']), 'no lookups row without Pro');
 check($rows['Tokens'] === '2,000 in, 200 out', 'tokens: ' . $rows['Tokens']);
 check($rows['Model'] === 'GPT-6 Luna', 'friendly model name');
-check($details['note'] === 'Estimated with OpenAI list prices.', 'note');
+check($details['note'] === '', 'no note for a normal tracked conversation (the Estimate badge says it)');
 
 $GLOBALS['pro'] = true;
 $details = wpiko_chatbot_usage_conversation_details('a', '2026-11-10 08:00:00');
@@ -127,7 +127,7 @@ check($details['total'] === 'Not tracked' && $details['rows'] === array() && $de
 $details = wpiko_chatbot_usage_conversation_details('c', '2026-11-12 09:00:00');
 check($details['total'] === '$0.00' && $details['note'] === 'No AI cost recorded for this conversation.', 'newer conversation without usage (for example only errors or a team member replied)');
 $details = wpiko_chatbot_usage_conversation_details('b', '2026-11-09 11:30:00');
-check(strpos($details['note'], 'Only replies from November 9, 2026 are counted.') !== false && $details['total'] === '$0.00004', 'conversation that started before tracking but continued after it');
+check($details['note'] === 'Only replies from November 9, 2026 are counted.' && $details['total'] === '$0.00004', 'conversation that started before tracking but continued after it');
 
 // Unpriced model.
 usage_row('d', 'chat', 0, 0, 'my-custom-model', 0);

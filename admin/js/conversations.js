@@ -221,6 +221,25 @@ jQuery(document).ready(function($) {
                         }
                     }
                     
+                    // AI cost of this conversation
+                    var $costSection = $('.conversation-cost-section');
+                    var aiCost = response.data.ai_cost;
+                    if ($costSection.length && aiCost) {
+                        var $costRows = $costSection.find('.conversation-cost-rows').empty();
+                        $costSection.find('.conversation-cost-total').text(aiCost.total || '');
+                        (aiCost.rows || []).forEach(function(row) {
+                            $('<div class="info-item"></div>')
+                                .append($('<span class="info-label"></span>').text(row.label))
+                                .append($('<span class="info-value"></span>').text(row.value))
+                                .appendTo($costRows);
+                        });
+                        $costSection.find('.conversation-cost-note').text(aiCost.note || '').prop('hidden', !aiCost.note);
+                        $costSection.toggleClass('has-note', !!aiCost.note);
+                        $costSection.prop('hidden', false);
+                    } else {
+                        $costSection.prop('hidden', true);
+                    }
+
                     // Scroll transcript to bottom
                     const transcriptContent = $('.transcript-content')[0];
                     transcriptContent.scrollTop = transcriptContent.scrollHeight;

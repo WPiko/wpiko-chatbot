@@ -178,6 +178,7 @@ function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $
                     FROM {$table_name} c3
                     WHERE c3.session_id = c1.session_id
                       AND c3.role = 'user'
+                      AND c3.user_name IS NOT NULL AND c3.user_name != ''
                     ORDER BY c3.timestamp ASC
                     LIMIT 1
                 ) as user_name
@@ -226,6 +227,7 @@ function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $
                     FROM {$table_name} c3
                     WHERE c3.session_id = c1.session_id
                       AND c3.role = 'user'
+                      AND c3.user_name IS NOT NULL AND c3.user_name != ''
                     ORDER BY c3.timestamp ASC
                     LIMIT 1
                 ) as user_name
@@ -273,6 +275,7 @@ function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $
                     FROM {$table_name} c3
                     WHERE c3.session_id = c1.session_id
                       AND c3.role = 'user'
+                      AND c3.user_name IS NOT NULL AND c3.user_name != ''
                     ORDER BY c3.timestamp ASC
                     LIMIT 1
                 ) as user_name
@@ -320,6 +323,7 @@ function wpiko_chatbot_get_conversations($per_page, $offset, $start_date = '', $
                     FROM {$table_name} c3
                     WHERE c3.session_id = c1.session_id
                       AND c3.role = 'user'
+                      AND c3.user_name IS NOT NULL AND c3.user_name != ''
                     ORDER BY c3.timestamp ASC
                     LIMIT 1
                 ) as user_name
@@ -371,6 +375,57 @@ function wpiko_chatbot_get_total_conversations($start_date = '', $end_date = '')
 
 
 /**
+ * Inbox page (newest first, unfiltered) that shows a conversation, so links to
+ * one conversation (Dashboard, Analytics) open it even when it isn't on page 1.
+ *
+ * @param string $session_id Conversation session ID.
+ * @param int    $per_page   Conversations per page.
+ * @return int Page number, 1 when the conversation isn't found.
+ */
+function wpiko_chatbot_get_conversation_page($session_id, $per_page)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'wpiko_chatbot_conversations';
+    $session_id = (string) $session_id;
+    if ($session_id === '') {
+        return 1;
+    }
+
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table_name is safe prefix; one lookup when a link is opened.
+    $last_message = $wpdb->get_var($wpdb->prepare("SELECT MAX(timestamp) FROM {$table_name} WHERE session_id = %s", $session_id));
+    if (empty($last_message)) {
+        return 1;
+    }
+
+    // Conversations with a newer last message come before it (same order as wpiko_chatbot_get_conversations()).
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- $table_name is safe prefix; one lookup when a link is opened.
+    $newer = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM (SELECT session_id FROM {$table_name} GROUP BY session_id HAVING MAX(timestamp) > %s) AS newer_conversations",
+        $last_message
+    ));
+
+    return (int) floor($newer / max(1, (int) $per_page)) + 1;
+}
+
+/**
+ * Add each conversation's estimated AI cost (one query for the whole list).
+ *
+ * @param object[] $conversations Inbox rows.
+ * @return object[] The same rows with an ai_cost property.
+ */
+function wpiko_chatbot_add_conversation_costs($conversations)
+{
+    if (empty($conversations) || !function_exists('wpiko_chatbot_usage_costs_by_session')) {
+        return $conversations;
+    }
+    $costs = wpiko_chatbot_usage_costs_by_session(wp_list_pluck($conversations, 'session_id'));
+    foreach ($conversations as $conversation) {
+        $conversation->ai_cost = isset($costs[$conversation->session_id]) ? $costs[$conversation->session_id] : 0;
+    }
+    return $conversations;
+}
+
+/**
  * Render a single conversation list item for the admin sidebar.
  * Used by the conversations section and the AJAX search endpoint.
  */
@@ -385,6 +440,10 @@ function wpiko_chatbot_render_conversation_item($conversation)
         $user_display = !empty($conversation->user_name) ? $conversation->user_name : 'Guest';
     }
     $message_class = ($conversation->last_message_role == 'error') ? 'error-message' : '';
+    // Set by wpiko_chatbot_add_conversation_costs(); only shown when there is a cost.
+    $cost_label = isset($conversation->ai_cost) && $conversation->ai_cost > 0 && function_exists('wpiko_chatbot_format_usage_cost')
+        ? wpiko_chatbot_format_usage_cost($conversation->ai_cost, true)
+        : '';
     $formatted_timestamp = get_date_from_gmt(get_gmt_from_date($conversation->timestamp), 'Y-m-d H:i:s');
 
     ob_start();
@@ -396,6 +455,9 @@ function wpiko_chatbot_render_conversation_item($conversation)
         <div class="conversation-info">
             <div class="user-name"><?php echo esc_html($user_display); ?></div>
             <div class="last-message <?php echo esc_attr($message_class); ?>"><?php echo esc_html($conversation->last_message); ?></div>
+            <?php if ($cost_label !== '') : ?>
+                <div class="conversation-cost" title="<?php esc_attr_e('Estimated AI cost of this conversation', 'wpiko-chatbot'); ?>"><span class="screen-reader-text"><?php esc_html_e('AI cost:', 'wpiko-chatbot'); ?> </span><?php echo esc_html($cost_label); ?></div>
+            <?php endif; ?>
             <?php // ISO 8601 with the site's UTC offset, so the browser computes "x ago" correctly in any timezone. ?>
             <div class="timestamp" data-timestamp="<?php echo esc_attr(mysql2date('c', $conversation->timestamp, false)); ?>" title="<?php echo esc_attr(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $conversation->timestamp)); ?>">
                 <?php echo esc_html($formatted_timestamp); ?>
@@ -453,6 +515,7 @@ function wpiko_chatbot_search_conversations()
                 FROM {$table_name} c3
                 WHERE c3.session_id = c1.session_id
                   AND c3.role = 'user'
+                  AND c3.user_name IS NOT NULL AND c3.user_name != ''
                 ORDER BY c3.timestamp ASC
                 LIMIT 1
             ) as user_name
@@ -467,7 +530,8 @@ function wpiko_chatbot_search_conversations()
     ));
 
     $html = '';
-    foreach ((array) $results as $conversation) {
+    $results = wpiko_chatbot_add_conversation_costs((array) $results);
+    foreach ($results as $conversation) {
         $html .= wpiko_chatbot_render_conversation_item($conversation);
     }
 
@@ -479,6 +543,31 @@ function wpiko_chatbot_search_conversations()
 
 // AJAX handlers for conversation management
 add_action('wp_ajax_wpiko_chatbot_fetch_conversation', 'wpiko_chatbot_fetch_conversation');
+
+/**
+ * The name and email a visitor gave in a conversation.
+ *
+ * Email: the latest one (a visitor can correct it). Name: the first one from the visitor's
+ * own messages. Both come from email capture or the Pro contact form.
+ *
+ * @param array $messages Conversation rows, oldest first (objects with user_email, user_name, role).
+ * @return array { email: string, name: string }
+ */
+function wpiko_chatbot_get_conversation_contact($messages)
+{
+    $contact = array('email' => '', 'name' => '');
+    foreach ((array) $messages as $row) {
+        $email = isset($row->user_email) ? trim((string) $row->user_email) : '';
+        if ($email !== '') {
+            $contact['email'] = $email;
+        }
+        $name = isset($row->user_name) ? trim((string) $row->user_name) : '';
+        if ($contact['name'] === '' && $name !== '' && isset($row->role) && $row->role === 'user') {
+            $contact['name'] = $name;
+        }
+    }
+    return $contact;
+}
 
 function wpiko_chatbot_fetch_conversation()
 {
@@ -559,18 +648,22 @@ function wpiko_chatbot_fetch_conversation()
         }
         $messages_html .= '</div>';
 
+        // A visitor may give their name and email later in the chat (email capture or the
+        // Pro contact form), so look at the whole conversation, not only the first message.
+        $contact = wpiko_chatbot_get_conversation_contact($conversations);
+
         // Get user display name - prioritize logged-in user account details over email capture
         if ($first_message->user_id != 0) {
             // User is logged in - use account details
             $user_data = get_userdata($first_message->user_id);
             $user_display = $user_data ? $user_data->display_name : $user_data->user_login;
         } else {
-            // Guest user - use email capture name if available, otherwise 'Guest'
-            $user_display = $first_message->user_name ?: 'Guest';
+            // Guest user - use the name they gave, otherwise 'Guest'
+            $user_display = $contact['name'] ?: 'Guest';
         }
 
         // Get user email - prioritize logged-in user's email over email capture
-        $user_email_display = $first_message->user_email;
+        $user_email_display = $contact['email'];
         if ($first_message->user_id != 0) {
             $user_data = get_userdata($first_message->user_id);
             if ($user_data && !empty($user_data->user_email)) {
@@ -589,8 +682,11 @@ function wpiko_chatbot_fetch_conversation()
             'region' => $first_message->region,
             'user_email' => $user_email_display,
             'user_name' => $user_display,
-            'raw_user_name' => $first_message->user_name,
-            'user_id' => $first_message->user_id
+            'raw_user_name' => $contact['name'],
+            'user_id' => $first_message->user_id,
+            'ai_cost' => function_exists('wpiko_chatbot_usage_conversation_details')
+                ? wpiko_chatbot_usage_conversation_details($session_id, $first_message->timestamp)
+                : null,
         );
 
         // Allow pro plugin to enrich response (e.g. user presence)
@@ -721,6 +817,7 @@ function wpiko_chatbot_get_email_stats()
              SELECT user_email, MIN(timestamp) AS first_seen, MAX(timestamp) AS last_seen
              FROM `{$wpdb->prefix}wpiko_chatbot_conversations`
              WHERE user_email IS NOT NULL AND user_email != ''
+               AND role = 'user' AND message NOT LIKE 'Contact Form Submission:%%'
              GROUP BY user_email
          ) AS emails",
         $since
@@ -782,6 +879,7 @@ function wpiko_chatbot_download_emails()
                 MAX(timestamp) AS last_seen
          FROM `{$wpdb->prefix}wpiko_chatbot_conversations`
          WHERE user_email IS NOT NULL AND user_email != ''
+               AND role = 'user' AND message NOT LIKE 'Contact Form Submission:%'
          GROUP BY user_email
          {$having}
          ORDER BY last_seen DESC"

@@ -25,11 +25,17 @@ function wpiko_chatbot_conversations_section() {
     if (isset($_GET['wpiko_conversations_filter_nonce']) && wp_verify_nonce(sanitize_key($_GET['wpiko_conversations_filter_nonce']), 'wpiko_conversations_filter')) {
         $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
     }
+    // A link to one conversation (Dashboard, Analytics) opens the page it's on.
+    $linked_conversation = isset($_GET['conversation']) ? sanitize_text_field(wp_unslash($_GET['conversation'])) : '';
+    if ($linked_conversation !== '' && !isset($_GET['paged']) && $start_date === '' && $end_date === '') {
+        $current_page = wpiko_chatbot_get_conversation_page($linked_conversation, $per_page);
+    }
     $offset = ($current_page - 1) * $per_page;
     $total_items = wpiko_chatbot_get_total_conversations($start_date, $end_date);
     $total_pages = ceil($total_items / $per_page);
 
     $conversations = wpiko_chatbot_get_conversations($per_page, $offset, $start_date, $end_date);
+    $conversations = wpiko_chatbot_add_conversation_costs($conversations);
 
     // HTML for the conversations section
     ?>
@@ -223,6 +229,17 @@ function wpiko_chatbot_conversations_section() {
                             <span class="user-device info-value"></span>
                         </div>
                         <?php do_action('wpiko_chatbot_conversation_additional_info'); ?>
+                    </div>
+
+                    <!-- AI cost of the conversation (filled in when it opens) -->
+                    <div class="additional-info-section conversation-cost-section" hidden>
+                        <h4><?php esc_html_e('AI cost', 'wpiko-chatbot'); ?> <span class="conversation-cost-badge"><?php esc_html_e('Estimate', 'wpiko-chatbot'); ?></span></h4>
+                        <div class="info-item">
+                            <span class="info-label"><?php esc_html_e('Total', 'wpiko-chatbot'); ?></span>
+                            <span class="info-value conversation-cost-total"></span>
+                        </div>
+                        <div class="conversation-cost-rows"></div>
+                        <p class="conversation-cost-note"></p>
                     </div>
 
                     <div class="actions">

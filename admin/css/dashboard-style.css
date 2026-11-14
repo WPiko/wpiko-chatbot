@@ -910,7 +910,8 @@
 .wpiko-chatbot-dashboard .usage-row-bar > span {
     display: block;
     height: 100%;
-    background: var(--wpiko-ui-info);
+    /* Teal for money, the same as the cost charts on the Pro Analytics page. */
+    background: var(--wpiko-ui-teal-dark);
     border-radius: inherit;
 }
 
