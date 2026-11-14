@@ -39,6 +39,19 @@ removes them afterwards.
 
 Exclude development tests from public release ZIPs.
 
+## AI usage and cost
+
+Run `php tests/usage-tracking.php` and `php tests/conversation-cost.php` from the
+free plugin directory, and `php tests/cost-analytics.php` from the Pro directory.
+These tests make no network calls. Usage tests cover cache reads, both cache-write
+lifetimes, mixed input charges, promotional expiry and older response formats.
+
+Before each release, compare `includes/usage-tracking.php` with OpenAI's Standard
+pricing at https://developers.openai.com/api/docs/pricing and its prompt-caching
+guide. Check input, cached input, output, both write lifetimes, file-search calls
+and promotional end dates. After verifying, update `WPIKO_CHATBOT_PRICES_UPDATED`.
+Historical costs are stored at request time and are not recalculated.
+
 
 ## Chat cost-abuse regression tests
 

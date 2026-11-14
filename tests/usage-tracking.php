@@ -104,6 +104,8 @@ check(wpiko_chatbot_usage_price_key('gpt-6-lunatic') === '' && wpiko_chatbot_usa
 check(wpiko_chatbot_usage_model_rates('gpt-5.6-sol', strtotime('2026-11-30 23:00 UTC'))['input'] === 4.0, 'promo applies on its last day');
 check(wpiko_chatbot_usage_model_rates('gpt-5.6-sol', strtotime('2026-12-01 00:30 UTC'))['output'] === 30.0, 'promo ends');
 check(wpiko_chatbot_usage_model_rates('unknown') === null, 'no rates for unknown model');
+check(wpiko_chatbot_usage_model_rates('gpt-5.6-sol', strtotime('2026-11-30 23:00 UTC'))['write_30m'] === 5.0, 'promo write pricing applies on its last day');
+check(wpiko_chatbot_usage_model_rates('gpt-5.6-sol', strtotime('2026-12-01 00:30 UTC'))['write_12h'] === 12.5, 'write pricing changes when the promo ends');
 
 // Cost.
 $cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna', array('input' => 1000000, 'cached' => 400000, 'output' => 200000), 4);
@@ -117,10 +119,63 @@ $filters['wpiko_chatbot_model_prices'] = function ($prices) { $prices['my-model'
 check(near(wpiko_chatbot_usage_calculate_cost('my-model', array('input' => 1000000, 'cached' => 500000, 'output' => 0))['token_cost'], 1.0), 'filtered price, cached defaults to input price');
 unset($filters['wpiko_chatbot_model_prices']);
 
+// Cache writes replace ordinary input charges, and are separate from cache reads.
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna-2026-09-22', array('input' => 1000000, 'write_30m' => 1000000));
+check(near($cost['token_cost'], 0.125), '30m writes use the full write rate, without adding ordinary input again');
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna', array('input' => 1000000, 'write_12h' => 1000000));
+check(near($cost['token_cost'], 0.25), '12h writes use their own rate');
+$mixed_tokens = array('input' => 12000, 'cached' => 4000, 'write_30m' => 3000, 'write_12h' => 4000, 'output' => 2000);
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6.1-terra', $mixed_tokens, 2);
+// 1,000 ordinary + 4,000 reads + 3,000 short writes + 4,000 long writes + output.
+check(near($cost['token_cost'], 0.02495) && near($cost['search_cost'], 0.005), 'mixed writes, reads, ordinary input, output and file search are each charged once');
+$writes_only = array('input' => 2000000, 'write_30m' => 1000000, 'write_12h' => 1000000);
+check(near(wpiko_chatbot_usage_calculate_cost('gpt-5.6-sol', $writes_only, 0, strtotime('2026-11-30 23:59 UTC'))['token_cost'], 15), 'write cost uses promotional rates');
+check(near(wpiko_chatbot_usage_calculate_cost('gpt-5.6-sol', $writes_only, 0, strtotime('2026-12-01 00:00 UTC'))['token_cost'], 18.75), 'write cost uses regular rates after expiry');
+check(near(wpiko_chatbot_usage_calculate_cost('gpt-4.1-mini', $mixed_tokens)['token_cost'], 0.0068), 'older models have no cache-write premium');
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna', array('input' => 100, 'cached' => 40, 'write_30m' => 900, 'write_12h' => 20));
+check(near($cost['token_cost'], 0.0000104), 'oversized writes cannot charge more tokens than total input');
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna', array('input' => 100, 'write_30m' => -50, 'write_12h' => -20));
+check(near($cost['token_cost'], 0.00001), 'negative write counts are ignored');
+$cost = wpiko_chatbot_usage_calculate_cost('gpt-6-luna', array('input' => 100, 'cached' => 900, 'write_30m' => 900, 'write_12h' => 900));
+check(near($cost['token_cost'], 0.000001), 'cached reads leave no room for overlapping writes');
+$cost = wpiko_chatbot_usage_calculate_cost('mystery', $mixed_tokens, 2);
+check(!$cost['priced'] && $cost['token_cost'] === 0.0 && near($cost['search_cost'], 0.005), 'write counts do not turn an unknown model into a priced model');
+$filters['wpiko_chatbot_model_prices'] = function ($prices) {
+    $prices['my-model'] = array('input' => 1, 'cached' => 0.1, 'output' => 2, 'write_30m' => 1.25, 'write_12h' => 2.5);
+    return $prices;
+};
+check(near(wpiko_chatbot_usage_calculate_cost('my-model', $mixed_tokens)['token_cost'], 0.01915), 'custom filtered write prices follow the documented mixed-lifetime calculation');
+unset($filters['wpiko_chatbot_model_prices']);
+
 // Reading usage.
 $usage = wpiko_chatbot_usage_from_response(response('gpt-6-luna-2026-09-22', 1200, 1000, 300, 120, 2));
 check($usage['input'] === 1200 && $usage['cached'] === 1000 && $usage['output'] === 300 && $usage['reasoning'] === 120 && $usage['search_calls'] === 2, 'usage fields');
 check(wpiko_chatbot_usage_from_response(array('id' => 'x')) === null && wpiko_chatbot_usage_from_response('text') === null, 'no usage');
+check($usage['write_30m'] === 0 && $usage['write_12h'] === 0, 'responses without cache-write fields remain compatible');
+$write_response = response('gpt-6.1-terra', 12000, 4000, 2000, 0, 2);
+$write_response['usage']['input_tokens_details'] += array(
+    'cache_write_tokens' => 7000,
+    'cache_write_tokens_details' => array('ttl_30m_tokens' => 3000, 'ttl_12h_tokens' => 4000),
+);
+$usage = wpiko_chatbot_usage_from_response($write_response);
+check($usage['write_30m'] === 3000 && $usage['write_12h'] === 4000 && $usage['cached'] === 4000, 'API usage preserves non-overlapping writes by lifetime');
+check(near(wpiko_chatbot_usage_calculate_cost($usage['model'], $usage)['token_cost'], 0.02495), 'API usage calculates the mixed-lifetime cost without double-counting total writes');
+$total_only = $write_response;
+unset($total_only['usage']['input_tokens_details']['cache_write_tokens_details']);
+$usage = wpiko_chatbot_usage_from_response($total_only);
+check($usage['write_30m'] === 7000 && $usage['write_12h'] === 0, 'aggregate-only writes use our default 30m lifetime');
+$only_details = $write_response;
+unset($only_details['usage']['input_tokens_details']['cache_write_tokens']);
+$usage = wpiko_chatbot_usage_from_response($only_details);
+check($usage['write_30m'] === 3000 && $usage['write_12h'] === 4000, 'lifetime counts work without an aggregate write count');
+$no_details = response('gpt-4.1', 100, 0, 10);
+unset($no_details['usage']['input_tokens_details']);
+$usage = wpiko_chatbot_usage_from_response($no_details);
+check($usage['cached'] === 0 && $usage['write_30m'] === 0 && $usage['write_12h'] === 0, 'missing input detail objects have no cache charges');
+$invalid_writes = $write_response;
+$invalid_writes['usage']['input_tokens_details']['cache_write_tokens_details'] = array('ttl_30m_tokens' => -3000, 'ttl_12h_tokens' => 99000);
+$usage = wpiko_chatbot_usage_from_response($invalid_writes);
+check($usage['write_30m'] === 0 && $usage['write_12h'] === 8000, 'API write counts are nonnegative and bounded by input minus reads');
 
 // Context.
 check(wpiko_chatbot_usage_context() === null, 'no context by default');
@@ -165,6 +220,11 @@ wpiko_chatbot_usage_capture_http_response(new stdClass(), 'response', 'Requests'
 check(count($wpdb->rows) === $count, 'WP_Error-like responses skipped');
 $http(response('gpt-6-luna', 50, 0, 10));
 check(count($wpdb->rows) === $count + 1 && end($wpdb->rows)['source'] === 'chat', 'POST to Responses recorded');
+$http($write_response);
+$write_row = array_pop($wpdb->rows);
+check(near($write_row['token_cost'], 0.02495) && near($write_row['search_cost'], 0.005), 'HTTP capture stores the corrected cost for reports and budget checks');
+check($write_row['input_tokens'] === 12000 && $write_row['cached_tokens'] === 4000 && $write_row['output_tokens'] === 2000, 'saved total input already includes writes');
+check(array_keys($write_row) === array_keys($row), 'write accounting works with the existing usage table');
 $previous = wpiko_chatbot_usage_context(null);
 $http(response('gpt-6-luna', 50, 0, 10));
 check(count($wpdb->rows) === $count + 1, 'other plugins (no context) never counted');
@@ -236,5 +296,14 @@ $snapshot = wpiko_chatbot_get_usage_snapshot($now);
 check(near($snapshot['month']['cost'], 0.3685 + 1.004), 'Pro sources counted with Pro');
 check(isset($snapshot['month']['sources']['qa_generation']) && near($snapshot['month']['conversation_cost'], 0.3585 + 0.004), 'conversation cost includes lookups');
 check(array_keys($snapshot['month']['sources'])[0] === 'chat', 'sources keep their order');
+
+// Reports consume the saved cost, including writes, without repricing older usage.
+$historical_row = $wpdb->rows[0];
+$wpdb->rows = array($historical_row);
+$write_row['created_at'] = $historical_row['created_at'];
+$wpdb->rows[] = $write_row;
+$totals = wpiko_chatbot_usage_totals('2026-11-01 00:00:00', '2026-12-01 00:00:00');
+check(near($totals['token_cost'], $historical_row['token_cost'] + 0.02495) && near($totals['search_cost'], $historical_row['search_cost'] + 0.005), 'report totals include the corrected saved cost');
+check($wpdb->rows[0] === $historical_row, 'historical usage is not recalculated');
 
 echo "PASS: $passed usage tracking assertions; no network calls.\n";

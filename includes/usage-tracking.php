@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('WPIKO_CHATBOT_USAGE_SCHEMA', '1');
-define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-09');
+define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-14');
 define('WPIKO_CHATBOT_USAGE_RETENTION_DAYS', 400);
 define('WPIKO_CHATBOT_RESPONSES_ENDPOINT', 'https://api.openai.com/v1/responses');
 
@@ -118,25 +118,29 @@ register_deactivation_hook(WPIKO_CHATBOT_PLUGIN_FILE, 'wpiko_chatbot_deactivate_
  * Checked on WPIKO_CHATBOT_PRICES_UPDATED against https://developers.openai.com/api/docs/pricing
  * and the model pages. A `promo` entry applies until (and including) its `until`
  * date (UTC). Long-context prices (very large prompts) are not used by the chatbot.
+ * Cache writes replace ordinary input pricing for the written tokens; they are
+ * not an extra charge on top of input. Models without write rates use input rates.
  *
  * @return array<string, array<string, mixed>>
  */
 function wpiko_chatbot_get_model_prices()
 {
     $prices = array(
-        'gpt-6-astra' => array('input' => 10.00, 'cached' => 1.00, 'output' => 50.00),
-        'gpt-6.1-sol' => array('input' => 2.00, 'cached' => 0.10, 'output' => 10.00),
-        'gpt-6.1-terra' => array('input' => 1.00, 'cached' => 0.05, 'output' => 5.00),
-        'gpt-6-sol' => array('input' => 2.00, 'cached' => 0.20, 'output' => 10.00),
-        'gpt-6-luna' => array('input' => 0.10, 'cached' => 0.01, 'output' => 0.50),
+        'gpt-6-astra' => array('input' => 10.00, 'cached' => 1.00, 'output' => 50.00, 'write_30m' => 12.50, 'write_12h' => 25.00),
+        'gpt-6.1-sol' => array('input' => 2.00, 'cached' => 0.10, 'output' => 10.00, 'write_30m' => 2.50, 'write_12h' => 5.00),
+        'gpt-6.1-terra' => array('input' => 1.00, 'cached' => 0.05, 'output' => 5.00, 'write_30m' => 1.25, 'write_12h' => 2.50),
+        'gpt-6-sol' => array('input' => 2.00, 'cached' => 0.20, 'output' => 10.00, 'write_30m' => 2.50, 'write_12h' => 5.00),
+        'gpt-6-luna' => array('input' => 0.10, 'cached' => 0.01, 'output' => 0.50, 'write_30m' => 0.125, 'write_12h' => 0.25),
         'gpt-5.6-sol' => array(
             'input' => 5.00,
             'cached' => 0.50,
             'output' => 30.00,
-            'promo' => array('until' => '2026-11-30', 'input' => 4.00, 'cached' => 0.40, 'output' => 20.00),
+            'write_30m' => 6.25,
+            'write_12h' => 12.50,
+            'promo' => array('until' => '2026-11-30', 'input' => 4.00, 'cached' => 0.40, 'output' => 20.00, 'write_30m' => 5.00, 'write_12h' => 10.00),
         ),
-        'gpt-5.6-terra' => array('input' => 2.00, 'cached' => 0.20, 'output' => 12.00),
-        'gpt-5.6-luna' => array('input' => 0.20, 'cached' => 0.02, 'output' => 1.20),
+        'gpt-5.6-terra' => array('input' => 2.00, 'cached' => 0.20, 'output' => 12.00, 'write_30m' => 2.50, 'write_12h' => 5.00),
+        'gpt-5.6-luna' => array('input' => 0.20, 'cached' => 0.02, 'output' => 1.20, 'write_30m' => 0.25, 'write_12h' => 0.50),
         'gpt-5.5' => array('input' => 5.00, 'cached' => 0.50, 'output' => 30.00),
         'gpt-5.4' => array('input' => 2.50, 'cached' => 0.25, 'output' => 15.00),
         'gpt-5.4-mini' => array('input' => 0.75, 'cached' => 0.075, 'output' => 4.50),
@@ -148,7 +152,7 @@ function wpiko_chatbot_get_model_prices()
     /**
      * Filter the model prices used for cost estimates (USD per 1M tokens).
      *
-     * @param array $prices Model ID => array( input, cached, output [, promo] ).
+     * @param array $prices Model ID => array( input, cached, output [, write_30m, write_12h, promo] ).
      */
     $prices = apply_filters('wpiko_chatbot_model_prices', $prices);
     return is_array($prices) ? $prices : array();
@@ -196,7 +200,7 @@ function wpiko_chatbot_usage_price_key($model)
  *
  * @param string   $model Model ID.
  * @param int|null $time  Unix time (default now).
- * @return array{input: float, cached: float, output: float}|null
+ * @return array{input: float, cached: float, output: float, write_30m: float, write_12h: float}|null
  */
 function wpiko_chatbot_usage_model_rates($model, $time = null)
 {
@@ -220,6 +224,8 @@ function wpiko_chatbot_usage_model_rates($model, $time = null)
         'input' => (float) $entry['input'],
         'cached' => isset($entry['cached']) ? (float) $entry['cached'] : (float) $entry['input'],
         'output' => (float) $entry['output'],
+        'write_30m' => isset($entry['write_30m']) ? (float) $entry['write_30m'] : (float) $entry['input'],
+        'write_12h' => isset($entry['write_12h']) ? (float) $entry['write_12h'] : (float) $entry['input'],
     );
 }
 
@@ -227,7 +233,7 @@ function wpiko_chatbot_usage_model_rates($model, $time = null)
  * Estimated cost of one API call.
  *
  * @param string   $model        Model ID.
- * @param array    $tokens       input, cached, output token counts.
+ * @param array    $tokens       input, cached, output and optional write_30m/write_12h token counts.
  * @param int      $search_calls File search calls.
  * @param int|null $time         Unix time of the call.
  * @return array{token_cost: float, search_cost: float, priced: bool}
@@ -239,8 +245,17 @@ function wpiko_chatbot_usage_calculate_cost($model, $tokens, $search_calls = 0, 
     if ($rates !== null) {
         $input = max(0, (int) ($tokens['input'] ?? 0));
         $cached = min($input, max(0, (int) ($tokens['cached'] ?? 0)));
+        $write_12h = min($input - $cached, max(0, (int) ($tokens['write_12h'] ?? 0)));
+        $write_30m = min($input - $cached - $write_12h, max(0, (int) ($tokens['write_30m'] ?? 0)));
+        $ordinary = $input - $cached - $write_30m - $write_12h;
         $output = max(0, (int) ($tokens['output'] ?? 0));
-        $token_cost = (($input - $cached) * $rates['input'] + $cached * $rates['cached'] + $output * $rates['output']) / 1000000;
+        $token_cost = (
+            $ordinary * $rates['input']
+            + $cached * $rates['cached']
+            + $write_30m * $rates['write_30m']
+            + $write_12h * $rates['write_12h']
+            + $output * $rates['output']
+        ) / 1000000;
     }
     return array(
         'token_cost' => $token_cost,
@@ -312,6 +327,15 @@ function wpiko_chatbot_usage_from_response($response)
     }
     $usage = $response['usage'];
     $input = absint($usage['input_tokens'] ?? 0);
+    $input_details = isset($usage['input_tokens_details']) && is_array($usage['input_tokens_details']) ? $usage['input_tokens_details'] : array();
+    $write_details = isset($input_details['cache_write_tokens_details']) && is_array($input_details['cache_write_tokens_details']) ? $input_details['cache_write_tokens_details'] : array();
+    $cached = min($input, max(0, (int) ($input_details['cached_tokens'] ?? 0)));
+    $write_12h = min($input - $cached, max(0, (int) ($write_details['ttl_12h_tokens'] ?? 0)));
+    // Older responses may report only total writes. Our requests use the default 30m lifetime.
+    $write_30m = isset($write_details['ttl_30m_tokens'])
+        ? max(0, (int) $write_details['ttl_30m_tokens'])
+        : max(0, (int) ($input_details['cache_write_tokens'] ?? 0) - $write_12h);
+    $write_30m = min($input - $cached - $write_12h, $write_30m);
     $search_calls = 0;
     $output_items = isset($response['output']) && is_array($response['output']) ? $response['output'] : array();
     foreach ($output_items as $item) {
@@ -323,7 +347,9 @@ function wpiko_chatbot_usage_from_response($response)
         'model' => isset($response['model']) && is_string($response['model']) ? $response['model'] : '',
         'response_id' => isset($response['id']) && is_string($response['id']) ? $response['id'] : '',
         'input' => $input,
-        'cached' => min($input, absint($usage['input_tokens_details']['cached_tokens'] ?? 0)),
+        'cached' => $cached,
+        'write_30m' => $write_30m,
+        'write_12h' => $write_12h,
         'output' => absint($usage['output_tokens'] ?? 0),
         'reasoning' => absint($usage['output_tokens_details']['reasoning_tokens'] ?? 0),
         'search_calls' => $search_calls,
@@ -358,6 +384,8 @@ function wpiko_chatbot_record_usage($response, $context = null, $fallback_model 
         $model = substr(preg_replace('/[^A-Za-z0-9._:-]/', '', $model), 0, 80);
         $cost = wpiko_chatbot_usage_calculate_cost($model, $usage, $usage['search_calls']);
 
+        // The saved token cost includes cache writes. Existing reports sum this cost;
+        // input_tokens still includes all input categories, so no schema change is needed.
         $row = array(
             'created_at' => gmdate('Y-m-d H:i:s'),
             'source' => substr((string) $context['source'], 0, 40),

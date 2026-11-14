@@ -163,6 +163,7 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 == Changelog ==
 
 = 2.1.5 =
+* Fix: AI cost estimates now include OpenAI's cache-write pricing for GPT-5.6 and later models, including 30-minute and 12-hour writes. Previously recorded costs are kept as recorded. Model prices checked on November 14, 2026.
 * Feature: Conversations shows what each conversation cost in OpenAI credit. The estimated cost appears under the time in the inbox, and the Details panel has a new AI cost section with the AI replies, knowledge searches, tokens and model of that conversation. Conversations from before cost tracking started say "Not tracked".
 * Improve: Accessibility of the chat window. The message box, the Send button and the menu button now have names that screen readers announce ("Type your message", "Send message", "Menu"), the reply field in the proactive greeting is announced as "Type your message", and the name and email fields in the email capture form are labelled with their placeholder text. Accessibility checkers no longer report form fields without a label or a button without text.
 * Improve: The name and email fields in the email capture form now let browsers fill in saved details.
