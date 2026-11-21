@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('WPIKO_CHATBOT_USAGE_SCHEMA', '1');
-define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-14');
+define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-21');
 define('WPIKO_CHATBOT_USAGE_RETENTION_DAYS', 400);
 define('WPIKO_CHATBOT_RESPONSES_ENDPOINT', 'https://api.openai.com/v1/responses');
 
@@ -126,6 +126,8 @@ register_deactivation_hook(WPIKO_CHATBOT_PLUGIN_FILE, 'wpiko_chatbot_deactivate_
 function wpiko_chatbot_get_model_prices()
 {
     $prices = array(
+        'gpt-6.2-astra' => array('input' => 8.00, 'cached' => 0.40, 'output' => 40.00, 'write_30m' => 10.00, 'write_12h' => 20.00),
+        'gpt-6.2-sol' => array('input' => 2.00, 'cached' => 0.10, 'output' => 10.00, 'write_30m' => 2.50, 'write_12h' => 5.00),
         'gpt-6-astra' => array('input' => 10.00, 'cached' => 1.00, 'output' => 50.00, 'write_30m' => 12.50, 'write_12h' => 25.00),
         'gpt-6.1-sol' => array('input' => 2.00, 'cached' => 0.10, 'output' => 10.00, 'write_30m' => 2.50, 'write_12h' => 5.00),
         'gpt-6.1-terra' => array('input' => 1.00, 'cached' => 0.05, 'output' => 5.00, 'write_30m' => 1.25, 'write_12h' => 2.50),

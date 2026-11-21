@@ -3,21 +3,39 @@
  * Displays detailed model information when users select models in the Responses API section
  * GPT-6 family details checked against OpenAI Models documentation on September 30, 2026
  * GPT-6.1 Terra details checked against OpenAI Models and Pricing documentation on October 28, 2026
+ * GPT-6.2 details checked against OpenAI Models documentation on November 21, 2026
  */
 
 jQuery(document).ready(function ($) {
 
     // Model information data based on provided table
     const modelsData = {
+        'gpt-6.2-astra': {
+            displayName: 'GPT-6.2 Astra',
+            description: 'Flagship model for demanding reasoning, coding, and document work',
+            reasoning: 5,
+            intelligence: null,
+            speed: 4,
+            contextWindow: '1,050,000',
+            maxOutputTokens: '128,000'
+        },
+        'gpt-6.2-sol': {
+            displayName: 'GPT-6.2 Sol',
+            description: 'General-purpose model for everyday work, coding, and agent workflows',
+            reasoning: 5,
+            intelligence: null,
+            speed: 4,
+            contextWindow: '1,050,000',
+            maxOutputTokens: '128,000'
+        },
         'gpt-6-astra': {
             displayName: 'GPT-6 Astra',
             description: 'OpenAI\'s most capable model for complex reasoning, coding, research, and document creation',
             reasoning: 5,
             intelligence: null,
-            speed: 3,
+            speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$10.00 / $50.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-6.1-sol': {
             displayName: 'GPT-6.1 Sol',
@@ -26,18 +44,16 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$2.00 / $10.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-6.1-terra': {
             displayName: 'GPT-6.1 Terra',
             description: 'Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing',
-            reasoning: null,
+            reasoning: 5,
             intelligence: null,
-            speed: null,
+            speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$1.00 / $5.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-6-sol': {
             displayName: 'GPT-6 Sol',
@@ -46,18 +62,16 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$2.00 / $10.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-6-luna': {
             displayName: 'GPT-6 Luna',
             description: 'Efficient model for focused, high-volume tasks',
             reasoning: 3,
             intelligence: null,
-            speed: 5,
+            speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.10 / $0.50'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.6-sol': {
             displayName: 'GPT-5.6 Sol',
@@ -66,8 +80,7 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 3,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$4.00 / $20.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.6-terra': {
             displayName: 'GPT-5.6 Terra',
@@ -76,18 +89,16 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$2.00 / $12.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.6-luna': {
             displayName: 'GPT-5.6 Luna',
             description: 'GPT-5.6 model optimized for cost-sensitive, high-volume workloads',
             reasoning: 3,
             intelligence: null,
-            speed: 5,
+            speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.20 / $1.20'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.5-2026-04-23': {
             displayName: 'GPT-5.5',
@@ -96,8 +107,7 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 4,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$5.00 / $30.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.4': {
             displayName: 'GPT-5.4',
@@ -106,8 +116,7 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 3,
             contextWindow: '1,050,000',
-            maxOutputTokens: '128,000',
-            cost: '$2.50 / $15.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.4-mini': {
             displayName: 'GPT-5.4 Mini',
@@ -116,8 +125,7 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 4,
             contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$0.75 / $4.50'
+            maxOutputTokens: '128,000'
         },
         'gpt-5.2': {
             displayName: 'GPT-5.2',
@@ -126,8 +134,7 @@ jQuery(document).ready(function ($) {
             intelligence: null,
             speed: 3,
             contextWindow: '400,000',
-            maxOutputTokens: '128,000',
-            cost: '$1.75 / $14.00'
+            maxOutputTokens: '128,000'
         },
         'gpt-4.1': {
             displayName: 'GPT-4.1',
@@ -136,8 +143,7 @@ jQuery(document).ready(function ($) {
             intelligence: 4,
             speed: 3,
             contextWindow: '1,047,576',
-            maxOutputTokens: '32,768',
-            cost: '$2.00 / $8.00'
+            maxOutputTokens: '32,768'
         },
         'gpt-4.1-mini': {
             displayName: 'GPT-4.1 Mini',
@@ -146,15 +152,14 @@ jQuery(document).ready(function ($) {
             intelligence: 3,
             speed: 4,
             contextWindow: '1,047,576',
-            maxOutputTokens: '32,768',
-            cost: '$0.40 / $1.60'
+            maxOutputTokens: '32,768'
         }
     };
 
     /**
      * Generate HTML for model information display
      */
-    function generateModelInfoHTML(modelKey) {
+    function generateModelInfoHTML(modelKey, hasPrice) {
         const model = modelsData[modelKey];
         if (!model) {
             return '<div class="wpiko-chatbot-model-info-box"><div class="wpiko-chatbot-info-content"><p>Model information not available.</p></div></div>';
@@ -216,10 +221,12 @@ jQuery(document).ready(function ($) {
                                 <span class="wpiko-spec-label">Max Output</span>
                                 <span class="wpiko-spec-value">${model.maxOutputTokens} tokens</span>
                             </div>
+                            ${hasPrice ? `
                             <div class="wpiko-spec-item">
                                 <span class="wpiko-spec-label">Input / Output per 1M</span>
-                                <span class="wpiko-spec-value">${model.cost}</span>
+                                <span class="wpiko-spec-value wpiko-model-price"></span>
                             </div>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -239,12 +246,11 @@ jQuery(document).ready(function ($) {
     /**
      * Update model information display
      */
-    function updateModelInfo(selectedModel) {
+    function updateModelInfo($modelSelect) {
         let $modelInfoContainer = $('#wpiko-responses-model-info');
 
         if (!$modelInfoContainer.length) {
             // Create the container if it doesn't exist
-            const $modelSelect = $('#responses_model');
             if ($modelSelect.length) {
                 const $parentTd = $modelSelect.closest('td');
                 if ($parentTd.length) {
@@ -255,8 +261,10 @@ jQuery(document).ready(function ($) {
         }
 
         if ($modelInfoContainer.length) {
-            const modelInfoHTML = generateModelInfoHTML(selectedModel);
+            const price = $modelSelect.find(':selected').attr('data-token-price');
+            const modelInfoHTML = generateModelInfoHTML($modelSelect.val(), Boolean(price));
             $modelInfoContainer.html(modelInfoHTML);
+            $modelInfoContainer.find('.wpiko-model-price').text(price || '');
         } else {
             console.warn('Wpiko Models Info: Could not find or create model info container');
         }
@@ -270,15 +278,13 @@ jQuery(document).ready(function ($) {
 
         if ($modelSelect.length) {
             // Show info for initially selected model
-            const initialModel = $modelSelect.val();
-            if (initialModel) {
-                updateModelInfo(initialModel);
+            if ($modelSelect.val()) {
+                updateModelInfo($modelSelect);
             }
 
             // Handle model selection changes
             $modelSelect.on('change', function () {
-                const selectedModel = $(this).val();
-                updateModelInfo(selectedModel);
+                updateModelInfo($modelSelect);
 
                 // Add a subtle animation
                 $('#wpiko-responses-model-info').hide().fadeIn(300);

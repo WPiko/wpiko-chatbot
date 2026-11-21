@@ -12,6 +12,8 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
 {
     // Known to support tools/file_search
     $supports = array(
+        'gpt-6.2-astra',
+        'gpt-6.2-sol',
         'gpt-6-astra',
         'gpt-6.1-sol',
         'gpt-6.1-terra',
@@ -44,6 +46,8 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
 function wpiko_chatbot_get_responses_reasoning_effort_config()
 {
     return array(
+        'gpt-6.2-astra' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
+        'gpt-6.2-sol' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-6-astra' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-6.1-sol' => array('allowed' => array('low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
         'gpt-6.1-terra' => array('allowed' => array('none', 'low', 'medium', 'high', 'xhigh', 'max'), 'default' => 'medium'),
@@ -1243,6 +1247,8 @@ function wpiko_chatbot_clear_vector_store_files_cache()
 function wpiko_chatbot_get_responses_api_models()
 {
     return array(
+        'gpt-6.2-astra' => 'GPT-6.2 Astra',
+        'gpt-6.2-sol' => 'GPT-6.2 Sol',
         'gpt-6-astra' => 'GPT-6 Astra',
         'gpt-6.1-sol' => 'GPT-6.1 Sol',
         'gpt-6.1-terra' => 'GPT-6.1 Terra',

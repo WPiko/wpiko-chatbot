@@ -72,10 +72,14 @@ function wpiko_chatbot_ai_configuration_section()
                                 if (!isset($available_models[$responses_model])) {
                                     $responses_model = 'gpt-6-luna';
                                 }
+                                $pricing_time = time();
                                 foreach ($available_models as $model_value => $model_label) {
+                                    $rates = wpiko_chatbot_usage_model_rates($model_value, $pricing_time);
+                                    $token_price = $rates ? sprintf('$%.2F / $%.2F', $rates['input'], $rates['output']) : '';
                                     printf(
-                                        '<option value="%s" %s>%s</option>',
+                                        '<option value="%s" data-token-price="%s" %s>%s</option>',
                                         esc_attr($model_value),
+                                        esc_attr($token_price),
                                         selected($model_value, $responses_model, false),
                                         esc_html($model_label)
                                     );
@@ -403,20 +407,7 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
                 'max': 'Max'
             };
 
-            var modelConfigs = {
-                'gpt-6-astra': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-6.1-sol': { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-6.1-terra': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-6-sol': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-6-luna': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-5.2': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
-                'gpt-5.4': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
-                'gpt-5.4-mini': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
-                'gpt-5.5-2026-04-23': { efforts: ['none', 'low', 'medium', 'high', 'xhigh'], defaultEffort: 'none' },
-                'gpt-5.6-sol': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-5.6-terra': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' },
-                'gpt-5.6-luna': { efforts: ['none', 'low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'medium' }
-            };
+            var modelConfigs = <?php echo wp_json_encode(wpiko_chatbot_get_responses_reasoning_effort_config()); ?>;
 
             var $modelSelect = $('#responses_model');
             var $effortSelect = $('#responses_reasoning_effort');
@@ -435,8 +426,8 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
 
                 if (config) {
                     // Update Reasoning Effort Options
-                    var supportedEfforts = config.efforts;
-                    var defaultEffort = config.defaultEffort;
+                    var supportedEfforts = config.allowed;
+                    var defaultEffort = config.default;
 
                     // Save current selection to see if we can keep it
                     var previousSelection = $effortSelect.val();

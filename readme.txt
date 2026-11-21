@@ -3,7 +3,7 @@ Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 2.1.5
+Stable tag: 2.1.6
 Requires PHP: 7.0
 License: GPL-2.0+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -162,24 +162,17 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 == Changelog ==
 
-= 2.1.5 =
-* Fix: AI cost estimates now include OpenAI's cache-write pricing for GPT-5.6 and later models, including 30-minute and 12-hour writes. Previously recorded costs are kept as recorded. Model prices checked on November 14, 2026.
-* Feature: Conversations shows what each conversation cost in OpenAI credit. The estimated cost appears under the time in the inbox, and the Details panel has a new AI cost section with the AI replies, knowledge searches, tokens and model of that conversation. Conversations from before cost tracking started say "Not tracked".
-* Improve: Accessibility of the chat window. The message box, the Send button and the menu button now have names that screen readers announce ("Type your message", "Send message", "Menu"), the reply field in the proactive greeting is announced as "Type your message", and the name and email fields in the email capture form are labelled with their placeholder text. Accessibility checkers no longer report form fields without a label or a button without text.
-* Improve: The name and email fields in the email capture form now let browsers fill in saved details.
-* Fix: A conversation opened from the Dashboard's Recent activity now opens even when it isn't among the 10 newest conversations in Conversations.
-* Fix: Conversations now shows the name and email a visitor gave later in the chat (for example in the WPiko AI Chatbot Pro contact form) in the Details panel and the inbox, not only details from their first message.
-* Improve: Download emails now lists the email addresses visitors gave through email capture and signed-in visitors. Addresses typed only into the contact form stay on their conversation but are no longer added to the download, because those visitors asked for help, not to be contacted.
-* Improve: The per-feature bars in the Dashboard's AI usage & cost widget are now teal, the colour used for AI cost.
-* Developer: The Send and menu buttons now have `type="button"`. The new labels can be translated with the `wpiko-chatbot` text domain.
-* Developer: New `wpiko_chatbot_usage_widget_after_periods` action in the Dashboard's AI usage & cost widget, below the Today, Last 7 days and month figures. WPiko AI Chatbot Pro uses it to show the monthly budget.
+= 2.1.6 =
+* Feature: Added GPT-6.2 Astra and GPT-6.2 Sol to AI Configuration with reasoning controls, knowledge file search and usage cost estimates.
+* Fix: Model cards now show the same OpenAI rates used for cost estimates. The GPT-5.6 Sol card updates to the regular rate when the promotion ends.
+* Update: Verified OpenAI API pricing on November 21, 2026.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
-= 2.1.5 =
-See what each conversation cost in Conversations. Accessibility improvements in the chat window: screen readers now announce the message box, Send button, menu button, proactive greeting reply field and email capture fields.
+= 2.1.6 =
+Adds GPT-6.2 Astra and GPT-6.2 Sol and keeps model card prices in sync with usage estimates.
 
 == External Services ==
 
