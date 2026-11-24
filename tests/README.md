@@ -37,6 +37,11 @@ The Pro takeover auto-release check runs from the Pro plugin directory with
 (as an admin) runs it against the real tables with two test conversations and
 removes them afterwards.
 
+Quick learn and the shared knowledge Markdown converter
+(`includes/knowledge-markdown.php`, also used by Pro's Scan Website) are checked
+on the local site at `/wp-content/plugins/wpiko-chatbot/tests/quick-learn-live.php`
+(as an admin; temporary pages, no OpenAI requests, `?show=1` prints the file).
+
 Exclude development tests from public release ZIPs.
 
 ## AI usage and cost

@@ -197,6 +197,7 @@ require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/conversation-handler.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/markdown-handler.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/api-helpers.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/openai-health.php';
+require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/knowledge-markdown.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/site-knowledge.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/sound-functions.php';
 require_once WPIKO_CHATBOT_PLUGIN_DIR . 'includes/files-list-handler.php';

@@ -2,14 +2,16 @@
 /**
  * "Quick learn from your pages": turns selected pages into a knowledge file.
  *
- * Builds one plain-text knowledge file from up to
+ * Builds one Markdown knowledge file from up to
  * WPIKO_CHATBOT_SITE_KNOWLEDGE_PAGE_LIMIT pages and uploads it to the
  * chatbot's OpenAI vector store, so a brand-new chatbot can answer questions
- * about the business straight away. No AI requests are made per page.
+ * about the business straight away. No AI requests are made per page. Pages
+ * are converted the same way as Pro's Scan Website (knowledge-markdown.php):
+ * exact wording, tables, a short header per page and context lines.
  *
  * The limit is the same for every site (with or without Pro) and keeps the
  * build fast on any host. WPiko AI Chatbot Pro's separate "Scan Website" tool
- * covers whole sites: AI-written Q&A for pages, clean Markdown for posts and docs.
+ * covers whole sites: every page, post and doc as clean Markdown.
  *
  * @package WPiko_Chatbot
  */
@@ -21,7 +23,7 @@ if (!defined('ABSPATH')) {
 define('WPIKO_CHATBOT_SITE_KNOWLEDGE_PAGE_LIMIT', 10);
 
 /** Maximum characters kept per page, to keep the knowledge file focused. */
-define('WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE', 20000);
+define('WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE', 30000);
 
 /**
  * Maximum number of pages that can be included.
@@ -187,10 +189,13 @@ function wpiko_chatbot_site_knowledge_candidates()
 }
 
 /**
- * Get a page's readable text, including page-builder content where possible.
+ * Get a page's text as Markdown, including page-builder content where possible.
+ *
+ * Very long pages are cut at WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE
+ * characters, at a paragraph break when there is one nearby.
  *
  * @param int $post_id Page ID.
- * @return array{title: string, url: string, text: string}|null
+ * @return array{title: string, url: string, text: string, truncated: bool, post: WP_Post}|null
  */
 function wpiko_chatbot_site_knowledge_page_text($post_id)
 {
@@ -199,42 +204,39 @@ function wpiko_chatbot_site_knowledge_page_text($post_id)
         return null;
     }
 
-    $html = '';
+    $text = wpiko_chatbot_html_to_markdown(wpiko_chatbot_knowledge_post_html($post));
 
-    // Elementor keeps its content outside post_content.
-    if (did_action('elementor/loaded') && class_exists('\Elementor\Plugin') && get_post_meta($post_id, '_elementor_edit_mode', true) === 'builder') {
-        $elementor = \Elementor\Plugin::instance();
-        if (isset($elementor->frontend) && method_exists($elementor->frontend, 'get_builder_content_for_display')) {
-            $html = (string) $elementor->frontend->get_builder_content_for_display($post_id);
+    $max = WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE;
+    $truncated = false;
+    $length = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+    if ($length > $max) {
+        $truncated = true;
+        $text = function_exists('mb_substr') ? mb_substr($text, 0, $max, 'UTF-8') : substr($text, 0, $max);
+        $break = function_exists('mb_strrpos') ? mb_strrpos($text, "\n\n", 0, 'UTF-8') : strrpos($text, "\n\n");
+        if ($break !== false && $break > $max * 0.8) {
+            $text = function_exists('mb_substr') ? mb_substr($text, 0, $break, 'UTF-8') : substr($text, 0, $break);
         }
-    }
-
-    if ($html === '') {
-        $html = $post->post_content;
-        if (function_exists('has_blocks') && has_blocks($html)) {
-            $html = do_blocks($html);
+        $text = rtrim($text);
+        // Close a code block that was cut in half.
+        if (preg_match_all('/^\s*(?:```|~~~)/m', $text) % 2 === 1) {
+            $text .= "\n```";
         }
-        // Do not render the chatbot itself inside its own knowledge.
-        $html = str_replace('[wpiko_chatbot]', '', $html);
-        $html = do_shortcode($html);
-    }
-
-    $text = wpiko_chatbot_html_to_text($html);
-    if (function_exists('mb_substr')) {
-        $text = mb_substr($text, 0, WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE);
-    } else {
-        $text = substr($text, 0, WPIKO_CHATBOT_SITE_KNOWLEDGE_MAX_CHARS_PER_PAGE);
     }
 
     return array(
-        'title' => wp_strip_all_tags(get_the_title($post)),
+        'title' => wpiko_chatbot_knowledge_title($post),
         'url' => get_permalink($post),
         'text' => $text,
+        'truncated' => $truncated,
+        'post' => $post,
     );
 }
 
 /**
  * Convert HTML to readable text, keeping headings, lists and link targets.
+ *
+ * Quick learn now uses wpiko_chatbot_html_to_markdown(); this stays for
+ * code that called it.
  *
  * @param string $html HTML.
  * @return string
@@ -274,6 +276,66 @@ function wpiko_chatbot_html_to_text($html)
 }
 
 /**
+ * Build the Quick learn file for the given pages (without uploading it).
+ *
+ * @param int[] $page_ids Pages to include, in order.
+ * @return array{document: string, included: int[], skipped: string[], truncated: string[]}
+ */
+function wpiko_chatbot_site_knowledge_document($page_ids)
+{
+    $site_name = wp_strip_all_tags(get_bloginfo('name'));
+    $document = '# ' . sprintf('Website content: %s', $site_name) . "\n";
+    $document .= 'Website address: ' . home_url('/') . "\n";
+    $tagline = wp_strip_all_tags(get_bloginfo('description'));
+    if ($tagline !== '') {
+        $document .= 'Tagline: ' . $tagline . "\n";
+    }
+    $document .= 'This file contains the text of pages on this website. Use it to answer visitor questions and mention the page link when it helps.' . "\n";
+
+    $included = array();
+    $skipped = array();
+    $truncated = array();
+    foreach ((array) $page_ids as $page_id) {
+        $page = wpiko_chatbot_site_knowledge_page_text($page_id);
+        if (!$page || trim($page['text']) === '') {
+            $skipped[] = $page ? $page['title'] : get_the_title($page_id);
+            continue;
+        }
+
+        $header = '# Page: ' . $page['title'] . "\n" . 'Source: ' . $page['url'];
+        $section = wpiko_chatbot_knowledge_section($page['post']);
+        if ($section) {
+            $header .= "\n" . 'Section: ' . implode(' › ', $section);
+        }
+        $summary = wpiko_chatbot_knowledge_summary($page['post']);
+        if ($summary !== '') {
+            $header .= "\n" . 'Summary: ' . $summary;
+        }
+
+        // The file holds several pages and OpenAI splits it without looking
+        // at where a page starts, so every page gets context lines.
+        $body = wpiko_chatbot_markdown_add_context($page['text'], $page['post'], array(
+            'header_tokens' => wpiko_chatbot_estimate_tokens($header),
+            'source' => 'quick_learn',
+            'always' => true,
+        ));
+
+        $document .= "\n\n---\n\n" . $header . "\n\n" . $body . "\n";
+        $included[] = (int) $page_id;
+        if (!empty($page['truncated'])) {
+            $truncated[] = $page['title'];
+        }
+    }
+
+    return array(
+        'document' => $document,
+        'included' => $included,
+        'skipped' => $skipped,
+        'truncated' => $truncated,
+    );
+}
+
+/**
  * Build the knowledge file from the selected pages and upload it.
  *
  * Replaces the previous site knowledge file, if any.
@@ -309,27 +371,11 @@ function wpiko_chatbot_build_site_knowledge($page_ids)
     }
 
     $site_name = wp_strip_all_tags(get_bloginfo('name'));
-    $document = '# ' . sprintf('Website content: %s', $site_name) . "\n";
-    $document .= 'Website address: ' . home_url('/') . "\n";
-    $tagline = wp_strip_all_tags(get_bloginfo('description'));
-    if ($tagline !== '') {
-        $document .= 'Tagline: ' . $tagline . "\n";
-    }
-    $document .= 'This file contains the text of pages on this website. Use it to answer visitor questions and mention the page link when it helps.' . "\n";
-
-    $included = 0;
-    $included_ids = array();
-    $skipped = array();
-    foreach ($page_ids as $page_id) {
-        $page = wpiko_chatbot_site_knowledge_page_text($page_id);
-        if (!$page || trim($page['text']) === '') {
-            $skipped[] = $page ? $page['title'] : get_the_title($page_id);
-            continue;
-        }
-        $document .= "\n\n---\n\n# Page: " . $page['title'] . "\nURL: " . $page['url'] . "\n\n" . $page['text'] . "\n";
-        $included++;
-        $included_ids[] = $page_id;
-    }
+    $built = wpiko_chatbot_site_knowledge_document($page_ids);
+    $document = $built['document'];
+    $included = count($built['included']);
+    $included_ids = $built['included'];
+    $skipped = $built['skipped'];
 
     if ($included === 0) {
         return array('success' => false, 'message' => __('The selected pages have no readable text. Try other pages, or upload a document with your business information instead.', 'wpiko-chatbot'));
@@ -388,6 +434,13 @@ function wpiko_chatbot_build_site_knowledge($page_ids)
             /* translators: %s: page titles. */
             __('Skipped because they have no readable text: %s.', 'wpiko-chatbot'),
             implode(', ', array_map('wp_strip_all_tags', $skipped))
+        );
+    }
+    if (!empty($built['truncated'])) {
+        $message .= ' ' . sprintf(
+            /* translators: %s: page titles. */
+            __('Only the first part of these very long pages was added: %s. Upload the rest as a document in File Management if the chatbot needs it.', 'wpiko-chatbot'),
+            implode(', ', array_map('wp_strip_all_tags', $built['truncated']))
         );
     }
 
@@ -626,8 +679,8 @@ function wpiko_chatbot_render_site_knowledge_panel($context = 'settings')
             <div class="wpiko-knowledge-compare-card is-pro">
                 <strong><span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span> <?php esc_html_e('Scan Website', 'wpiko-chatbot'); ?> <span class="wpiko-pro-pill">PRO</span></strong>
                 <ul>
-                    <li><?php esc_html_e('AI writes Q&A from your pages', 'wpiko-chatbot'); ?></li>
-                    <li><?php esc_html_e('Posts and docs added as clean Markdown', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Pages, posts and docs as clean Markdown', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Exact wording, no AI cost, can update automatically', 'wpiko-chatbot'); ?></li>
                     <li><?php esc_html_e('Any number of pages, posts and docs', 'wpiko-chatbot'); ?></li>
                 </ul>
                 <?php if ($pro_licensed) : ?>

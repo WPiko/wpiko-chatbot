@@ -314,7 +314,7 @@ For support inquiries, direct users to contact@example.com."><?php echo esc_text
                                 'scan' => array(
                                     'icon' => 'dashicons-search',
                                     'label' => __('Scan Website', 'wpiko-chatbot'),
-                                    'info' => __('Scan your pages, posts and docs with no page limit. Pages become AI-written questions and answers; posts and docs are added as clean Markdown.', 'wpiko-chatbot'),
+                                    'info' => __('Scan your pages, posts and docs with no page limit. They are added as clean Markdown with their exact wording, with no AI cost.', 'wpiko-chatbot'),
                                 ),
                                 'qa' => array(
                                     'icon' => 'dashicons-editor-help',

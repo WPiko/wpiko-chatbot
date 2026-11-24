@@ -244,7 +244,7 @@ function refreshUrlProcessingFileList(retryCount = 0) {
                 
                 setListCount('url-processing-files-count', pageFiles.length);
                 if (!hasUrlProcessingFiles) {
-                    $urlProcessingFilesList.empty().append(emptyRow('dashicons-admin-page', 'No pages scanned yet', 'Find a page above and generate its Q&A.'));
+                    $urlProcessingFilesList.empty().append(emptyRow('dashicons-admin-page', 'No pages scanned yet', 'Scanned pages, posts and docs appear here.'));
                 } else {
                     // Show page file count and performance info
                     var pageFileCount = pageFiles.length;
@@ -474,7 +474,7 @@ function deleteFile(fileId, refreshFunction, $anchor) {
         var $button = $(this);
         var fileId = $button.data('file-id');
         var $list = $button.closest('ul');
-        confirmDelete('Delete this scanned page?', 'Its Q&A will be removed from the knowledge base. You can scan the page again later.').then(function(ok) {
+        confirmDelete('Delete this scanned page?', 'Its file will be removed from the knowledge base. You can scan the page again later.').then(function(ok) {
             if (ok) {
                 $button.prop('disabled', true);
                 deleteFile(fileId, refreshUrlProcessingFileList, $list);

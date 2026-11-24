@@ -173,5 +173,42 @@ function wpiko_chatbot_vector_file_attachment($file_id, $filename) {
     if (wpiko_chatbot_private_orders_retired()) {
         $data['attributes'] = array('wpiko_scope' => strtolower($filename) === 'woocommerce_orders.json' ? 'private_orders' : 'public_v1');
     }
+
+    // Quick learn and Scan Website files carry context lines spaced for a
+    // known piece size, so that size is set instead of OpenAI's default.
+    $lower = strtolower((string) $filename);
+    $source = '';
+    if (substr($lower, -3) === '.md') {
+        if (strpos($lower, 'website-pages-') === 0) {
+            $source = 'quick_learn';
+        } elseif (strpos($lower, 'page_') === 0) {
+            $source = 'scan_website';
+        }
+    }
+    if ($source !== '' && function_exists('wpiko_chatbot_knowledge_chunking')) {
+        $data['chunking_strategy'] = array(
+            'type' => 'static',
+            'static' => wpiko_chatbot_knowledge_chunking($source),
+        );
+    }
+
+    /**
+     * Filter the request that adds an uploaded file to the knowledge base
+     * (OpenAI vector store), for example to set its chunking_strategy.
+     *
+     * @param array  $data     Request body: file_id and optional attributes.
+     * @param string $file_id  OpenAI file ID.
+     * @param string $filename File name with extension.
+     */
+    $filtered = apply_filters('wpiko_chatbot_vector_file_attachment', $data, $file_id, $filename);
+    if (is_array($filtered)) {
+        // The file and its privacy label cannot be changed by a filter.
+        $filtered['file_id'] = $data['file_id'];
+        unset($filtered['attributes']);
+        if (isset($data['attributes'])) {
+            $filtered['attributes'] = $data['attributes'];
+        }
+        $data = $filtered;
+    }
     return $data;
 }

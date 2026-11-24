@@ -47,7 +47,7 @@ https://www.youtube.com/watch?v=68E5sxxMli0
 
 - Live chat: take over any conversation from the AI and reply to visitors yourself (Admin Takeover)
 - Mobile app (PWA) with push notifications to reply from your phone
-- Website scan with no page limit: AI-written Q&A from your pages, and clean Markdown from your posts and documentation plugin articles (no AI cost). Scan many at once, rescan what changed, and optionally keep posts and docs updated automatically
+- Website scan with no page limit: your pages, posts and documentation plugin articles added as clean Markdown with their exact wording (no AI cost). Scan many at once, rescan what changed, and optionally keep everything updated automatically
 - Q&A Builder to control exact answers (up to 50 Q&A pairs)
 - WooCommerce integration: product cards, product recommendations and order questions
 - Lead capture: email capture and a contact form with file attachments and reCAPTCHA
@@ -104,7 +104,7 @@ You pay OpenAI per use. For most small sites that is a few dollars a month. The 
 
 = How does the chatbot learn about my business? =
 
-Pick up to 10 pages in "Quick learn from your pages" and upload documents such as price lists or FAQs in File Management. With Pro, Scan Website covers every page, post and documentation article on your site: pages become AI-written Q&A, and posts and articles are added as clean Markdown with their exact wording. WooCommerce products stay in sync.
+Pick up to 10 pages in "Quick learn from your pages" and upload documents such as price lists or FAQs in File Management. With Pro, Scan Website covers every page, post and documentation article on your site, added as clean Markdown with their exact wording. WooCommerce products stay in sync.
 
 = Does it include live chat? =
 
@@ -155,7 +155,7 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 5. Style presets and full color, avatar and position settings with a live preview.
 6. Conversations: every chat in one inbox, with search, translation, download and email export.
 7. Clear connection diagnostics: the exact OpenAI problem and a button to fix it.
-8. (Pro) Scan Website: pages become AI-written Q&A, posts and docs are added as clean Markdown.
+8. (Pro) Scan Website: pages, posts and docs are added as clean Markdown.
 9. (Pro) WooCommerce product cards and recommendations right in the chat.
 10. (Pro) Live chat takeover from the mobile app, with push notifications.
 
@@ -164,7 +164,15 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 = 2.1.7 =
 * Improve: Debug Log entries are limited to 2,000 characters, and OpenAI requests are logged as a short summary instead of the full request. The log stays small even when debug logging is left on, and existing large logs shrink automatically.
+* Improve: Quick learn adds your pages as clean Markdown, the same way as Pro's Scan Website. Tables keep their header row, so the chatbot knows which column a price or ✓ belongs to. Menus, buttons, forms and hidden text are left out, headings keep their levels, and text that a theme separates only with CSS no longer runs together ("**Lifetime** Pay once" instead of "LifetimePay once").
+* Improve: Each page in Quick learn now has a short header with its link, its section (parent pages) and a summary (the page's SEO description from WPiko SEO, Yoast SEO, Rank Math, SEOPress or All in One SEO, or its excerpt).
+* Improve: Quick learn adds short context lines such as "(Services › Delivery › Returns)" through each page. OpenAI's knowledge search returns pieces of the file, not the whole file, and one Quick learn file holds up to 10 pages; with these lines every piece says which page and section it comes from, so prices or opening hours from different pages are not mixed up. Quick learn and Scan Website files are uploaded with a fixed piece size (800 tokens, 400 overlap) that the lines are spaced for.
+* Improve: Quick learn keeps up to 30,000 characters per page (was 20,000) and cuts a longer page at a paragraph break. It now tells you which pages were cut, so you can upload the rest as a document.
+* Fix: Quick learn reads pages built with the classic editor with their paragraphs, and leaves the chatbot's own `[wpiko_chatbot]` shortcode out of the file.
+* Improve: AI Configuration, Quick learn and the scanned pages list describe the updated Pro Scan Website: pages, posts and docs are all added as clean Markdown.
 * Developer: New `wpiko_chatbot_log_message_max_length` filter to change the longest Debug Log message (at least 200 characters).
+* Developer: New `wpiko_chatbot_vector_file_attachment` filter for the request that adds an uploaded file to the knowledge base (the file ID and its privacy label cannot be changed).
+* Developer: New shared functions for knowledge files in `includes/knowledge-markdown.php` (`wpiko_chatbot_html_to_markdown()`, `wpiko_chatbot_markdown_add_context()` and others), used by Quick learn and by WPiko AI Chatbot Pro 2.1.8's Scan Website. New filters `wpiko_chatbot_knowledge_section`, `wpiko_chatbot_knowledge_summary`, `wpiko_chatbot_knowledge_context_parts` and `wpiko_chatbot_knowledge_chunking`.
 
 Older releases: `changelog.txt`.
 
