@@ -12,6 +12,33 @@ if (!defined('ABSPATH')) {
 // Maximum number of log entries to keep in database
 define('WPIKO_CHATBOT_MAX_LOG_ENTRIES', 200);
 
+// Longest message kept per log entry, in characters. Keeps the log option small:
+// every new entry re-saves the whole log.
+define('WPIKO_CHATBOT_MAX_LOG_MESSAGE_LENGTH', 2000);
+
+/**
+ * Shorten a log message to WPIKO_CHATBOT_MAX_LOG_MESSAGE_LENGTH characters.
+ *
+ * @param mixed $message Message.
+ * @return string
+ */
+function wpiko_chatbot_log_trim($message) {
+    $message = is_scalar($message) ? (string) $message : (string) wp_json_encode($message);
+    $max     = (int) apply_filters('wpiko_chatbot_log_message_max_length', WPIKO_CHATBOT_MAX_LOG_MESSAGE_LENGTH);
+    if ($max < 200) {
+        $max = 200;
+    }
+    $length = function_exists('mb_strlen') ? mb_strlen($message, 'UTF-8') : strlen($message);
+    if ($length <= $max) {
+        return $message;
+    }
+    // The marker counts towards the limit, so a shortened message is never shortened again.
+    $marker = ' … (truncated, ' . $length . ' characters)';
+    $keep   = $max - (function_exists('mb_strlen') ? mb_strlen($marker, 'UTF-8') : strlen($marker));
+    $short  = function_exists('mb_substr') ? mb_substr($message, 0, $keep, 'UTF-8') : substr($message, 0, $keep);
+    return $short . $marker;
+}
+
 /**
  * Log a message for debugging purposes
  * Logs to WP_DEBUG log AND/OR to database based on settings
@@ -21,6 +48,8 @@ define('WPIKO_CHATBOT_MAX_LOG_ENTRIES', 200);
  * @return void
  */
 function wpiko_chatbot_log($message, $level = 'info') {
+    $message = wpiko_chatbot_log_trim($message);
+
     // Check if debug logging is enabled in plugin settings
     $debug_logging_enabled = get_option('wpiko_chatbot_debug_logging', '0') === '1';
     
@@ -61,17 +90,27 @@ function wpiko_chatbot_log($message, $level = 'info') {
  */
 function wpiko_chatbot_db_log($message, $level = 'info') {
     $logs = get_option('wpiko_chatbot_debug_logs', array());
-    
+    if (!is_array($logs)) {
+        $logs = array();
+    }
+
     // Add new log entry
     $logs[] = array(
         'timestamp' => current_time('mysql'),
         'level' => $level,
-        'message' => $message
+        'message' => wpiko_chatbot_log_trim($message)
     );
     
     // Keep only the last X entries to prevent database bloat
     if (count($logs) > WPIKO_CHATBOT_MAX_LOG_ENTRIES) {
         $logs = array_slice($logs, -WPIKO_CHATBOT_MAX_LOG_ENTRIES);
+    }
+
+    // Shorten long entries saved by older versions, so an existing large log shrinks too.
+    foreach ($logs as $index => $entry) {
+        if (is_array($entry) && isset($entry['message'])) {
+            $logs[$index]['message'] = wpiko_chatbot_log_trim($entry['message']);
+        }
     }
     
     update_option('wpiko_chatbot_debug_logs', $logs, false); // autoload = false for performance

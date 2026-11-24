@@ -41,6 +41,40 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
     return false;
 }
 
+/**
+ * Short description of an OpenAI request for the debug log, without its content
+ * (the full body can be very large and may contain visitor messages).
+ *
+ * @param array $request_body Request body.
+ * @return string
+ */
+function wpiko_chatbot_log_request_summary($request_body)
+{
+    if (!is_array($request_body)) {
+        return 'not an array';
+    }
+    $parts = array('model ' . (isset($request_body['model']) ? $request_body['model'] : 'unknown'));
+    if (isset($request_body['input'])) {
+        $parts[] = is_array($request_body['input']) ? count($request_body['input']) . ' input items' : 'text input';
+    }
+    if (!empty($request_body['instructions']) && is_string($request_body['instructions'])) {
+        $parts[] = strlen($request_body['instructions']) . ' bytes of instructions';
+    }
+    if (!empty($request_body['tools']) && is_array($request_body['tools'])) {
+        $types = array();
+        foreach ($request_body['tools'] as $tool) {
+            $types[] = is_array($tool) && isset($tool['type']) ? $tool['type'] : 'tool';
+        }
+        $parts[] = 'tools: ' . implode(', ', $types);
+    }
+    if (!empty($request_body['previous_response_id'])) {
+        $parts[] = 'continues a previous response';
+    }
+    $json = wp_json_encode($request_body);
+    $parts[] = 'size ' . ($json === false ? 'unknown' : size_format(strlen($json), 1));
+    return implode(', ', $parts);
+}
+
 function wpiko_chatbot_get_responses_reasoning_effort_config()
 {
     return array(
@@ -244,7 +278,7 @@ function wpiko_chatbot_responses_api_call($message, $conversation_id = null, $us
         wpiko_chatbot_log('File search tool configuration: ' . json_encode($request_body['tools']), 'info');
     }
     if (!wpiko_chatbot_private_orders_retired()) {
-        wpiko_chatbot_log('Request body: ' . json_encode($request_body), 'info');
+        wpiko_chatbot_log('Request: ' . wpiko_chatbot_log_request_summary($request_body), 'info');
     }
 
     // Increase execution time to prevent timeouts - High reasoning effort can take a long time
@@ -800,7 +834,7 @@ function wpiko_chatbot_responses_api_stream($message, $conversation_id = null, $
     wpiko_chatbot_log('Vector Store ID: ' . $context['responses_vector_store_id'], 'info');
     wpiko_chatbot_log('Model: ' . $context['model'] . ' (supports file search: ' . (wpiko_chatbot_responses_model_supports_file_search($context['model']) ? 'YES' : 'NO') . ')', 'info');
     if (!wpiko_chatbot_private_orders_retired()) {
-        wpiko_chatbot_log('Streaming request body: ' . json_encode($request_body), 'info');
+        wpiko_chatbot_log('Streaming request: ' . wpiko_chatbot_log_request_summary($request_body), 'info');
     }
 
     if (function_exists('set_time_limit')) {

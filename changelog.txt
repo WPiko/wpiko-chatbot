@@ -3,6 +3,12 @@
 This file contains the release history for versions prior to the current release.
 The current release notes remain in readme.txt for the WordPress.org Plugin Directory.
 
+= 2.1.6 =
+* Feature: Added GPT-6.2 Astra and GPT-6.2 Sol to AI Configuration with reasoning controls, knowledge file search and usage cost estimates.
+* Update: Removed GPT-4.1 and GPT-4.1 Mini from AI Configuration because OpenAI deprecated them. Sites that use one of them switch to GPT-6 Luna automatically. Open AI Settings to choose another model.
+* Fix: Model cards now show the same OpenAI rates used for cost estimates. The GPT-5.6 Sol card updates to the regular rate when the promotion ends.
+* Update: Verified OpenAI API pricing on November 24, 2026.
+
 = 2.1.5 =
 * Fix: AI cost estimates now include OpenAI's cache-write pricing for GPT-5.6 and later models, including 30-minute and 12-hour writes. Previously recorded costs are kept as recorded. Model prices checked on November 14, 2026.
 * Feature: Conversations shows what each conversation cost in OpenAI credit. The estimated cost appears under the time in the inbox, and the Details panel has a new AI cost section with the AI replies, knowledge searches, tokens and model of that conversation. Conversations from before cost tracking started say "Not tracked".
