@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('WPIKO_CHATBOT_USAGE_SCHEMA', '1');
-define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-21');
+define('WPIKO_CHATBOT_PRICES_UPDATED', '2026-11-24');
 define('WPIKO_CHATBOT_USAGE_RETENTION_DAYS', 400);
 define('WPIKO_CHATBOT_RESPONSES_ENDPOINT', 'https://api.openai.com/v1/responses');
 
@@ -147,6 +147,7 @@ function wpiko_chatbot_get_model_prices()
         'gpt-5.4' => array('input' => 2.50, 'cached' => 0.25, 'output' => 15.00),
         'gpt-5.4-mini' => array('input' => 0.75, 'cached' => 0.075, 'output' => 4.50),
         'gpt-5.2' => array('input' => 1.75, 'cached' => 0.175, 'output' => 14.00),
+        // Deprecated by OpenAI and no longer selectable; kept so older usage and developer overrides are still priced.
         'gpt-4.1' => array('input' => 2.00, 'cached' => 0.50, 'output' => 8.00),
         'gpt-4.1-mini' => array('input' => 0.40, 'cached' => 0.10, 'output' => 1.60),
     );

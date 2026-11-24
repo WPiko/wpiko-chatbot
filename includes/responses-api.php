@@ -19,8 +19,6 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
         'gpt-6.1-terra',
         'gpt-6-sol',
         'gpt-6-luna',
-        'gpt-4.1',
-        'gpt-4.1-mini',
         // GPT-5.2 family
         'gpt-5.2',
         // GPT-5.4 family
@@ -36,8 +34,8 @@ function wpiko_chatbot_responses_model_supports_file_search($model)
     if (in_array($model, $supports, true)) {
         return true;
     }
-    // Heuristic: most modern 4.1/5-series variants support tools
-    if (preg_match('/^(gpt-4\.1|gpt-5|gpt-5\.2|gpt-5\.4|gpt-5\.5|gpt-5\.6|gpt-6)/', $model)) {
+    // Heuristic: most modern 5- and 6-series variants support tools
+    if (preg_match('/^(gpt-5|gpt-5\.2|gpt-5\.4|gpt-5\.5|gpt-5\.6|gpt-6)/', $model)) {
         return true;
     }
     return false;
@@ -1260,9 +1258,7 @@ function wpiko_chatbot_get_responses_api_models()
         'gpt-5.5-2026-04-23' => 'GPT-5.5 (2026-04-23)',
         'gpt-5.4' => 'GPT-5.4',
         'gpt-5.4-mini' => 'GPT-5.4 Mini',
-        'gpt-5.2' => 'GPT-5.2',
-        'gpt-4.1' => 'GPT-4.1',
-        'gpt-4.1-mini' => 'GPT-4.1 Mini'
+        'gpt-5.2' => 'GPT-5.2'
     );
 }
 

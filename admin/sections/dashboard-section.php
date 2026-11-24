@@ -473,7 +473,15 @@ function wpiko_chatbot_dashboard_section() {
             }
 
             $model_names = function_exists('wpiko_chatbot_get_responses_api_models') ? wpiko_chatbot_get_responses_api_models() : array();
-            $model_label = isset($model_names[$selected_model]) ? $model_names[$selected_model] : $selected_model;
+            if (isset($model_names[$selected_model])) {
+                $model_label = $model_names[$selected_model];
+            } elseif (isset($model_names['gpt-6-luna'])) {
+                // The saved model was retired by OpenAI, so the chatbot uses GPT-6 Luna.
+                /* translators: %s: model name, GPT-6 Luna. */
+                $model_label = sprintf(__('%s (your previous model was retired)', 'wpiko-chatbot'), $model_names['gpt-6-luna']);
+            } else {
+                $model_label = $selected_model;
+            }
 
             $knowledge = array('state' => 'todo', 'value' => __('Connect OpenAI first', 'wpiko-chatbot'), 'action' => __('Add content', 'wpiko-chatbot'), 'async' => false);
             if ($is_configured) {

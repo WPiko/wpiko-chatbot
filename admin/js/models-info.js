@@ -30,7 +30,7 @@ jQuery(document).ready(function ($) {
         },
         'gpt-6-astra': {
             displayName: 'GPT-6 Astra',
-            description: 'OpenAI\'s most capable model for complex reasoning, coding, research, and document creation',
+            description: 'Previous flagship model for complex reasoning, coding, research, and document creation',
             reasoning: 5,
             intelligence: null,
             speed: 4,
@@ -135,24 +135,6 @@ jQuery(document).ready(function ($) {
             speed: 3,
             contextWindow: '400,000',
             maxOutputTokens: '128,000'
-        },
-        'gpt-4.1': {
-            displayName: 'GPT-4.1',
-            description: 'Smartest non-reasoning model',
-            reasoning: null,
-            intelligence: 4,
-            speed: 3,
-            contextWindow: '1,047,576',
-            maxOutputTokens: '32,768'
-        },
-        'gpt-4.1-mini': {
-            displayName: 'GPT-4.1 Mini',
-            description: 'Smaller, faster version of GPT-4.1',
-            reasoning: null,
-            intelligence: 3,
-            speed: 4,
-            contextWindow: '1,047,576',
-            maxOutputTokens: '32,768'
         }
     };
 

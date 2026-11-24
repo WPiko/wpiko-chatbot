@@ -164,15 +164,16 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 
 = 2.1.6 =
 * Feature: Added GPT-6.2 Astra and GPT-6.2 Sol to AI Configuration with reasoning controls, knowledge file search and usage cost estimates.
+* Update: Removed GPT-4.1 and GPT-4.1 Mini from AI Configuration because OpenAI deprecated them. Sites that use one of them switch to GPT-6 Luna automatically. Open AI Settings to choose another model.
 * Fix: Model cards now show the same OpenAI rates used for cost estimates. The GPT-5.6 Sol card updates to the regular rate when the promotion ends.
-* Update: Verified OpenAI API pricing on November 21, 2026.
+* Update: Verified OpenAI API pricing on November 24, 2026.
 
 Older releases: `changelog.txt`.
 
 == Upgrade Notice ==
 
 = 2.1.6 =
-Adds GPT-6.2 Astra and GPT-6.2 Sol and keeps model card prices in sync with usage estimates.
+Adds GPT-6.2 Astra and GPT-6.2 Sol, removes the deprecated GPT-4.1 models and keeps model card prices in sync with usage estimates.
 
 == External Services ==
 
