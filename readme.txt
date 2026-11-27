@@ -2,7 +2,7 @@
 Contributors: wpiko
 Tags: chatbot, chatgpt, openai, customer-service, woocommerce
 Requires at least: 6.0
-Tested up to: 7.1
+Tested up to: 7.2
 Stable tag: 2.1.7
 Requires PHP: 7.0
 License: GPL-2.0+
@@ -163,6 +163,12 @@ A Pro feature: pause the AI and chat with a visitor live from the mobile app or 
 == Changelog ==
 
 = 2.1.7 =
+* Compatibility: Tested with WordPress 7.2.
+* Fix: Streamed chatbot replies no longer log a PHP deprecation notice on PHP 8.5 and later.
+* Fix: The emoji picker in the Contact user form opens on top of the form instead of behind it, opens above the button when there is no room below, and closes with Escape or when the form closes. Picking an emoji inserts it again: when WordPress shows emojis as images, as it does in WordPress 7.2, the picker inserted nothing.
+* Fix: Opening a plugin screen from the WordPress admin menu, an "Activate Pro" button or an email link no longer adds a "Tab switching without nonce verification" warning to the Debug Log.
+* Fix: In Conversations, the AI cost Models line no longer runs out of the Details panel when a conversation used more than one model. Each model name stays on one line, and the list wraps between them.
+* Improve: The plugin's admin screens no longer use jQuery features that are deprecated ahead of jQuery 4, so WordPress 7.2's jQuery Migrate 3.6 reports no warnings for them.
 * Improve: Debug Log entries are limited to 2,000 characters, and OpenAI requests are logged as a short summary instead of the full request. The log stays small even when debug logging is left on, and existing large logs shrink automatically.
 * Improve: Quick learn adds your pages as clean Markdown, the same way as Pro's Scan Website. Tables keep their header row, so the chatbot knows which column a price or ✓ belongs to. Menus, buttons, forms and hidden text are left out, headings keep their levels, and text that a theme separates only with CSS no longer runs together ("**Lifetime** Pay once" instead of "LifetimePay once").
 * Improve: Each page in Quick learn now has a short header with its link, its section (parent pages) and a summary (the page's SEO description from WPiko SEO, Yoast SEO, Rank Math, SEOPress or All in One SEO, or its excerpt).

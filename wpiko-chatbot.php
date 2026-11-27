@@ -5,7 +5,7 @@
  * Description: AI chatbot powered by your own OpenAI account. Learns your pages in minutes and answers visitors 24/7. No monthly subscription.
  * Version: 2.1.7
  * Requires at least: 6.0
- * Tested up to: 7.1
+ * Tested up to: 7.2
  * Requires PHP: 7.0
  * Author: WPiko
  * Author URI: https://wpiko.com

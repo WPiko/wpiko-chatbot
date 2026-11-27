@@ -817,10 +817,11 @@ function wpiko_chatbot_get_email_stats()
              SELECT user_email, MIN(timestamp) AS first_seen, MAX(timestamp) AS last_seen
              FROM `{$wpdb->prefix}wpiko_chatbot_conversations`
              WHERE user_email IS NOT NULL AND user_email != ''
-               AND role = 'user' AND message NOT LIKE 'Contact Form Submission:%%'
+               AND role = 'user' AND message NOT LIKE %s
              GROUP BY user_email
          ) AS emails",
-        $since
+        $since,
+        $wpdb->esc_like('Contact Form Submission:') . '%'
     ));
 
     return array(

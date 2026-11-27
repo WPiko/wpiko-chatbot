@@ -221,7 +221,18 @@ jQuery(document).ready(function($) {
                         }
                     }
                     
-                    // AI cost of this conversation
+                    // AI cost of this conversation. A list such as the models used wraps
+                    // between its items, never inside a model name.
+                    var buildCostValue = function(value) {
+                        var $value = $('<span class="info-value"></span>');
+                        String(value === undefined || value === null ? '' : value).split(', ').forEach(function(part, index) {
+                            if (index > 0) {
+                                $value.append(document.createTextNode(', '));
+                            }
+                            $('<span class="conversation-cost-part"></span>').text(part).appendTo($value);
+                        });
+                        return $value;
+                    };
                     var $costSection = $('.conversation-cost-section');
                     var aiCost = response.data.ai_cost;
                     if ($costSection.length && aiCost) {
@@ -230,7 +241,7 @@ jQuery(document).ready(function($) {
                         (aiCost.rows || []).forEach(function(row) {
                             $('<div class="info-item"></div>')
                                 .append($('<span class="info-label"></span>').text(row.label))
-                                .append($('<span class="info-value"></span>').text(row.value))
+                                .append(buildCostValue(row.value))
                                 .appendTo($costRows);
                         });
                         $costSection.find('.conversation-cost-note').text(aiCost.note || '').prop('hidden', !aiCost.note);
@@ -362,7 +373,13 @@ jQuery(document).ready(function($) {
     // Contact functionality
     let currentUserEmail = '';
 
+    function closeEmojiPicker() {
+        $('#emoji-picker').remove();
+        $(document).off('.wpikoEmojiPicker');
+    }
+
     function closeContactModal() {
+        closeEmojiPicker();
         $('#contact-modal').remove();
     }
 
@@ -471,56 +488,70 @@ jQuery(document).ready(function($) {
             e.preventDefault();
             const button = $(this);
             const messageTextarea = $('#message');
-            
-            // Create emoji picker if it doesn't exist
-            if (!$('#emoji-picker').length) {
-                const picker = $('<div>', {
-                    id: 'emoji-picker',
-                    class: 'emoji-picker'
-                });
-                
-                // Common emojis
-                const emojis = ['😊', '😂', '🤔', '👍', '👎', '❤️', '🎉', '🔥', '✨', '⭐', '📎', '📌', '⚡', '💡', '💪', '🙌', '👏', '🤝', '👋', '✅'];
-                
-                emojis.forEach(emoji => {
-                    $('<button>', {
-                        type: 'button',
-                        class: 'emoji-option',
-                        text: emoji
-                    }).appendTo(picker);
-                });
-                
-                $('body').append(picker);
-                
-                // Position picker near the button
-                const buttonPos = button.offset();
-                picker.css({
-                    top: buttonPos.top + button.outerHeight(),
-                    left: buttonPos.left
-                });
-                
-        // Handle emoji selection
-        $('.emoji-option').on('click', function() {
-            const emoji = $(this).text();
-            const cursorPos = messageTextarea[0].selectionStart;
-            const text = messageTextarea.val();
-            messageTextarea.val(
-                text.substring(0, cursorPos) +
-                emoji +
-                text.substring(cursorPos)
-            );
-            messageTextarea.focus();
-        });
-                
-        // Close picker when clicking outside
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('#emoji-picker, .emoji-picker-button').length) {
-                        $('#emoji-picker').remove();
-                    }
-                });
-            } else {
-                $('#emoji-picker').remove();
+
+            if ($('#emoji-picker').length) {
+                closeEmojiPicker();
+                return;
             }
+
+            const picker = $('<div>', {
+                id: 'emoji-picker',
+                class: 'emoji-picker'
+            });
+
+            // Common emojis
+            const emojis = ['😊', '😂', '🤔', '👍', '👎', '❤️', '🎉', '🔥', '✨', '⭐', '📎', '📌', '⚡', '💡', '💪', '🙌', '👏', '🤝', '👋', '✅'];
+
+            emojis.forEach(emoji => {
+                $('<button>', {
+                    type: 'button',
+                    class: 'emoji-option',
+                    'data-emoji': emoji,
+                    text: emoji
+                }).appendTo(picker);
+            });
+
+            $('body').append(picker);
+
+            // The Contact user dialog is fixed to the window, so the picker is too. It opens
+            // below the button, or above it when there is no room below.
+            const rect = button[0].getBoundingClientRect();
+            const pickerHeight = picker.outerHeight();
+            const pickerWidth = picker.outerWidth();
+            const gap = 6;
+            let top = rect.bottom + gap;
+            if (top + pickerHeight > window.innerHeight - gap && rect.top - gap - pickerHeight >= gap) {
+                top = rect.top - gap - pickerHeight;
+            }
+            const left = Math.max(gap, Math.min(rect.left, window.innerWidth - pickerWidth - gap));
+            picker.css({ top: top, left: left });
+
+            // Handle emoji selection
+            picker.on('click', '.emoji-option', function() {
+                // WordPress's emoji script can swap the character for an <img>, so read it from data-emoji.
+                const emoji = $(this).attr('data-emoji') || $(this).text();
+                const cursorPos = messageTextarea[0].selectionStart;
+                const text = messageTextarea.val();
+                messageTextarea.val(
+                    text.substring(0, cursorPos) +
+                    emoji +
+                    text.substring(cursorPos)
+                );
+                messageTextarea.trigger('focus');
+            });
+
+            // Close picker when clicking outside it or pressing Escape
+            $(document).on('click.wpikoEmojiPicker', function(e) {
+                if (!$(e.target).closest('#emoji-picker, .emoji-picker-button').length) {
+                    closeEmojiPicker();
+                }
+            });
+            $(document).on('keydown.wpikoEmojiPicker', function(e) {
+                if (e.key === 'Escape') {
+                    closeEmojiPicker();
+                    button.trigger('focus');
+                }
+            });
         });
 
         // Handle AI text enhancement
@@ -622,7 +653,7 @@ jQuery(document).ready(function($) {
         });
 
         // Handle form submission
-        $('#contact-form').submit(function(e) {
+        $('#contact-form').on('submit', function(e) {
             e.preventDefault();
             const subject = $('#subject').val();
             const message = $('#message').val();
@@ -679,7 +710,7 @@ jQuery(document).ready(function($) {
     }
 
     // Contact user button click handler
-    $('.contact-user').click(function(e) {
+    $('.contact-user').on('click', function(e) {
         e.preventDefault();
         if (currentUserEmail) {
             showContactForm();
@@ -687,7 +718,7 @@ jQuery(document).ready(function($) {
     });
 
     // Download conversation
-    $('.download-conversation').click(function(e) {
+    $('.download-conversation').on('click', function(e) {
         e.preventDefault();
         if (!currentSessionId) return;
 
@@ -760,7 +791,7 @@ jQuery(document).ready(function($) {
     });
 
     // Delete conversation
-    $('.delete-conversation').click(function(e) {
+    $('.delete-conversation').on('click', function(e) {
         e.preventDefault();
         if (!currentSessionId) return;
         

@@ -609,16 +609,9 @@ function wpiko_chatbot_admin_page()
         return;
     }
 
-    // Verify nonce if tab parameter is set
-    if (isset($_GET['tab'])) {
-        $nonce_verified = isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_key($_GET['_wpnonce']), 'wpiko_chatbot_tab_nonce');
-        if (!$nonce_verified && !wp_doing_ajax()) {
-            // Still allow tab switching but log it for debugging
-            wpiko_chatbot_log('Tab switching without nonce verification', 'warning');
-        }
-    }
-
-    // Properly unslash and sanitize tab parameter
+    // Opening a tab only displays it, and only for admins (checked above), so it needs no nonce.
+    // Links from the WordPress menu, Pro and emails open tabs without one.
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
     $wpiko_active_tab = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : 'dashboard';
 
     // Helper function to generate secure tab URLs

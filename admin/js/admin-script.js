@@ -104,10 +104,10 @@ jQuery(document).ready(function($) {
 
         updateQuestionRows();
 
-        $addQuestionButton.click(function() {
+        $addQuestionButton.on('click', function() {
             $questionsContainer.append('<div class="question-row wpiko-chatbot-settings-repeater-row"><input type="text" name="questions[]" value="" aria-describedby="chatbot-questions-description"><button type="button" class="button remove-question wpiko-chatbot-settings-danger">Remove</button></div>');
             updateQuestionRows();
-            $questionsContainer.find('.question-row:last input').trigger('focus');
+            $questionsContainer.find('.question-row').last().find('input').trigger('focus');
         });
 
         $questionsContainer.on('click', '.remove-question', function() {

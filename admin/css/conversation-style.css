@@ -1156,7 +1156,21 @@
     font-variant-numeric: tabular-nums;
 }
 
+.conversation-cost-section .info-item {
+    align-items: flex-start;
+}
+
+.conversation-cost-section .info-label {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Values wrap between list items (such as several models), never inside one item. */
 .conversation-cost-section .info-value {
+    min-width: 0;
+}
+
+.conversation-cost-part {
     white-space: nowrap;
 }
 
@@ -1564,7 +1578,7 @@
 
 /* Emoji Picker */
 .emoji-picker {
-    position: absolute;
+    position: fixed;
     background: var(--wpiko-ui-surface);
     border: 1px solid var(--wpiko-ui-line);
     border-radius: var(--wpiko-ui-radius-sm);
@@ -1573,7 +1587,8 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 4px;
-    z-index: 1000;
+    /* Above the Contact user dialog (.wpiko-conversations-dialog, z-index 100100). */
+    z-index: 100110;
 }
 
 .emoji-option {

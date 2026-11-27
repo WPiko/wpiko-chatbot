@@ -1051,7 +1051,10 @@ function wpiko_chatbot_send_openai_stream_request($headers, $request_body, $call
     $curl_result = curl_exec($ch);
     $curl_error = curl_error($ch);
     $status_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    // curl_close() does nothing since PHP 8.0 and is deprecated in PHP 8.5; the handle is freed when $ch goes out of scope.
+    if (PHP_VERSION_ID < 80000) {
+        curl_close($ch);
+    }
     // phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_init, WordPress.WP.AlternativeFunctions.curl_curl_setopt, WordPress.WP.AlternativeFunctions.curl_curl_exec, WordPress.WP.AlternativeFunctions.curl_curl_error, WordPress.WP.AlternativeFunctions.curl_curl_getinfo, WordPress.WP.AlternativeFunctions.curl_curl_close
 
     wpiko_chatbot_flush_openai_stream_parser($stream_state, $callbacks);
