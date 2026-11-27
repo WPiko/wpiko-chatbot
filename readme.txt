@@ -47,7 +47,7 @@ https://www.youtube.com/watch?v=68E5sxxMli0
 
 - Live chat: take over any conversation from the AI and reply to visitors yourself (Admin Takeover)
 - Mobile app (PWA) with push notifications to reply from your phone
-- Website scan with no page limit: your pages, posts and documentation plugin articles added as clean Markdown with their exact wording (no AI cost). Scan many at once, rescan what changed, and optionally keep everything updated automatically
+- Website scan with no page limit: your pages, posts and documentation plugin articles added as clean Markdown with their exact wording. Scan many at once, rescan what changed, and optionally keep everything updated automatically
 - Q&A Builder to control exact answers (up to 50 Q&A pairs)
 - WooCommerce integration: product cards, product recommendations and order questions
 - Lead capture: email capture and a contact form with file attachments and reCAPTCHA

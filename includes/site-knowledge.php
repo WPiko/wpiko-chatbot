@@ -667,7 +667,7 @@ function wpiko_chatbot_render_site_knowledge_panel($context = 'settings')
                 <strong><span class="dashicons dashicons-media-text" aria-hidden="true"></span> <?php esc_html_e('Quick learn', 'wpiko-chatbot'); ?></strong>
                 <ul>
                     <li><?php esc_html_e('Copies the page text', 'wpiko-chatbot'); ?></li>
-                    <li><?php esc_html_e('Ready in seconds, no AI cost', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Ready in seconds', 'wpiko-chatbot'); ?></li>
                     <li>
                         <?php
                         /* translators: %d: page limit. */
@@ -680,7 +680,7 @@ function wpiko_chatbot_render_site_knowledge_panel($context = 'settings')
                 <strong><span class="dashicons dashicons-admin-site-alt3" aria-hidden="true"></span> <?php esc_html_e('Scan Website', 'wpiko-chatbot'); ?> <span class="wpiko-pro-pill">PRO</span></strong>
                 <ul>
                     <li><?php esc_html_e('Pages, posts and docs as clean Markdown', 'wpiko-chatbot'); ?></li>
-                    <li><?php esc_html_e('Exact wording, no AI cost, can update automatically', 'wpiko-chatbot'); ?></li>
+                    <li><?php esc_html_e('Exact wording, can update automatically', 'wpiko-chatbot'); ?></li>
                     <li><?php esc_html_e('Any number of pages, posts and docs', 'wpiko-chatbot'); ?></li>
                 </ul>
                 <?php if ($pro_licensed) : ?>
